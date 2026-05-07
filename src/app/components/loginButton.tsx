@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useSession, signIn } from "next-auth/react";
+import { useSession, signIn, signOut } from "next-auth/react";
 import { useRouter, usePathname } from "next/navigation";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "../css/homepage.css";
@@ -71,13 +71,15 @@ export default function LoginButton() {
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, [dropdownOpen]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (!TENANT_ID) {
       console.error("Missing Azure TENANT_ID for logout");
       return;
     }
     setDropdownOpen(false);
     showAlert("Signing out...", "info");
+    // Clear the NextAuth JWT cookie first, then redirect to Microsoft logout
+    await signOut({ redirect: false });
     const logoutUrl = `https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/logout?post_logout_redirect_uri=${window.location.origin}`;
     window.location.href = logoutUrl;
   };

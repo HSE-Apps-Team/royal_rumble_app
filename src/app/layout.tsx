@@ -10,8 +10,8 @@ export const dynamic = "force-dynamic";
 const DEV_MODE = process.env.DEV_MODE === "true";
 
 export const metadata: Metadata = {
-  title: "Royal Rumble App",
-  description: "A simple Next.js app made by Nithik and Nico",
+  title: "HSE Royal Rumble",
+  description: "The hub for all things Royal Rumble!",
 };
 
 export default function RootLayout({
@@ -30,8 +30,7 @@ export default function RootLayout({
           <AlertProvider>
             {DEV_MODE && (
               <nav style={{ textAlign: "center", padding: "30px" }}>
-                <Link href="/">Home</Link> |{" "}
-                <Link href="/faq">FAQ</Link> |{" "}
+                <Link href="/">Home</Link> | <Link href="/faq">FAQ</Link> |{" "}
                 <Link href="/freshmen/home">Freshmen</Link> |{" "}
                 <Link href="/mentor/ambassador">Ambassador</Link> |{" "}
                 <Link href="/mentor/hallway_host">Hallway Host</Link> |{" "}

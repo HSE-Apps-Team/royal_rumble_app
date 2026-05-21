@@ -2,7 +2,6 @@ import Image from "next/image";
 import LoginButton from "./components/loginButton";
 import FAQButton from "./components/faqButton";
 import TicketButton from "./components/ticketButton";
-import SubmitButton from "./components/addButton";
 import NavButton from "./components/addButton";
 import homepagePhoto1 from "./assets/homepagePhoto1.jpg";
 import homepagePhoto2 from "./assets/homepagePhoto2.jpg";
@@ -276,7 +275,8 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="contact-form">
+      {/* Contact form removed — replaced with direct email contact */}
+      {/* <section className="contact-form">
         <header className="home-header">
           <h1 className="home-title">Contact</h1>
         </header>
@@ -306,6 +306,17 @@ export default async function Home() {
         >
           Submit
         </SubmitButton>
+      </section> */}
+
+      <section className="contact-form">
+        <header className="home-header">
+          <h1 className="home-title">Contact</h1>
+        </header>
+
+        <p className="contact-subtitle">
+          Have any questions, concerns, or feedback? Email Ms. Kelsey Habig at{" "}
+          <a href="mailto:khabig@hse.k12.in.us">khabig@hse.k12.in.us</a>.
+        </p>
       </section>
     </main>
   );

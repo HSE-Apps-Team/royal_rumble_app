@@ -716,6 +716,28 @@ export default function AdminUpload() {
           </div>
         </InfoBox>
       </section>
+
+      <div style={{ margin: "40px 0 60px", textAlign: "center", fontFamily: "Poppins, sans-serif" }}>
+        <p style={{ color: "var(--primaryBlue)", fontWeight: 600, fontSize: "1rem", marginBottom: "12px" }}>
+          Need to clear uploaded data?
+        </p>
+        <button
+          style={{
+            backgroundColor: "var(--primaryRed)",
+            color: "white",
+            fontFamily: "Poppins, sans-serif",
+            fontWeight: "bold",
+            border: "3px solid var(--primaryRed)",
+            borderRadius: "10px",
+            padding: "10px 28px",
+            fontSize: "1rem",
+            cursor: "pointer",
+          }}
+          onClick={() => router.push("/admin/reset")}
+        >
+          Go to Reset Tables
+        </button>
+      </div>
     </main>
   );
 }

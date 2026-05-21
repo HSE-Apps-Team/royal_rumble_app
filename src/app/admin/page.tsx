@@ -53,6 +53,10 @@ export default async function AdminHomepage() {
           <AdminButtons link="/admin/routes">Routes</AdminButtons>
           <AdminButtons link="/admin/editContent">Edit Content</AdminButtons>
         </div>
+
+        <div style={{ display: "flex", flexDirection: "row", gap: "20px", margin: "20px" }}>
+          <AdminButtons link="/admin/reset">Reset Tables</AdminButtons>
+        </div>
       </section>
     </main>
   );

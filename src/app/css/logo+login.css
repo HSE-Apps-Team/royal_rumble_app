@@ -48,5 +48,26 @@
     border: none;
     z-index: 100;
   }
+}
 
+@media (max-width: 768px) {
+  /* Hide desktop nav buttons — bottom nav bar takes over */
+  .nav-buttons {
+    display: none;
+  }
+
+  .home-logo-button {
+    top: 12px;
+    left: 12px;
+  }
+
+  .logo {
+    width: 70px;
+  }
+
+  .profile-icon-button {
+    top: 12px;
+    right: 12px;
+    font-size: 2.8rem;
+  }
 }

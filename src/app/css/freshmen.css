@@ -42,3 +42,27 @@
   font-weight: normal;
   font-size: 30px;
 }
+
+@media (max-width: 768px) {
+  .freshmen-title {
+    font-size: 2.2rem;
+    margin-top: 90px;
+  }
+
+  .check-registration {
+    font-size: 1.1rem;
+    padding: 0 16px;
+  }
+
+  .freshmen-info-box {
+    margin-top: 10px;
+  }
+
+  .info-label {
+    font-size: 20px;
+  }
+
+  .info-value {
+    font-size: 18px;
+  }
+}

@@ -2,8 +2,10 @@ import LogoButton from "../../components/logoButton";
 import LoginButton from "../../components/loginButton";
 import InfoBox from "../../components/infoBox";
 import NavButton from "../../components/addButton";
+import MobileNav from "../../components/MobileNav";
 import "../../css/freshmen.css";
 import "../../css/logo+login.css";
+import "../../css/mobile-nav.css";
 import {
   getFreshmanById,
   getFreshmanByIdFromSchoolData,
@@ -27,6 +29,7 @@ export default async function FreshmenHomepage() {
         <main className="freshmen-container">
           <LogoButton />
           <LoginButton />
+          <MobileNav homeHref="/" dashboardHref="/freshmen/home" />
           <header className="freshmen-header">
             <h1 className="freshmen-title">Welcome!</h1>
             <h3 className="check-registration">
@@ -78,6 +81,7 @@ export default async function FreshmenHomepage() {
           </NavButton>
         </div>
         <LoginButton />
+        <MobileNav homeHref="/" dashboardHref="/freshmen/home" />
 
         <header className="freshmen-header">
           <h1 className="freshmen-title">
@@ -111,6 +115,7 @@ export default async function FreshmenHomepage() {
         </NavButton>
         </div>
       <LoginButton />
+      <MobileNav homeHref="/" dashboardHref="/freshmen/home" />
 
       <header className="freshmen-header">
         <h1 className="freshmen-title">

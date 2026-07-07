@@ -2,6 +2,10 @@ import InfoBox from "../../components/infoBox";
 import InfoTable from "../../components/infoTable";
 import EditableContent from "../../components/EditableContent";
 import NavButton from "../../components/addButton";
+import MobileNav from "../../components/MobileNav";
+import "../../css/mentor.css";
+import "../../css/logo+login.css";
+import "../../css/mobile-nav.css";
 
 export default function UtilitySquadUI({
   mentorsData,
@@ -42,6 +46,7 @@ export default function UtilitySquadUI({
           Dashboard
         </NavButton>
       </div>
+      <MobileNav homeHref="/" dashboardHref="/mentor/utility_squad" />
       <header className="mentor-header">
         <h1 className="mentor-title">
           Welcome, {mentorsData.fName} {mentorsData.lName}!

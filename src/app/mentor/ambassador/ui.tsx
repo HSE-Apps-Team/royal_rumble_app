@@ -1,10 +1,12 @@
 import InfoBox from "../../components/infoBox";
 import MentorButtons from "../../components/mentorButtons";
 import NavButton from "../../components/addButton";
+import MobileNav from "../../components/MobileNav";
 import InfoTable from "../../components/infoTable";
 import EditableContent from "../../components/EditableContent";
 import "../../css/mentor.css";
 import "../../css/logo+login.css";
+import "../../css/mobile-nav.css";
 
 export default function AmbassadorUI({
   mentorsData,
@@ -66,6 +68,7 @@ export default function AmbassadorUI({
           Dashboard
         </NavButton>
       </div>
+      <MobileNav homeHref="/" dashboardHref="/mentor/ambassador" />
       <header className="mentor-header">
         <h1 className="mentor-title">
           Welcome, {mentorsData.fName} {mentorsData.lName}!
@@ -88,7 +91,7 @@ export default function AmbassadorUI({
       {groupDetails != null && (
         <>
           <div
-            className="mentor-info-box"
+            className="mentor-info-box mentor-action-buttons"
             style={{ flexDirection: "row", gap: "20px" }}
           >
             <MentorButtons link="/mentor/ambassador/attendance">

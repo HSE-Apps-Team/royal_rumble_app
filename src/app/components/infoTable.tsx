@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import "./infoTable.css";
 
 export default function Table({
   headers,
@@ -40,27 +41,44 @@ export default function Table({
   };
 
   return (
-    <table style={tableStyle}>
-      <thead>
-        <tr>
-          {headers.map((header, index) => (
-            <th key={index} style={headerCellStyle}>
-              {header}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {data.map((row, rowIndex) => (
-          <tr key={rowIndex}>
-            {row.map((cell, cellIndex) => (
-              <td key={cellIndex} style={cellStyle}>
-                {cell}
-              </td>
+    <>
+      {/* Desktop table */}
+      <table style={tableStyle} className="info-table-desktop">
+        <thead>
+          <tr>
+            {headers.map((header, index) => (
+              <th key={index} style={headerCellStyle}>
+                {header}
+              </th>
             ))}
           </tr>
+        </thead>
+        <tbody>
+          {data.map((row, rowIndex) => (
+            <tr key={rowIndex}>
+              {row.map((cell, cellIndex) => (
+                <td key={cellIndex} style={cellStyle}>
+                  {cell}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {/* Mobile card layout */}
+      <div className="info-table-mobile">
+        {data.map((row, rowIndex) => (
+          <div key={rowIndex} className="info-card">
+            {row.map((cell, cellIndex) => (
+              <div key={cellIndex} className="info-card-row">
+                <span className="info-card-label">{headers[cellIndex]}</span>
+                <span className="info-card-value">{cell}</span>
+              </div>
+            ))}
+          </div>
         ))}
-      </tbody>
-    </table>
+      </div>
+    </>
   );
 }

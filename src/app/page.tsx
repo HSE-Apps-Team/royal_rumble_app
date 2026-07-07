@@ -3,6 +3,7 @@ import LoginButton from "./components/loginButton";
 import FAQButton from "./components/faqButton";
 import TicketButton from "./components/ticketButton";
 import NavButton from "./components/addButton";
+import MobileNav from "./components/MobileNav";
 import homepagePhoto1 from "./assets/homepagePhoto1.jpg";
 import homepagePhoto2 from "./assets/homepagePhoto2.jpg";
 import homepagePhoto3 from "./assets/homepagePhoto3.jpg";
@@ -23,6 +24,7 @@ import vinson from "./assets/vinson.png";
 import royalRumbleLogo from "./assets/logo.png";
 import "./css/homepage.css";
 import "./css/logo+login.css";
+import "./css/mobile-nav.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { getRoyalRumbleTicketLink } from "../actions/other";
 import { auth } from "@/auth";
@@ -76,6 +78,8 @@ export default async function Home() {
           </NavButton>
         </div>
       )}
+
+      {session && <MobileNav homeHref="/" dashboardHref={dashboardLink} />}
 
       {/* <header style={{ backgroundColor: "red", color: "white" }}>
         THE IS A DEVOLPMENT SITE. FOR THE OFFICIAL ROYAL RUMBLE WEBSITE{" "}

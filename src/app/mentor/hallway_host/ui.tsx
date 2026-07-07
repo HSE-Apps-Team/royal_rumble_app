@@ -1,10 +1,12 @@
 import InfoBox from "../../components/infoBox";
 import MentorButtons from "../../components/mentorButtons";
 import NavButton from "../../components/addButton";
+import MobileNav from "../../components/MobileNav";
 import InfoTable from "../../components/infoTable";
 import EditableContent from "../../components/EditableContent";
 import "../../css/mentor.css";
 import "../../css/logo+login.css";
+import "../../css/mobile-nav.css";
 
 export default function HallwayHostUI({
   mentorsData,
@@ -56,6 +58,7 @@ export default function HallwayHostUI({
           Dashboard
         </NavButton>
       </div>
+      <MobileNav homeHref="/" dashboardHref="/mentor/hallway_host" />
       <header className="mentor-header">
         <h1 className="mentor-title">
           Welcome, {mentorsData.fName} {mentorsData.lName}!

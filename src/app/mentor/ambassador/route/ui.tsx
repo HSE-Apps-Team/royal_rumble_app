@@ -6,8 +6,10 @@ import InfoBox from "../../../components/infoBox";
 import InfoTable from "../../../components/infoTable";
 import BackButton from "../../../components/backButton";
 import NavButton from "../../../components/addButton";
+import MobileNav from "../../../components/MobileNav";
 import "../../../css/mentor.css";
 import "../../../css/logo+login.css";
+import "../../../css/mobile-nav.css";
 
 interface Stop {
   stopOrder: number;
@@ -39,19 +41,20 @@ export default function AmbassadorRouteUI({
     return (
       <main className="mentor-container">
         <LogoButton />
-         <div className= "nav-buttons">
+                <div className="nav-buttons">
           <NavButton href="/"
-          style = {{ width: "90px", height: "40px", padding: "5px 0px", fontSize: "15px"}}
+          style={{ width: "90px", height: "40px", padding: "5px 0px", fontSize: "15px" }}
           >
             Home
           </NavButton>
           <NavButton href="/mentor/ambassador"
-          style = {{ width: "140px", height: "40px", padding: "5px 0px", fontSize: "15px"}}
+          style={{ width: "140px", height: "40px", padding: "5px 0px", fontSize: "15px" }}
           >
             Dashboard
           </NavButton>
         </div>
         <LoginButton />
+        <MobileNav homeHref="/" dashboardHref="/mentor/ambassador" />
 
         <header className="mentor-header">
           <h1 className="mentor-title">Route</h1>
@@ -81,19 +84,20 @@ export default function AmbassadorRouteUI({
   return (
     <main className="mentor-container">
       <LogoButton />
-      <div className= "nav-buttons">
+             <div className="nav-buttons">
           <NavButton href="/"
-          style = {{ width: "90px", height: "40px", padding: "5px 0px", fontSize: "15px"}}
+          style={{ width: "90px", height: "40px", padding: "5px 0px", fontSize: "15px" }}
           >
             Home
           </NavButton>
           <NavButton href="/mentor/ambassador"
-          style = {{ width: "140px", height: "40px", padding: "5px 0px", fontSize: "15px"}}
+          style={{ width: "140px", height: "40px", padding: "5px 0px", fontSize: "15px" }}
           >
             Dashboard
           </NavButton>
       </div>
       <LoginButton />
+      <MobileNav homeHref="/" dashboardHref="/mentor/ambassador" />
 
       <header className="mentor-header">
         <h1 className="mentor-title">Your Route</h1>

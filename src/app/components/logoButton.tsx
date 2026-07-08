@@ -19,8 +19,8 @@ export default function LogoButton() {
     } else if (pathname.startsWith("/mentor/hallway_host")) {
       router.push("/mentor/hallway_host");
 
-    } else if (pathname.startsWith("/mentor/utility_spirit")) {
-      router.push("/mentor/utility_spirit");
+    } else if (pathname.startsWith("/mentor/utility_squad")) {
+      router.push("/mentor/utility_squad");
 
     } else if (pathname.startsWith("/admin")) {
       router.push("/admin");

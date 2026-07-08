@@ -3,13 +3,12 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import { Modal, Button } from "react-bootstrap";
 import { useAlert } from "@/app/context/AlertContext";
 import ExportToExcelButton from "./ExportToExcelButton";
+import ModalShell from "./ModalShell";
 
 interface EditTableProps {
   headers: string[];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any[];
   editLink: string;
   deleteAction: (id: string | number) => Promise<{ success: boolean }>;
@@ -17,6 +16,23 @@ interface EditTableProps {
   visibleColumns: number[];
   fileName?: string;
 }
+
+const makeBtn = (bg: string) => ({
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  backgroundColor: bg,
+  color: "white",
+  fontFamily: "Poppins, sans-serif",
+  fontWeight: "bold" as const,
+  fontSize: "15px",
+  border: "5px solid transparent",
+  borderRadius: "14px",
+  padding: "8px 18px",
+  cursor: "pointer",
+  transition: "background-color 0.2s",
+  minWidth: "100px",
+});
 
 export default function EditTable({
   headers,
@@ -29,12 +45,11 @@ export default function EditTable({
 }: EditTableProps) {
   const router = useRouter();
   const { showAlert } = useAlert();
-
   const [modalID, setModalID] = useState<null | string | number>(null);
 
   const colCount = visibleColumns.length + 1;
 
-  const tableContainerStyle: React.CSSProperties = {
+  const tableStyle: React.CSSProperties = {
     borderCollapse: "collapse",
     width: "100%",
     height: "300px",
@@ -77,69 +92,33 @@ export default function EditTable({
   const unhover = (e: React.MouseEvent<HTMLElement>) =>
     (e.currentTarget.style.color = "var(--primaryBlue)");
 
-   const buttonStyle = {
-      display: "inline-flex",
-      alignItems: "center",
-      justifyContent: "center",
-      backgroundColor: "var(--primaryBlue)",
-      color: "white",
-      fontFamily: "Poppins, sans-serif",
-      fontWeight: "bold",
-      fontSize: "15px",
-      border: "5px solid transparent",
-      borderRadius: "14px",
-      padding: "5px 5px",
-      textAlign: "center" as const,
-      cursor: "pointer",
-      transition: "background-color 0.3s",
-      width: "100px"
-    };
-  
-    const buttonHover = (e: React.MouseEvent<HTMLButtonElement>) => {
-      e.currentTarget.style.backgroundColor = "white";
-      e.currentTarget.style.color = "var(--primaryBlue)";
-      e.currentTarget.style.borderColor = "var(--primaryBlue)";
-    };
-  
-    const buttonUnhover = (e: React.MouseEvent<HTMLButtonElement>) => {
-      e.currentTarget.style.backgroundColor = "var(--primaryBlue)";
-      e.currentTarget.style.color = "white";
-      e.currentTarget.style.borderColor = "transparent";
-    };
-  
-    const buttonStyle2 = {
-      display: "inline-flex",
-      alignItems: "center",
-      justifyContent: "center",
-      backgroundColor: "var(--primaryRed)",
-      color: "white",
-      fontFamily: "Poppins, sans-serif",
-      fontWeight: "bold",
-      fontSize: "15px",
-      border: "5px solid transparent",
-      borderRadius: "14px",
-      padding: "5px 5px",
-      textAlign: "center" as const,
-      cursor: "pointer",
-      transition: "background-color 0.3s",
-      width: "100px"
-    };
-  
-    const buttonHover2 = (e: React.MouseEvent<HTMLButtonElement>) => {
-      e.currentTarget.style.backgroundColor = "white";
-      e.currentTarget.style.color = "var(--primaryRed)";
-      e.currentTarget.style.borderColor = "var(--primaryRed)";
-    };
-  
-    const buttonUnhover2 = (e: React.MouseEvent<HTMLButtonElement>) => {
-      e.currentTarget.style.backgroundColor = "var(--primaryRed)";
-      e.currentTarget.style.color = "white";
-      e.currentTarget.style.borderColor = "transparent";
-    };
+  const cancelBtnStyle = makeBtn("var(--secondarySilver)");
+  const cancelBtnHover = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.currentTarget.style.backgroundColor = "white";
+    e.currentTarget.style.color = "var(--secondarySilver)";
+    e.currentTarget.style.borderColor = "var(--secondarySilver)";
+  };
+  const cancelBtnUnhover = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.currentTarget.style.backgroundColor = "var(--secondarySilver)";
+    e.currentTarget.style.color = "white";
+    e.currentTarget.style.borderColor = "transparent";
+  };
+
+  const deleteBtnStyle = makeBtn("var(--primaryRed)");
+  const deleteBtnHover = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.currentTarget.style.backgroundColor = "white";
+    e.currentTarget.style.color = "var(--primaryRed)";
+    e.currentTarget.style.borderColor = "var(--primaryRed)";
+  };
+  const deleteBtnUnhover = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.currentTarget.style.backgroundColor = "var(--primaryRed)";
+    e.currentTarget.style.color = "white";
+    e.currentTarget.style.borderColor = "transparent";
+  };
 
   return (
     <div>
-      <table style={tableContainerStyle}>
+      <table style={tableStyle}>
         <colgroup>
           {Array.from({ length: colCount }).map((_, i) => (
             <col
@@ -175,7 +154,6 @@ export default function EditTable({
         <tbody>
           {data.map((row, rowIndex) => {
             const id = row[idIndex];
-
             return (
               <tr key={rowIndex}>
                 {visibleColumns.map((ci) => (
@@ -183,16 +161,8 @@ export default function EditTable({
                     {row[ci]}
                   </td>
                 ))}
-
                 <td style={cellStyle}>
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      gap: 12,
-                    }}
-                  >
+                  <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 12 }}>
                     <i
                       className="bi bi-pencil"
                       style={iconStyle}
@@ -200,7 +170,6 @@ export default function EditTable({
                       onMouseLeave={unhover}
                       onClick={() => router.push(`${editLink}/${id}`)}
                     />
-                    {/* delete */}
                     <i
                       className="bi bi-trash"
                       style={iconStyle}
@@ -216,63 +185,48 @@ export default function EditTable({
         </tbody>
       </table>
 
-      {/* -------- Modal OUTSIDE map (only one) -------- */}
-      <Modal show={modalID !== null} onHide={() => setModalID(null)}>
-        <Modal.Header
-          style={{ backgroundColor: "var(--primaryBlue)", color: "white",
-            fontFamily: "Poppins, sans-serif", fontWeight: "bold",
-            fontSize: "15px", justifyContent:"space-between"}}
+      {modalID !== null && (
+        <ModalShell
+          title="Delete Item"
+          onClose={() => setModalID(null)}
+          footer={
+            <>
+              <button
+                style={cancelBtnStyle}
+                onMouseEnter={cancelBtnHover}
+                onMouseLeave={cancelBtnUnhover}
+                onClick={() => setModalID(null)}
+              >
+                Cancel
+              </button>
+              <button
+                style={deleteBtnStyle}
+                onMouseEnter={deleteBtnHover}
+                onMouseLeave={deleteBtnUnhover}
+                onClick={async () => {
+                  if (deleteAction && modalID !== null) {
+                    const result = await deleteAction(modalID);
+                    if (result?.success) {
+                      showAlert(`Successfully deleted item with ID ${modalID}`, "success");
+                    } else {
+                      showAlert(`Failed to delete item with ID ${modalID}`, "danger");
+                    }
+                    setModalID(null);
+                    router.refresh();
+                  }
+                }}
+              >
+                Delete
+              </button>
+            </>
+          }
         >
-          <Modal.Title style={{ color: "white",fontFamily: "Poppins, sans-serif",
-                                fontWeight: "bold", fontSize: "20px" }}>
-            Delete Row
-          </Modal.Title>
-          <i className="bi bi-x-lg" data-bs-dismiss="modal" 
-            style={{fontSize:"22px", cursor: "pointer"}}
-            onClick={() => setModalID(null)} 
-          />
-        </Modal.Header>
-        <Modal.Body>
-          Are you sure you want to delete this item (ID: {modalID})?
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setModalID(null)}
-                  style={buttonStyle}
-                  onMouseEnter={buttonHover}
-                  onMouseLeave={buttonUnhover2}>
-            Cancel
-          </Button>
-          <Button
-            variant="danger"
-            onClick={async () => {
-              if (deleteAction && modalID !== null) {
-                const result = await deleteAction(modalID);
-
-                if (result?.success) {
-                  showAlert(
-                    `Successfully deleted item with ID ${modalID}`,
-                    "success",
-                  );
-                } else {
-                  showAlert(
-                    `Failed to delete item with ID ${modalID}`,
-                    "danger",
-                  );
-                }
-
-                setModalID(null);
-                // location.reload();
-                router.refresh();
-              }
-            }}
-            style={buttonStyle2}
-                  onMouseEnter={buttonHover2}
-                  onMouseLeave={buttonUnhover2}
-          >
-            Delete
-          </Button>
-        </Modal.Footer>
-      </Modal>
+          <p style={{ margin: 0, fontSize: "17px" }}>
+            Are you sure you want to delete item{" "}
+            <strong>ID: {modalID}</strong>? This action cannot be undone.
+          </p>
+        </ModalShell>
+      )}
     </div>
   );
 }

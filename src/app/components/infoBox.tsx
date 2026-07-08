@@ -29,7 +29,7 @@ export default function InfoBox({ headerText, children }: InfoBoxProps) {
   const contentStyle = {
     backgroundColor: "white",
     border: "5px solid var(--primaryRed)",
-    color: "#000000s",
+    color: "#000000",
     fontFamily: "Poppins, sans-serif",
     fontSize: "16px",
     padding: "30px 20px",

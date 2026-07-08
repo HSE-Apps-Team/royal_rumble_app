@@ -56,14 +56,14 @@ export default function AmbassadorUI({
 }) {
   return (
     <>
-     <div className= "nav-buttons">
+     <div className="nav-buttons">
         <NavButton href="/"
-        style = {{ width: "90px", height: "40px", padding: "5px 0px", fontSize: "15px"}}
+        style={{ width: "90px", height: "40px", padding: "5px 0px", fontSize: "15px" }}
         >
           Home
         </NavButton>
         <NavButton href="/mentor/ambassador"
-        style = {{ width: "140px", height: "40px", padding: "5px 0px", fontSize: "15px"}}
+        style={{ width: "140px", height: "40px", padding: "5px 0px", fontSize: "15px" }}
         >
           Dashboard
         </NavButton>

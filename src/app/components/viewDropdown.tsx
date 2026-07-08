@@ -3,9 +3,8 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import { Modal, Button } from "react-bootstrap";
 import { useAlert } from "@/app/context/AlertContext";
-import { View } from "drizzle-orm";
+import ModalShell from "./ModalShell";
 
 interface ViewDropdownProps {
   editLink?: string;
@@ -238,62 +237,48 @@ export default function ViewDropdown({
         );
       })}
 
-      {/* -------- Modal OUTSIDE map (only one) -------- */}
-      <Modal show={modalID !== null} onHide={() => setModalID(null)}>
-        <Modal.Header
-          style={{ backgroundColor: "var(--primaryBlue)", color: "white",
-            fontFamily: "Poppins, sans-serif", fontWeight: "bold",
-            fontSize: "15px", justifyContent:"space-between"}}
+      {modalID !== null && (
+        <ModalShell
+          title="Delete Item"
+          onClose={() => setModalID(null)}
+          footer={
+            <>
+              <button
+                style={buttonStyle}
+                onMouseEnter={buttonHover}
+                onMouseLeave={buttonUnhover}
+                onClick={() => setModalID(null)}
+              >
+                Cancel
+              </button>
+              <button
+                style={buttonStyle2}
+                onMouseEnter={buttonHover2}
+                onMouseLeave={buttonUnhover2}
+                onClick={async () => {
+                  if (deleteAction && modalID !== null) {
+                    const result = await deleteAction(modalID);
+                    if (result?.success) {
+                      showAlert(`Successfully deleted item with ID ${modalID}`, "success");
+                    } else {
+                      showAlert(`Failed to delete item with ID ${modalID}`, "danger");
+                    }
+                    setModalID(null);
+                    router.refresh();
+                  }
+                }}
+              >
+                Delete
+              </button>
+            </>
+          }
         >
-          <Modal.Title style={{ color: "white",fontFamily: "Poppins, sans-serif",
-                                fontWeight: "bold", fontSize: "20px" }}>
-            Delete Group
-          </Modal.Title>
-          <i className="bi bi-x-lg" data-bs-dismiss="modal" onClick={() => setModalID(null)}
-            style={{fontSize:"22px", cursor: "pointer"}} />
-        </Modal.Header>
-        <Modal.Body>
-          Are you sure you want to delete this item (ID: {modalID})?
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setModalID(null)}
-            style={buttonStyle}
-            onMouseEnter={buttonHover}
-            onMouseLeave={buttonUnhover}>
-            
-            Cancel
-          </Button>
-          <Button
-            variant="danger"
-            onClick={async () => {
-              if (deleteAction && modalID !== null) {
-                const result = await deleteAction(modalID);
-
-                if (result?.success) {
-                  showAlert(
-                    `Successfully deleted item with ID ${modalID}`,
-                    "success",
-                  );
-                } else {
-                  showAlert(
-                    `Failed to delete item with ID ${modalID}`,
-                    "danger",
-                  );
-                }
-
-                setModalID(null);
-                // location.reload();
-                router.refresh();
-              }
-            }}
-            style={buttonStyle2}
-            onMouseEnter={buttonHover2}
-            onMouseLeave={buttonUnhover2}
-          >
-            Delete
-          </Button>
-        </Modal.Footer>
-      </Modal>
+          <p style={{ margin: 0, fontSize: "17px" }}>
+            Are you sure you want to delete item{" "}
+            <strong>ID: {modalID}</strong>? This action cannot be undone.
+          </p>
+        </ModalShell>
+      )}
     </div>
   );
 }

@@ -190,7 +190,7 @@ export default function AdminAttendanceAllGroupsUI({
               >
                 Mentor:
               </label>
-              <div style={{ width: 925 }}>
+              <div style={{ width: "100%" }}>
                 <CheckBoxTable
                   headers={["Mentor Name", "Student ID"]}
                   data={group.mentors.map((m) => [m.name, m.mentor_id])}
@@ -212,7 +212,7 @@ export default function AdminAttendanceAllGroupsUI({
               >
                 Freshmen:
               </label>
-              <div style={{ width: 925 }}>
+              <div style={{ width: "100%" }}>
                 <CheckBoxTable
                   headers={["Freshman Name", "Student ID"]}
                   data={group.freshmen.map((f) => [f.name, f.freshman_id])}

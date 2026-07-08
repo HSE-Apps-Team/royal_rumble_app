@@ -200,6 +200,8 @@ export const addMentor = async (data: {
   job: string;
   email: string;
   phone_number: string;
+  group_id?: number | null;
+  hallway_stop_id?: number | null;
 }) => {
   await db.insert(mentorData).values({
     fName: data.f_name,
@@ -213,19 +215,18 @@ export const addMentor = async (data: {
   if (data.job === "AMBASSADOR") {
     await db.insert(ambassadorData).values({
       mentorId: data.mentor_id,
-      groupId: null,
+      groupId: data.group_id ?? null,
     });
   } else if (data.job === "HALLWAY HOST") {
     await db.insert(hallwayHostData).values({
       mentorId: data.mentor_id,
-      hallwayStopId: null,
+      hallwayStopId: data.hallway_stop_id ?? null,
     });
   }
   const eventIds = await db
     .select({ eventId: eventsData.eventId })
     .from(eventsData)
     .where(or(eq(eventsData.job, data.job), eq(eventsData.job, "ALL")));
-  console.log("Event IDs for ALL jobs:", eventIds);
   for (const event of eventIds) {
     await db.insert(mentorAttendanceData).values({
       mentorId: data.mentor_id,

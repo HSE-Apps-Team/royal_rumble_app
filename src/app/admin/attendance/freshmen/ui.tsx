@@ -105,8 +105,8 @@ export default function AdminAttendanceFreshmenUI({
       </div>
 
       <InfoBox headerText="All Freshmen">
-        <section style = {{display: "flex", justifyContent: "right", 
-                           marginBottom: "10px", width: "92%"}}
+        <section style={{ display: "flex", justifyContent: "right",
+                          marginBottom: "10px", width: "92%" }}
         >
           <ExportToExcelButton
             headers={["First Name", "Last Name", "Student ID", "Status"]}
@@ -117,7 +117,7 @@ export default function AdminAttendanceFreshmenUI({
               student.present ? "Present" : "Absent",
             ])}
             fileName="freshmen-attendance"
-            style = {{width: "150px"}}
+            style={{ width: "150px" }}
           />
         </section>
         <CheckBoxTable

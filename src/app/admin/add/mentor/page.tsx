@@ -1,13 +1,15 @@
 "use client";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import LogoButton from "../../../components/logoButton";
 import LoginButton from "../../../components/loginButton";
 import AddButton from "../../../components/addButton";
 import { addMentor } from "../../../../actions/mentor";
+import { getGroupIds } from "../../../../actions/group";
+import { getAllHallways } from "../../../../actions/group";
 import "../../../css/admin.css";
 import "../../../css/logo+login.css";
-import { useState } from "react";
 import BackButton from "@/app/components/backButton";
 import { useAlert } from "@/app/context/AlertContext";
 
@@ -22,8 +24,24 @@ export default function AdminAddMentor() {
   const [job, setJob] = useState("");
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [groupId, setGroupId] = useState<string>("");
+  const [hallwayStopId, setHallwayStopId] = useState<string>("");
+
+  const [groups, setGroups] = useState<Array<{ groupId: number; name: string }>>([]);
+  const [hallways, setHallways] = useState<Array<{ hallwayStopId: number; location: string | null }>>([]);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    getGroupIds().then(setGroups);
+    getAllHallways().then(setHallways);
+  }, []);
+
+  // Reset assignment when job changes
+  useEffect(() => {
+    setGroupId("");
+    setHallwayStopId("");
+  }, [job]);
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
@@ -61,27 +79,27 @@ export default function AdminAddMentor() {
 
     try {
       const mentor_return = await addMentor({
-        f_name: f_name,
-        l_name: l_name,
+        f_name,
+        l_name,
         mentor_id: Number(mentorId),
         graduation_year: Number(graduationYear),
-        job: job,
+        job,
         email,
         phone_number: phoneNumber,
+        group_id: job === "AMBASSADOR" && groupId ? Number(groupId) : null,
+        hallway_stop_id: job === "HALLWAY HOST" && hallwayStopId ? Number(hallwayStopId) : null,
       });
       if (!mentor_return.success) {
         throw new Error("Failed to add mentor");
-      } else {
-        showAlert(
-          `Mentor ${mentor_return.f_name} ${mentor_return.l_name} added successfully!`,
-          "success",
-        );
-        router.push("/admin/add/mentor");
       }
+      showAlert(
+        `Mentor ${mentor_return.f_name} ${mentor_return.l_name} added successfully!`,
+        "success",
+      );
+      router.push("/admin/mentor");
     } catch {
       showAlert(`Failed to add mentor: ${f_name} ${l_name}`, "danger");
     }
-    router.push("/admin/mentor");
   };
 
   return (
@@ -181,6 +199,49 @@ export default function AdminAddMentor() {
               )}
             </div>
           </div>
+
+          {/* Conditional group assignment for AMBASSADOR */}
+          {job === "AMBASSADOR" && (
+            <div className="form-row add-mentor-conditional-row">
+              <label className="form-label">Assign to Group:</label>
+              <div>
+                <select
+                  className="form-input"
+                  value={groupId}
+                  onChange={(e) => setGroupId(e.target.value)}
+                >
+                  <option value="">— Unassigned —</option>
+                  {groups.map((g) => (
+                    <option key={g.groupId} value={g.groupId}>
+                      {g.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
+
+          {/* Conditional hallway assignment for HALLWAY HOST */}
+          {job === "HALLWAY HOST" && (
+            <div className="form-row add-mentor-conditional-row">
+              <label className="form-label">Assign to Hallway:</label>
+              <div>
+                <select
+                  className="form-input"
+                  value={hallwayStopId}
+                  onChange={(e) => setHallwayStopId(e.target.value)}
+                >
+                  <option value="">— Unassigned —</option>
+                  {hallways.map((h) => (
+                    <option key={h.hallwayStopId} value={h.hallwayStopId}>
+                      {h.location ?? `Stop ${h.hallwayStopId}`}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
+
           <div className="form-row">
             <label className="form-label">Email:</label>
             <div>

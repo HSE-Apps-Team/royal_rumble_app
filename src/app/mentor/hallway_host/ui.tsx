@@ -46,14 +46,14 @@ export default function HallwayHostUI({
 }) {
   return (
     <>
-     <div className= "nav-buttons">
+     <div className="nav-buttons">
         <NavButton href="/"
-        style = {{ width: "90px", height: "40px", padding: "5px 0px", fontSize: "15px"}}
+        style={{ width: "90px", height: "40px", padding: "5px 0px", fontSize: "15px" }}
         >
           Home
         </NavButton>
         <NavButton href="/mentor/hallway_host"
-        style = {{ width: "140px", height: "40px", padding: "5px 0px", fontSize: "15px"}}
+        style={{ width: "140px", height: "40px", padding: "5px 0px", fontSize: "15px" }}
         >
           Dashboard
         </NavButton>
@@ -76,7 +76,7 @@ export default function HallwayHostUI({
           <h3 className="mentor-subtitle1">Job:</h3>
           <h3 className="mentor-subtitle2">{mentorsData.job}</h3>
         </div>
-      </header>{" "}
+      </header>
       <div className="mentor-info-box">
         <MentorButtons link="/mentor/hallway_host/group_attendance">
           Attendance

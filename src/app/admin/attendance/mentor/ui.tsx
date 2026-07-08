@@ -125,8 +125,8 @@ export default function AdminAttendanceMentorUI({
         <i className="bi bi-arrow-left"></i>
       </button>
 
-      <div className="search-container" 
-           style = {{width: "100%", display: "flex", alignItems: "center", gap: "100px"}}
+      <div className="search-container"
+           style={{ width: "100%", display: "flex", alignItems: "center", gap: "100px" }}
       >
         <div className="search-row">
           <input
@@ -156,7 +156,7 @@ export default function AdminAttendanceMentorUI({
       </div>
 
       <InfoBox headerText="Mentors">
-        <section style = {{display: "flex", justifyContent: "right", marginBottom: "10px", width: "92%"}}>
+        <section style={{ display: "flex", justifyContent: "right", marginBottom: "10px", width: "92%" }}>
           <ExportToExcelButton
             headers={["First Name", "Last Name", "Student ID", "Job", "Status"]}
             data={filteredMentors.map((mentor) => [
@@ -167,7 +167,7 @@ export default function AdminAttendanceMentorUI({
               mentor.status ? "Present" : "Absent",
             ])}
             fileName="mentor-attendance"
-            style = {{width: "150px"}}
+            style={{ width: "150px" }}
           />
         </section>
         <CheckBoxTable

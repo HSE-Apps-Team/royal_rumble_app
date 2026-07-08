@@ -3,9 +3,8 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import { Modal, Button } from "react-bootstrap";
-import SaveButton from "@/app/components/saveButton";
 import { useAlert } from "@/app/context/AlertContext";
+import ModalShell from "./ModalShell";
 
 interface ReassignTableProps {
   headers: string[];
@@ -20,6 +19,25 @@ interface ReassignTableProps {
   currentGroupId: number | string;
   possibleGroups: Array<{ group_id: number; name: string }>;
 }
+
+/* ---- reusable button styles ---- */
+const makeBtn = (bg: string, border: string) => ({
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  backgroundColor: bg,
+  color: "white",
+  fontFamily: "Poppins, sans-serif",
+  fontWeight: "bold" as const,
+  fontSize: "15px",
+  border: `5px solid transparent`,
+  borderRadius: "14px",
+  padding: "8px 18px",
+  cursor: "pointer",
+  transition: "background-color 0.2s",
+  minWidth: "100px",
+});
+
 export default function ReassignTable({
   headers,
   data,
@@ -32,12 +50,8 @@ export default function ReassignTable({
 }: ReassignTableProps) {
   const router = useRouter();
   const { showAlert } = useAlert();
-  const [deleteModalID, setDeleteModalID] = useState<null | string | number>(
-    null,
-  );
-  const [reassignModalID, setReassignModalID] = useState<
-    null | string | number
-  >(null);
+  const [deleteModalID, setDeleteModalID] = useState<null | string | number>(null);
+  const [reassignModalID, setReassignModalID] = useState<null | string | number>(null);
   const [newGroupId, setNewGroupId] = useState<string | number>("");
 
   useEffect(() => {
@@ -48,7 +62,7 @@ export default function ReassignTable({
 
   const colCount = visibleColumns.length + 1;
 
-  const tableContainerStyle: React.CSSProperties = {
+  const tableStyle: React.CSSProperties = {
     borderCollapse: "collapse",
     width: "100%",
     height: "300px",
@@ -91,61 +105,40 @@ export default function ReassignTable({
   const unhover = (e: React.MouseEvent<HTMLElement>) =>
     (e.currentTarget.style.color = "var(--primaryBlue)");
 
-  const buttonStyle = {
-    display: "inline-flex",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "var(--primaryBlue)",
-    color: "white",
-    fontFamily: "Poppins, sans-serif",
-    fontWeight: "bold",
-    fontSize: "15px",
-    border: "5px solid transparent",
-    borderRadius: "14px",
-    padding: "5px 5px",
-    textAlign: "center" as const,
-    cursor: "pointer",
-    transition: "background-color 0.3s",
-    width: "100px"
-  };
-
-  const buttonHover = (e: React.MouseEvent<HTMLButtonElement>) => {
+  // Reassign button (blue)
+  const reassignBtnStyle = makeBtn("var(--primaryBlue)", "var(--primaryBlue)");
+  const reassignBtnHover = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.currentTarget.style.backgroundColor = "white";
     e.currentTarget.style.color = "var(--primaryBlue)";
     e.currentTarget.style.borderColor = "var(--primaryBlue)";
   };
-
-  const buttonUnhover = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const reassignBtnUnhover = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.currentTarget.style.backgroundColor = "var(--primaryBlue)";
     e.currentTarget.style.color = "white";
     e.currentTarget.style.borderColor = "transparent";
   };
 
-  const buttonStyle2 = {
-    display: "inline-flex",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "var(--primaryRed)",
-    color: "white",
-    fontFamily: "Poppins, sans-serif",
-    fontWeight: "bold",
-    fontSize: "15px",
-    border: "5px solid transparent",
-    borderRadius: "14px",
-    padding: "5px 5px",
-    textAlign: "center" as const,
-    cursor: "pointer",
-    transition: "background-color 0.3s",
-    width: "100px"
+  // Cancel button (grey)
+  const cancelBtnStyle = makeBtn("var(--secondarySilver)", "var(--secondarySilver)");
+  const cancelBtnHover = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.currentTarget.style.backgroundColor = "white";
+    e.currentTarget.style.color = "var(--secondarySilver)";
+    e.currentTarget.style.borderColor = "var(--secondarySilver)";
+  };
+  const cancelBtnUnhover = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.currentTarget.style.backgroundColor = "var(--secondarySilver)";
+    e.currentTarget.style.color = "white";
+    e.currentTarget.style.borderColor = "transparent";
   };
 
-  const buttonHover2 = (e: React.MouseEvent<HTMLButtonElement>) => {
+  // Delete button (red)
+  const deleteBtnStyle = makeBtn("var(--primaryRed)", "var(--primaryRed)");
+  const deleteBtnHover = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.currentTarget.style.backgroundColor = "white";
     e.currentTarget.style.color = "var(--primaryRed)";
     e.currentTarget.style.borderColor = "var(--primaryRed)";
   };
-
-  const buttonUnhover2 = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const deleteBtnUnhover = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.currentTarget.style.backgroundColor = "var(--primaryRed)";
     e.currentTarget.style.color = "white";
     e.currentTarget.style.borderColor = "transparent";
@@ -153,7 +146,7 @@ export default function ReassignTable({
 
   return (
     <div>
-      <table style={tableContainerStyle}>
+      <table style={tableStyle}>
         <colgroup>
           {Array.from({ length: colCount }).map((_, i) => (
             <col
@@ -179,7 +172,6 @@ export default function ReassignTable({
         <tbody>
           {data.map((row, rowIndex) => {
             const id = row[idIndex];
-
             return (
               <tr key={rowIndex}>
                 {visibleColumns.map((ci) => (
@@ -187,28 +179,16 @@ export default function ReassignTable({
                     {row[ci]}
                   </td>
                 ))}
-
                 <td style={cellStyle}>
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      gap: 12,
-                    }}
-                  >
-                    <SaveButton
+                  <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 12 }}>
+                    <button
+                      style={reassignBtnStyle}
+                      onMouseEnter={reassignBtnHover}
+                      onMouseLeave={reassignBtnUnhover}
                       onClick={() => setReassignModalID(id)}
-                      style={{
-                        width: "120px",
-                        fontSize: "16px",
-                        padding: "10px",
-                      }}
                     >
                       Reassign
-                    </SaveButton>
-
-                    {/* delete */}
+                    </button>
                     <i
                       className="bi bi-trash"
                       style={iconStyle}
@@ -224,147 +204,118 @@ export default function ReassignTable({
         </tbody>
       </table>
 
-      {/* -------- Delete Modal-------- */}
-      <Modal show={deleteModalID !== null} onHide={() => setDeleteModalID(null)}>
-        <Modal.Header
-          style={{ backgroundColor: "var(--primaryBlue)", color: "white",
-            fontFamily: "Poppins, sans-serif", fontWeight: "bold",
-            fontSize: "15px", justifyContent:"space-between"}}
+      {/* ---- Delete Modal ---- */}
+      {deleteModalID !== null && (
+        <ModalShell
+          title="Delete Item"
+          onClose={() => setDeleteModalID(null)}
+          footer={
+            <>
+              <button
+                style={cancelBtnStyle}
+                onMouseEnter={cancelBtnHover}
+                onMouseLeave={cancelBtnUnhover}
+                onClick={() => setDeleteModalID(null)}
+              >
+                Cancel
+              </button>
+              <button
+                style={deleteBtnStyle}
+                onMouseEnter={deleteBtnHover}
+                onMouseLeave={deleteBtnUnhover}
+                onClick={async () => {
+                  if (deleteAction && deleteModalID !== null) {
+                    const result = await deleteAction(deleteModalID);
+                    if (result?.success) {
+                      showAlert(`Successfully deleted item with ID ${deleteModalID}`, "success");
+                    } else {
+                      showAlert(`Failed to delete item with ID ${deleteModalID}`, "danger");
+                    }
+                    setDeleteModalID(null);
+                    router.refresh();
+                  }
+                }}
+              >
+                Delete
+              </button>
+            </>
+          }
         >
-          <Modal.Title style={{ color: "white",fontFamily: "Poppins, sans-serif",
-                                fontWeight: "bold", fontSize: "20px" }}>
-            Delete Row
-          </Modal.Title>
-          <i className="bi bi-x-lg" data-bs-dismiss="modal" 
-            style={{fontSize:"22px", cursor: "pointer"}}
-            onClick={() => setDeleteModalID(null)} 
-          />
-        </Modal.Header>
-        <Modal.Body>
-          Are you sure you want to delete this item (ID: {deleteModalID})?
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setDeleteModalID(null)}
-                  style={buttonStyle}
-                  onMouseEnter={buttonHover}
-                  onMouseLeave={buttonUnhover2}>
-            Cancel
-          </Button>
-          <Button
-            variant="danger"
-            onClick={async () => {
-              if (deleteAction && deleteModalID !== null) {
-                const result = await deleteAction(deleteModalID);
+          <p style={{ margin: 0, fontSize: "17px" }}>
+            Are you sure you want to delete item{" "}
+            <strong>ID: {deleteModalID}</strong>? This action cannot be undone.
+          </p>
+        </ModalShell>
+      )}
 
-                if (result?.success) {
-                  showAlert(
-                    `Successfully deleted item with ID ${deleteModalID}`,
-                    "success",
-                  );
-                } else {
-                  showAlert(
-                    `Failed to delete item with ID ${deleteModalID}`,
-                    "danger",
-                  );
-                }
-
-                setDeleteModalID(null);
-                // location.reload();
-                router.refresh();
-              }
-            }}
-            style={buttonStyle2}
-                  onMouseEnter={buttonHover2}
-                  onMouseLeave={buttonUnhover2}
-          >
-            Delete
-          </Button>
-        </Modal.Footer>
-      </Modal>
-      {/* -------- Reassign Modal -------- */}
-      <Modal show={reassignModalID !== null} onHide={() => setReassignModalID(null)}>
-        <Modal.Header
-          style={{ backgroundColor: "var(--primaryBlue)", color: "white",
-            fontFamily: "Poppins, sans-serif", fontWeight: "bold",
-            fontSize: "15px", justifyContent:"space-between"}}
+      {/* ---- Reassign Modal ---- */}
+      {reassignModalID !== null && (
+        <ModalShell
+          title="Reassign to Group"
+          onClose={() => setReassignModalID(null)}
+          footer={
+            <>
+              <button
+                style={cancelBtnStyle}
+                onMouseEnter={cancelBtnHover}
+                onMouseLeave={cancelBtnUnhover}
+                onClick={() => setReassignModalID(null)}
+              >
+                Cancel
+              </button>
+              <button
+                style={reassignBtnStyle}
+                onMouseEnter={reassignBtnHover}
+                onMouseLeave={reassignBtnUnhover}
+                onClick={async () => {
+                  if (reassignAction && reassignModalID !== null) {
+                    const result = await reassignAction(reassignModalID, newGroupId);
+                    if (result?.success) {
+                      showAlert(`Successfully reassigned ID ${reassignModalID}`, "success");
+                    } else {
+                      showAlert(`Failed to reassign ID ${reassignModalID}`, "danger");
+                    }
+                    setReassignModalID(null);
+                    router.refresh();
+                  }
+                }}
+              >
+                Reassign
+              </button>
+            </>
+          }
         >
-          <Modal.Title style={{ color: "white",fontFamily: "Poppins, sans-serif",
-                                fontWeight: "bold", fontSize: "20px" }}>
-            Reassign Student
-          </Modal.Title>
-          <i className="bi bi-x-lg" data-bs-dismiss="modal" 
-            style={{fontSize:"22px", cursor: "pointer"}}
-            onClick={() => setReassignModalID(null)} 
-          />
-        </Modal.Header>
-        <Modal.Body>
-          <label className="form-label" 
-                 style = {{fontSize: "23px", fontWeight: "bold", width: "100%", marginBottom: "40px"}}
-          >
-            What do you want to reassign {reassignModalID} to?
-          </label>
-          <div className="form-row">
-            <label className="form-label"
-                   style = {{fontSize: "23px", fontWeight: "bold", width: "100%",
-                   marginBottom: "20px"}}>
-              New Group:
-            </label>
+          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+            <p style={{ margin: 0, fontSize: "16px" }}>
+              Reassigning <strong>ID: {reassignModalID}</strong>
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <label
+                style={{
+                  fontSize: "16px",
+                  fontWeight: "bold",
+                  color: "var(--primaryBlue)",
+                }}
+              >
+                New Group:
+              </label>
+              <select
+                className="form-select"
+                value={newGroupId}
+                onChange={(e) => setNewGroupId(e.target.value)}
+                style={{ fontSize: "15px" }}
+              >
+                <option value="unassigned">— Unassigned —</option>
+                {possibleGroups.map((group) => (
+                  <option key={group.group_id} value={group.group_id}>
+                    {group.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
-          <select
-            className = "form-select"
-            value = {newGroupId}
-            style = {{marginBottom: "40px"}}
-            onChange={(e) => setNewGroupId(e.target.value)}
-          >
-            <option value="unassigned">Unassigned</option>
-            {possibleGroups.map((group) => (
-              <option key={group.group_id} value={group.group_id}>
-                {group.name}
-              </option>
-            ))}
-          </select>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setReassignModalID(null)}
-                  style={buttonStyle}
-                  onMouseEnter={buttonHover}
-                  onMouseLeave={buttonUnhover}>
-            Cancel
-          </Button>
-          <Button
-            variant="danger"
-            onClick={async () => {
-              if (reassignAction && reassignModalID !== null) {
-                const result = await reassignAction(
-                  reassignModalID,
-                  newGroupId,
-                );
-
-                if (result?.success) {
-                  showAlert(
-                    `Successfully reassigned item with ID ${reassignModalID}`,
-                    "success",
-                  );
-                } else {
-                  showAlert(
-                    `Failed to reassign item with ID ${reassignModalID}`,
-                    "danger",
-                  );
-                }
-
-                setReassignModalID(null);
-                // location.reload();
-                router.refresh();
-              }
-            }}
-            style={buttonStyle2}
-                  onMouseEnter={buttonHover}
-                  onMouseLeave={buttonUnhover}
-          >
-            Reassign
-          </Button>
-        </Modal.Footer>
-      </Modal>
+        </ModalShell>
+      )}
     </div>
   );
 }

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import { Modal, Button } from "react-bootstrap";
+import ModalShell from "../../components/ModalShell";
 import LogoButton from "../../components/logoButton";
 import LoginButton from "../../components/loginButton";
 import BackButton from "../../components/backButton";
@@ -63,6 +63,25 @@ interface Props {
   routes: Route[];
   hallways: Hallway[];
 }
+
+const makeModalBtn = (bg: string): React.CSSProperties => ({
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  backgroundColor: bg,
+  color: "white",
+  fontFamily: "Poppins, sans-serif",
+  fontWeight: "bold",
+  fontSize: "15px",
+  border: "5px solid transparent",
+  borderRadius: "14px",
+  padding: "8px 18px",
+  cursor: "pointer",
+  minWidth: "100px",
+});
+const cancelBtnStyle = makeModalBtn("var(--secondarySilver)");
+const deleteBtnStyle = makeModalBtn("var(--primaryRed)");
+const saveBtnStyle   = makeModalBtn("var(--primaryBlue)");
 
 const inputStyle: React.CSSProperties = {
   border: "4px solid var(--primaryBlue)",
@@ -905,85 +924,94 @@ export default function AdminRoutesUI({
         </>
       )}
 
-      {/* ══════════════════════════════════════════════
-          BLOCK DELETE MODAL
-      ══════════════════════════════════════════════ */}
-      <Modal
-        show={blockDeleteModal !== null}
-        onHide={() => setBlockDeleteModal(null)}
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Delete Block</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          Are you sure you want to delete block{" "}
-          <strong>"{blockDeleteModal?.blockName}"</strong>?
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setBlockDeleteModal(null)}>
-            Cancel
-          </Button>
-          <Button
-            variant="danger"
-            onClick={async () => {
-              if (blockDeleteModal !== null) {
-                await handleDeleteBlock(
-                  blockDeleteModal.blockScheduleId,
-                  blockDeleteModal.blockName,
-                );
-                setBlockDeleteModal(null);
-              }
-            }}
-          >
-            Delete
-          </Button>
-        </Modal.Footer>
-      </Modal>
+      {/* ══════════ BLOCK DELETE MODAL ══════════ */}
+      {blockDeleteModal !== null && (
+        <ModalShell
+          title="Delete Block"
+          onClose={() => setBlockDeleteModal(null)}
+          footer={
+            <>
+              <button style={cancelBtnStyle} onClick={() => setBlockDeleteModal(null)}>Cancel</button>
+              <button
+                style={deleteBtnStyle}
+                onClick={async () => {
+                  if (blockDeleteModal !== null) {
+                    await handleDeleteBlock(blockDeleteModal.blockScheduleId, blockDeleteModal.blockName);
+                    setBlockDeleteModal(null);
+                  }
+                }}
+              >
+                Delete
+              </button>
+            </>
+          }
+        >
+          <p style={{ margin: 0, fontSize: "17px" }}>
+            Are you sure you want to delete block{" "}
+            <strong>"{blockDeleteModal?.blockName}"</strong>? This cannot be undone.
+          </p>
+        </ModalShell>
+      )}
 
-      {/* ══════════════════════════════════════════════
-          STOP DELETE MODAL
-      ══════════════════════════════════════════════ */}
-      <Modal
-        show={stopDeleteModal !== null}
-        onHide={() => setStopDeleteModal(null)}
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Delete Stop</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          Are you sure you want to delete stop{" "}
-          <strong>
-            #{stopDeleteModal?.stopOrder} (
-            {stopDeleteModal?.location ?? "Unknown"})
-          </strong>
-          ?
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setStopDeleteModal(null)}>
-            Cancel
-          </Button>
-          <Button
-            variant="danger"
-            onClick={async () => {
-              if (stopDeleteModal !== null) {
-                await handleDeleteStop(
-                  stopDeleteModal.routeId,
-                  stopDeleteModal.routeStopId,
-                );
-                setStopDeleteModal(null);
-              }
-            }}
-          >
-            Delete
-          </Button>
-        </Modal.Footer>
-      </Modal>
-      {/* Add Hallway Modal */}
-      <Modal show={showHallwayModal} onHide={() => setShowHallwayModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Create New Hallway</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
+      {/* ══════════ STOP DELETE MODAL ══════════ */}
+      {stopDeleteModal !== null && (
+        <ModalShell
+          title="Delete Stop"
+          onClose={() => setStopDeleteModal(null)}
+          footer={
+            <>
+              <button style={cancelBtnStyle} onClick={() => setStopDeleteModal(null)}>Cancel</button>
+              <button
+                style={deleteBtnStyle}
+                onClick={async () => {
+                  if (stopDeleteModal !== null) {
+                    await handleDeleteStop(stopDeleteModal.routeId, stopDeleteModal.routeStopId);
+                    setStopDeleteModal(null);
+                  }
+                }}
+              >
+                Delete
+              </button>
+            </>
+          }
+        >
+          <p style={{ margin: 0, fontSize: "17px" }}>
+            Are you sure you want to delete stop{" "}
+            <strong>#{stopDeleteModal?.stopOrder} ({stopDeleteModal?.location ?? "Unknown"})</strong>?
+            This cannot be undone.
+          </p>
+        </ModalShell>
+      )}
+
+      {/* ══════════ ADD HALLWAY MODAL ══════════ */}
+      {showHallwayModal && (
+        <ModalShell
+          title="Create New Hallway"
+          onClose={() => { setShowHallwayModal(false); setNewHallway(""); }}
+          footer={
+            <>
+              <button style={cancelBtnStyle} onClick={() => { setShowHallwayModal(false); setNewHallway(""); }}>
+                Cancel
+              </button>
+              <button
+                style={saveBtnStyle}
+                onClick={async () => {
+                  const result = await addHallway(newHallway);
+                  if (result?.success) {
+                    showAlert(`Successfully added hallway "${newHallway}"`, "success");
+                  } else {
+                    showAlert(`Failed to add hallway "${newHallway}"`, "danger");
+                  }
+                  setNewHallway("");
+                  setShowHallwayModal(false);
+                  router.refresh();
+                }}
+              >
+                Add
+              </button>
+            </>
+          }
+        >
           <div className="form-row">
             <label className="form-label">New Hallway:</label>
             <input
@@ -993,43 +1021,8 @@ export default function AdminRoutesUI({
               onChange={(e) => setNewHallway(e.target.value)}
             />
           </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            variant="secondary"
-            onClick={() => {
-              setShowHallwayModal(false);
-              setNewHallway("");
-            }}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="success"
-            onClick={async () => {
-              const result = await addHallway(newHallway);
-
-              if (result?.success) {
-                showAlert(
-                  `Successfully added hallway with ID ${newHallway}`,
-                  "success",
-                );
-              } else {
-                showAlert(
-                  `Failed to add hallway with ID ${newHallway}`,
-                  "danger",
-                );
-              }
-
-              setNewHallway("");
-              setShowHallwayModal(false);
-              router.refresh();
-            }}
-          >
-            Add
-          </Button>
-        </Modal.Footer>
-      </Modal>
+        </ModalShell>
+      )}
     </main>
   );
 }

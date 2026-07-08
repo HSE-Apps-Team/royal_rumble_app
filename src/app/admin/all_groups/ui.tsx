@@ -16,7 +16,7 @@ import {
   deleteGroupByGroupId,
   deleteHallwayByStopId,
 } from "@/actions/group";
-import { Button, Modal } from "react-bootstrap";
+import ModalShell from "../../components/ModalShell";
 import { useAlert } from "@/app/context/AlertContext";
 
 interface FreshmenGroup {
@@ -334,12 +334,37 @@ export default function AdminAllGroups({
         />
       )}
 
-      {/* Add Hallway Modal */}
-      <Modal show={showHallwayModal} onHide={() => setShowHallwayModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Create New Hallway</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
+      {showHallwayModal && (
+        <ModalShell
+          title="Create New Hallway"
+          onClose={() => { setShowHallwayModal(false); setNewHallway(""); }}
+          footer={
+            <>
+              <button
+                style={{ display:"inline-flex", alignItems:"center", justifyContent:"center", backgroundColor:"var(--secondarySilver)", color:"white", fontFamily:"Poppins, sans-serif", fontWeight:"bold", fontSize:"15px", border:"5px solid transparent", borderRadius:"14px", padding:"8px 18px", cursor:"pointer", minWidth:"100px" }}
+                onClick={() => { setShowHallwayModal(false); setNewHallway(""); }}
+              >
+                Cancel
+              </button>
+              <button
+                style={{ display:"inline-flex", alignItems:"center", justifyContent:"center", backgroundColor:"var(--primaryBlue)", color:"white", fontFamily:"Poppins, sans-serif", fontWeight:"bold", fontSize:"15px", border:"5px solid transparent", borderRadius:"14px", padding:"8px 18px", cursor:"pointer", minWidth:"100px" }}
+                onClick={async () => {
+                  const result = await addHallway(newHallway);
+                  if (result?.success) {
+                    showAlert(`Successfully added hallway "${newHallway}"`, "success");
+                  } else {
+                    showAlert(`Failed to add hallway "${newHallway}"`, "danger");
+                  }
+                  setNewHallway("");
+                  setShowHallwayModal(false);
+                  router.refresh();
+                }}
+              >
+                Add
+              </button>
+            </>
+          }
+        >
           <div className="form-row">
             <label className="form-label">New Hallway:</label>
             <input
@@ -349,43 +374,8 @@ export default function AdminAllGroups({
               onChange={(e) => setNewHallway(e.target.value)}
             />
           </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            variant="secondary"
-            onClick={() => {
-              setShowHallwayModal(false);
-              setNewHallway("");
-            }}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="success"
-            onClick={async () => {
-              const result = await addHallway(newHallway);
-
-              if (result?.success) {
-                showAlert(
-                  `Successfully added hallway with ID ${newHallway}`,
-                  "success",
-                );
-              } else {
-                showAlert(
-                  `Failed to add hallway with ID ${newHallway}`,
-                  "danger",
-                );
-              }
-
-              setNewHallway("");
-              setShowHallwayModal(false);
-              router.refresh();
-            }}
-          >
-            Add
-          </Button>
-        </Modal.Footer>
-      </Modal>
+        </ModalShell>
+      )}
     </main>
   );
 }

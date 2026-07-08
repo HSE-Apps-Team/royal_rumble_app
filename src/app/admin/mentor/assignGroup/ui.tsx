@@ -154,8 +154,12 @@ export default function MentorAssignGroupUI({
             dropdownDisplayTexts={groupIds.map((g) => g.name)}
             currentDropdownColumnIndex={0}
             reassignAction={async (mentorId, newGroupId) => {
-              const parsed = newGroupId === "unassigned" ? null : Number(newGroupId);
-              const result = await reassignMentorGroup(Number(mentorId), parsed);
+              const parsed =
+                newGroupId === "unassigned" ? null : Number(newGroupId);
+              const result = await reassignMentorGroup(
+                Number(mentorId),
+                parsed,
+              );
 
               if (result.success) {
                 setAmbassadors((prev) =>
@@ -164,9 +168,11 @@ export default function MentorAssignGroupUI({
                       ? {
                           ...mentor,
                           groupId: parsed,
-                          groupName: parsed !== null
-                            ? (groupIds.find((g) => g.groupId === parsed)?.name ?? null)
-                            : null,
+                          groupName:
+                            parsed !== null
+                              ? (groupIds.find((g) => g.groupId === parsed)
+                                  ?.name ?? null)
+                              : null,
                         }
                       : mentor,
                   ),

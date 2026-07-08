@@ -10,6 +10,7 @@ import "../../../css/admin.css";
 import "../../../css/logo+login.css";
 import { updateFreshmanAttendanceById } from "../../../../actions/freshmen";
 import { updateMentorAttendanceById } from "../../../../actions/other";
+import { useToast } from "../../../context/ToastContext";
 
 interface Freshman {
   freshman_id: string;
@@ -42,6 +43,7 @@ export default function AdminAttendanceAllGroupsUI({
   royalRumbleEventId,
 }: AdminAttendanceAllGroupsUIProps) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [groups, setGroups] = useState<Group[]>(initialGroups);
   const [selectedGroupId, setSelectedGroupId] = useState("");
 
@@ -54,6 +56,12 @@ export default function AdminAttendanceAllGroupsUI({
     freshmanId: number,
     newStatus: boolean,
   ) => {
+    const freshmanName =
+      groups
+        .find((g) => g.group_id === groupId)
+        ?.freshmen.find((f) => f.freshman_id === freshmanId.toString())
+        ?.name ?? "Freshman";
+
     // Optimistic update
     setGroups((prev) =>
       prev.map((g) =>
@@ -73,7 +81,10 @@ export default function AdminAttendanceAllGroupsUI({
     const result = await updateFreshmanAttendanceById(freshmanId, newStatus);
 
     if (!result?.success) {
-      alert("Failed to update freshman attendance");
+      showToast(
+        `Failed to update attendance for ${freshmanName}`,
+        "danger",
+      );
       // Rollback
       setGroups((prev) =>
         prev.map((g) =>
@@ -89,6 +100,11 @@ export default function AdminAttendanceAllGroupsUI({
               },
         ),
       );
+    } else {
+      showToast(
+        `${freshmanName} marked as ${newStatus ? "present" : "absent"}`,
+        newStatus ? "success" : "info",
+      );
     }
   };
 
@@ -97,6 +113,12 @@ export default function AdminAttendanceAllGroupsUI({
     mentorId: number,
     newStatus: boolean,
   ) => {
+    const mentorName =
+      groups
+        .find((g) => g.group_id === groupId)
+        ?.mentors.find((m) => m.mentor_id === mentorId.toString())?.name ??
+      "Mentor";
+
     // Optimistic update
     setGroups((prev) =>
       prev.map((g) =>
@@ -120,7 +142,7 @@ export default function AdminAttendanceAllGroupsUI({
     );
 
     if (!result?.success) {
-      alert("Failed to update mentor attendance");
+      showToast(`Failed to update attendance for ${mentorName}`, "danger");
       // Rollback
       setGroups((prev) =>
         prev.map((g) =>
@@ -135,6 +157,11 @@ export default function AdminAttendanceAllGroupsUI({
                 ),
               },
         ),
+      );
+    } else {
+      showToast(
+        `${mentorName} marked as ${newStatus ? "present" : "absent"}`,
+        newStatus ? "success" : "info",
       );
     }
   };

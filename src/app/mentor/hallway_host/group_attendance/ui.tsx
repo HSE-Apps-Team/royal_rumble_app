@@ -14,6 +14,7 @@ import "../../../css/mentor.css";
 import "../../../css/logo+login.css";
 import "../../../css/mobile-nav.css";
 import { markGroupPresent } from "@/actions/routes";
+import { useToast } from "../../../context/ToastContext";
 
 interface AttendanceRow {
   groupId: number;
@@ -31,6 +32,7 @@ export default function HallwayHostAttendanceUI({
   hallwayLocation: string;
   attendanceRows: AttendanceRow[];
 }) {
+  const { showToast } = useToast();
   const [rows, setRows] = useState<AttendanceRow[]>(attendanceRows);
 
   const handleStatusChange = async (rowIndex: number, newStatus: boolean) => {
@@ -48,11 +50,17 @@ export default function HallwayHostAttendanceUI({
     );
 
     if (!result?.success) {
+      showToast(`Failed to update attendance for ${row.groupName}`, "danger");
       // Rollback
       setRows((prev) =>
         prev.map((r, i) =>
           i === rowIndex ? { ...r, present: !newStatus } : r,
         ),
+      );
+    } else {
+      showToast(
+        `${row.groupName} marked as ${newStatus ? "present" : "absent"}`,
+        newStatus ? "success" : "info",
       );
     }
   };

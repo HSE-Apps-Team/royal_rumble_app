@@ -11,6 +11,7 @@ import "../../../css/admin.css";
 import "../../../css/logo+login.css";
 import { updateFreshmanAttendanceById } from "../../../../actions/freshmen";
 import ExportToExcelButton from "@/app/components/ExportToExcelButton";
+import { useToast } from "../../../context/ToastContext";
 
 interface Freshman {
   fName: string;
@@ -27,6 +28,7 @@ export default function AdminAttendanceFreshmenUI({
   freshmenAttendance,
 }: AdminAttendanceFreshmenUIProps) {
   const router = useRouter();
+  const { showToast } = useToast();
 
   const [attendanceState, setAttendanceState] =
     useState<Freshman[]>(freshmenAttendance);
@@ -42,6 +44,11 @@ export default function AdminAttendanceFreshmenUI({
   };
 
   const handleStatusChange = async (freshmenId: number, newStatus: boolean) => {
+    const student = attendanceState.find((s) => s.freshmenId === freshmenId);
+    const studentName = student
+      ? `${student.fName} ${student.lName}`
+      : "Freshman";
+
     // optimistic UI update
     setAttendanceState((prev) =>
       prev.map((student) =>
@@ -54,7 +61,7 @@ export default function AdminAttendanceFreshmenUI({
     const result = await updateFreshmanAttendanceById(freshmenId, newStatus);
 
     if (!result?.success) {
-      alert("Failed to update attendance");
+      showToast(`Failed to update attendance for ${studentName}`, "danger");
 
       // rollback on failure
       setAttendanceState((prev) =>
@@ -63,6 +70,11 @@ export default function AdminAttendanceFreshmenUI({
             ? { ...student, present: !newStatus }
             : student,
         ),
+      );
+    } else {
+      showToast(
+        `${studentName} marked as ${newStatus ? "present" : "absent"}`,
+        newStatus ? "success" : "info",
       );
     }
   };

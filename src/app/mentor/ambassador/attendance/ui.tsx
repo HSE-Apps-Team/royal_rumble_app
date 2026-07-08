@@ -12,6 +12,7 @@ import "../../../css/mentor.css";
 import "../../../css/logo+login.css";
 import "../../../css/mobile-nav.css";
 import { useState } from "react";
+import { useToast } from "../../../context/ToastContext";
 
 interface Freshman {
   fName: string;
@@ -30,6 +31,7 @@ export default function FreshmenAttendancePageUI({
     present: boolean | null;
   }>;
 }) {
+  const { showToast } = useToast();
   const [attendanceState, setAttendanceState] = useState<Freshman[]>(
     attendanceData.map((student) => ({
       fName: student.fName || "",
@@ -39,7 +41,11 @@ export default function FreshmenAttendancePageUI({
     })),
   );
   const handleStatusChange = async (freshmenId: number, newStatus: boolean) => {
-    console.log(`Updating freshmenId ${freshmenId} to ${newStatus}`);
+    const student = attendanceState.find((s) => s.freshmenId === freshmenId);
+    const studentName = student
+      ? `${student.fName} ${student.lName}`
+      : "Freshman";
+
     // optimistic UI update
     setAttendanceState((prev) =>
       prev.map((student) =>
@@ -52,7 +58,7 @@ export default function FreshmenAttendancePageUI({
     const result = await updateFreshmanAttendanceById(freshmenId, newStatus);
 
     if (!result?.success) {
-      alert("Failed to update attendance");
+      showToast(`Failed to update attendance for ${studentName}`, "danger");
 
       // rollback on failure
       setAttendanceState((prev) =>
@@ -61,6 +67,11 @@ export default function FreshmenAttendancePageUI({
             ? { ...student, present: !newStatus }
             : student,
         ),
+      );
+    } else {
+      showToast(
+        `${studentName} marked as ${newStatus ? "present" : "absent"}`,
+        newStatus ? "success" : "info",
       );
     }
   };

@@ -10,6 +10,7 @@ import "../../../css/admin.css";
 import "../../../css/logo+login.css";
 import { updateMentorAttendanceById } from "../../../../actions/other";
 import ExportToExcelButton from "@/src/app/components/ExportToExcelButton";
+import { useToast } from "../../../context/ToastContext";
 
 interface Mentor {
   fName: string;
@@ -34,6 +35,7 @@ export default function AdminAttendanceMentorUI({
   mentorAttendance,
 }: AdminAttendanceMentorUIProps) {
   const router = useRouter();
+  const { showToast } = useToast();
 
   const [attendanceState, setAttendanceState] =
     useState<EventWithMentorsAttendance[]>(mentorAttendance);
@@ -53,6 +55,11 @@ export default function AdminAttendanceMentorUI({
   };
 
   const handleStatusChange = async (mentorId: number, newStatus: boolean) => {
+    const mentor = selectedEventData?.mentors.find(
+      (m) => m.mentor_id === mentorId,
+    );
+    const mentorName = mentor ? `${mentor.fName} ${mentor.lName}` : "Mentor";
+
     setAttendanceState((prev) =>
       prev.map((event) =>
         event.eventId !== selectedEvent
@@ -75,7 +82,7 @@ export default function AdminAttendanceMentorUI({
     );
 
     if (!result.success) {
-      alert("Failed to update attendance");
+      showToast(`Failed to update attendance for ${mentorName}`, "danger");
 
       setAttendanceState((prev) =>
         prev.map((event) =>
@@ -90,6 +97,11 @@ export default function AdminAttendanceMentorUI({
                 ),
               },
         ),
+      );
+    } else {
+      showToast(
+        `${mentorName} marked as ${newStatus ? "present" : "absent"}`,
+        newStatus ? "success" : "info",
       );
     }
   };

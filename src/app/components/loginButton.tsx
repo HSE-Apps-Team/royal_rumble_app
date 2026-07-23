@@ -17,7 +17,7 @@ const JOB_ROUTES: Record<string, string> = {
   AMBASSADOR: "/mentor/ambassador",
   "HALLWAY HOST": "/mentor/hallway_host",
   "UTILITY SQUAD": "/mentor/utility_squad",
-  "SPIRIT SESSION": "/mentor/spirit_session",
+  "CCA CONVOS": "/mentor/cca_convos",
 };
 
 const JOB_BASE_PATHS: Record<string, string> = {
@@ -26,7 +26,7 @@ const JOB_BASE_PATHS: Record<string, string> = {
   AMBASSADOR: "/mentor",
   "HALLWAY HOST": "/mentor",
   "UTILITY SQUAD": "/mentor",
-  "SPIRIT SESSION": "/mentor",
+  "CCA CONVOS": "/mentor",
 };
 
 export default function LoginButton() {

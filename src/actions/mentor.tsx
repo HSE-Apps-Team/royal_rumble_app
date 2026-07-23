@@ -152,7 +152,7 @@ export const getHallwayHostEvents = async () => {
   return events;
 };
 
-// Utility / Spirit queries
+// Utility / CCA Convos queries
 export const getUtilitySquadEvents = async () => {
   const events = await db
     .select({
@@ -167,7 +167,7 @@ export const getUtilitySquadEvents = async () => {
     .where(or(eq(eventsData.job, "UTILITY SQUAD"), eq(eventsData.job, "ALL")));
   return events;
 };
-export const getSpiritSessionEvents = async () => {
+export const getCCAConvosEvents = async () => {
   const events = await db
     .select({
       eventId: eventsData.eventId,
@@ -178,7 +178,7 @@ export const getSpiritSessionEvents = async () => {
     })
     .from(eventsData)
     .orderBy(sql`${eventsData.date} ASC, ${eventsData.time} ASC`)
-    .where(or(eq(eventsData.job, "SPIRIT SESSION"), eq(eventsData.job, "ALL")));
+    .where(or(eq(eventsData.job, "CCA CONVOS"), eq(eventsData.job, "ALL")));
   return events;
 };
 

@@ -34,7 +34,7 @@ interface AdminEventsUIProps {
   allEvents: Events;
   ambassadorEvents: Events;
   hallwayHostEvents: Events;
-  spiritEvents: Events;
+  ccaConvosEvents: Events;
   utilityEvents: Events;
 }
 
@@ -42,7 +42,7 @@ export default function AdminEventsUI({
   allEvents,
   ambassadorEvents,
   hallwayHostEvents,
-  spiritEvents,
+  ccaConvosEvents,
   utilityEvents,
 }: AdminEventsUIProps) {
   const router = useRouter();
@@ -117,9 +117,9 @@ export default function AdminEventsUI({
                   name="groupType"
                   value="spirit"
                   className="checkbox-input"
-                  onClick={() => setEvents(spiritEvents)}
+                  onClick={() => setEvents(ccaConvosEvents)}
                 />
-                Spirit
+                CCA Convos
               </label>
 
               <label className="checkbox-label">

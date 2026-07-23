@@ -38,7 +38,7 @@ export default function RootLayout({
                   <Link href="/mentor/ambassador">Ambassador</Link> |{" "}
                   <Link href="/mentor/hallway_host">Hallway Host</Link> |{" "}
                   <Link href="/mentor/utility_squad">Utility Squad</Link> |{" "}
-                  <Link href="/mentor/spirit_session">Spirit Session</Link> |{" "}
+                  <Link href="/mentor/cca_convos">CCA Convos</Link> |{" "}
                   <Link href="/admin">Admin</Link> |{" "}
                   <Link href="/testPage">Test</Link>
                 </nav>

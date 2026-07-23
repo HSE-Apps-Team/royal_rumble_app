@@ -7,9 +7,9 @@ import "../../css/mentor.css";
 import "../../css/logo+login.css";
 import "../../css/mobile-nav.css";
 
-export default function SpiritSessionUI({
+export default function CCAConvosUI({
   mentorsData,
-  spiritSessionEvents,
+  ccaConvosEvents,
 }: {
   mentorsData: {
     mentorId: number;
@@ -24,7 +24,7 @@ export default function SpiritSessionUI({
     trainingDay: string | null;
     pizzaType: string | null;
   };
-  spiritSessionEvents: Array<{
+  ccaConvosEvents: Array<{
     eventId: number;
     name: string | null;
     date: string | null;
@@ -40,13 +40,13 @@ export default function SpiritSessionUI({
         >
           Home
         </NavButton>
-        <NavButton href="/mentor/spirit_session"
+        <NavButton href="/mentor/cca_convos"
         style={{ width: "140px", height: "40px", padding: "5px 0px", fontSize: "15px" }}
         >
           Dashboard
         </NavButton>
       </div>
-      <MobileNav homeHref="/" dashboardHref="/mentor/spirit_session" />
+      <MobileNav homeHref="/" dashboardHref="/mentor/cca_convos" />
       <header className="mentor-header">
         <h1 className="mentor-title">
           Welcome, {mentorsData.fName} {mentorsData.lName}!
@@ -69,7 +69,7 @@ export default function SpiritSessionUI({
         <InfoBox headerText="Event Details">
           <InfoTable
             headers={["Event", "Date", "Time", "Description"]}
-            data={spiritSessionEvents.map((event) => [
+            data={ccaConvosEvents.map((event) => [
               event.name ?? "N/A",
               event.date ?? "N/A",
               event.time ?? "N/A",
@@ -80,7 +80,7 @@ export default function SpiritSessionUI({
       </section>
 
       <InfoBox headerText="Additional Instruction">
-        <EditableContent contentKey="spirit_session_more_details" />
+        <EditableContent contentKey="cca_convos_more_details" />
       </InfoBox>
     </>
   );

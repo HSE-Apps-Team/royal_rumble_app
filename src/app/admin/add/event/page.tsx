@@ -222,9 +222,9 @@ export default function AdminAddEvent() {
                       name="mentorType"
                       value="spirit"
                       className="checkbox-input"
-                      onChange={() => setJob("SPIRIT SESSION")}
+                      onChange={() => setJob("CCA CONVOS")}
                     />
-                    Spirit
+                    CCA Convos
                   </label>
                   <label className="checkbox-label">
                     <input

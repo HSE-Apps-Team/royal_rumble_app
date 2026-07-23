@@ -125,7 +125,7 @@ export default function AdminSearchUI({ freshmen, mentors }: Props) {
 
             {(showMentors || (!showFreshmen && !showMentors)) && (
               <div className="form-row checkbox-row">
-                {["AMBASSADOR", "HALLWAY HOST", "SPIRIT SESSION", "UTILITY SQUAD"].map((job) => (
+                {["AMBASSADOR", "HALLWAY HOST", "CCA CONVOS", "UTILITY SQUAD"].map((job) => (
                   <label key={job} className="checkbox-label">
                     <input
                       type="checkbox"

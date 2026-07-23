@@ -43,7 +43,7 @@ function prodMiddleware(req: any) {
       "AMBASSADOR",
       "HALLWAY HOST",
       "UTILITY SQUAD",
-      "SPIRIT SESSION",
+      "CCA CONVOS",
     ];
 
     if (!allowedMentorJobs.includes(user.job ?? "")) {

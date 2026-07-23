@@ -38,7 +38,7 @@ export default async function Home() {
     AMBASSADOR: "/mentor/ambassador",
     "HALLWAY HOST": "/mentor/hallway_host",
     "UTILITY SQUAD": "/mentor/utility_squad",
-    "SPIRIT SESSION": "/mentor/spirit_session",
+    "CCA CONVOS": "/mentor/cca_convos",
     FRESHMAN: "/freshmen/home",
   };
 

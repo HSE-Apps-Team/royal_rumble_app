@@ -6,14 +6,14 @@ async function AdminEvents() {
   const allEvents = await getAllEvents();
   const ambassadorEvents = await getAllEvents("AMBASSADOR");
   const hallwayHostEvents = await getAllEvents("HALLWAY HOST");
-  const spiritEvents = await getAllEvents("SPIRIT SESSION");
+  const ccaConvosEvents = await getAllEvents("CCA CONVOS");
   const utilityEvents = await getAllEvents("UTILITY SQUAD");
   return (
     <AdminEventsUI
       allEvents={{ events: allEvents }}
       ambassadorEvents={{ events: ambassadorEvents }}
       hallwayHostEvents={{ events: hallwayHostEvents }}
-      spiritEvents={{ events: spiritEvents }}
+      ccaConvosEvents={{ events: ccaConvosEvents }}
       utilityEvents={{ events: utilityEvents }}
     />
   );

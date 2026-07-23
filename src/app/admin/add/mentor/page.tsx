@@ -191,7 +191,7 @@ export default function AdminAddMentor() {
                 ) : null}
                 <option value="AMBASSADOR">AMBASSADOR</option>
                 <option value="HALLWAY HOST">HALLWAY HOST</option>
-                <option value="SPIRIT SESSION">SPIRIT SESSION</option>
+                <option value="CCA CONVOS">CCA CONVOS</option>
                 <option value="UTILITY SQUAD">UTILITY SQUAD</option>
               </select>
               {errors.job && (

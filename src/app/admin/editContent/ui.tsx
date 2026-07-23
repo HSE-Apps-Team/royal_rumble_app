@@ -289,8 +289,8 @@ export default function AdminEditContentPageUI({
             contentKey="freshmen_more_details"
           />
           <EditableContentBox
-            title="Spirit Session More Details Text"
-            contentKey="spirit_session_more_details"
+            title="CCA Convos More Details Text"
+            contentKey="cca_convos_more_details"
           />
           <EditableContentBox
             title="Utility Squad More Details Text"

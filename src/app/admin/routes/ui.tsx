@@ -417,7 +417,7 @@ export default function AdminRoutesUI({
                     <input
                       type="text"
                       style={{ ...inputStyle, width: "500px" }}
-                      placeholder="e.g. Tour, LGI, Gym"
+                      placeholder="e.g. Tour, Leonard, Gym"
                       value={patternEdits[pattern.patternId] ?? ""}
                       onChange={(e) =>
                         setPatternEdits((prev) => ({
@@ -462,14 +462,14 @@ export default function AdminRoutesUI({
               }}
             >
               Enter block names separated by commas. Example:{" "}
-              <strong>Gym, Tour, LGI</strong>
+              <strong>Gym, Tour, Leonard</strong>
             </p>
             <div className="form-row" style={{ flexWrap: "wrap", gap: "20px" }}>
               <label style={labelStyle}>Block Order:</label>
               <input
                 type="text"
                 style={{ ...inputStyle, width: "500px" }}
-                placeholder="e.g. Gym, Tour, LGI"
+                placeholder="e.g. Gym, Tour, Leonard"
                 value={newPatternInput}
                 onChange={(e) => setNewPatternInput(e.target.value)}
               />
@@ -503,7 +503,7 @@ export default function AdminRoutesUI({
           >
             Set the start time and duration for each block. Block names must
             match exactly what is used in the Event Order Patterns (e.g. Tour,
-            LGI, Gym).
+            Leonard, Gym).
           </p>
 
           {blocksState.length === 0 && (

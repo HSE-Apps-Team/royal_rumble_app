@@ -81,7 +81,7 @@ const makeModalBtn = (bg: string): React.CSSProperties => ({
 });
 const cancelBtnStyle = makeModalBtn("var(--secondarySilver)");
 const deleteBtnStyle = makeModalBtn("var(--primaryRed)");
-const saveBtnStyle   = makeModalBtn("var(--primaryBlue)");
+const saveBtnStyle = makeModalBtn("var(--primaryBlue)");
 
 const inputStyle: React.CSSProperties = {
   border: "4px solid var(--primaryBlue)",
@@ -286,7 +286,10 @@ export default function AdminRoutesUI({
     try {
       result = await addTourRouteStop(routeId, hallwayId, duration);
     } catch (err) {
-      showAlert(err instanceof Error ? err.message : "Failed to add stop.", "danger");
+      showAlert(
+        err instanceof Error ? err.message : "Failed to add stop.",
+        "danger",
+      );
       return;
     }
     const hallway = hallways.find((h) => h.hallwayStopId === hallwayId);
@@ -407,7 +410,7 @@ export default function AdminRoutesUI({
                     Enter block names separated by commas in the order groups
                     should visit them.
                     <br />
-                    Example: <strong>Tour, LGI, Gym</strong>
+                    Example: <strong>Tour, Leonard, Gym</strong>
                   </p>
                   <div className="form-row">
                     <label style={labelStyle}>Block Order:</label>
@@ -931,12 +934,20 @@ export default function AdminRoutesUI({
           onClose={() => setBlockDeleteModal(null)}
           footer={
             <>
-              <button style={cancelBtnStyle} onClick={() => setBlockDeleteModal(null)}>Cancel</button>
+              <button
+                style={cancelBtnStyle}
+                onClick={() => setBlockDeleteModal(null)}
+              >
+                Cancel
+              </button>
               <button
                 style={deleteBtnStyle}
                 onClick={async () => {
                   if (blockDeleteModal !== null) {
-                    await handleDeleteBlock(blockDeleteModal.blockScheduleId, blockDeleteModal.blockName);
+                    await handleDeleteBlock(
+                      blockDeleteModal.blockScheduleId,
+                      blockDeleteModal.blockName,
+                    );
                     setBlockDeleteModal(null);
                   }
                 }}
@@ -948,7 +959,8 @@ export default function AdminRoutesUI({
         >
           <p style={{ margin: 0, fontSize: "17px" }}>
             Are you sure you want to delete block{" "}
-            <strong>"{blockDeleteModal?.blockName}"</strong>? This cannot be undone.
+            <strong>"{blockDeleteModal?.blockName}"</strong>? This cannot be
+            undone.
           </p>
         </ModalShell>
       )}
@@ -960,12 +972,20 @@ export default function AdminRoutesUI({
           onClose={() => setStopDeleteModal(null)}
           footer={
             <>
-              <button style={cancelBtnStyle} onClick={() => setStopDeleteModal(null)}>Cancel</button>
+              <button
+                style={cancelBtnStyle}
+                onClick={() => setStopDeleteModal(null)}
+              >
+                Cancel
+              </button>
               <button
                 style={deleteBtnStyle}
                 onClick={async () => {
                   if (stopDeleteModal !== null) {
-                    await handleDeleteStop(stopDeleteModal.routeId, stopDeleteModal.routeStopId);
+                    await handleDeleteStop(
+                      stopDeleteModal.routeId,
+                      stopDeleteModal.routeStopId,
+                    );
                     setStopDeleteModal(null);
                   }
                 }}
@@ -977,8 +997,11 @@ export default function AdminRoutesUI({
         >
           <p style={{ margin: 0, fontSize: "17px" }}>
             Are you sure you want to delete stop{" "}
-            <strong>#{stopDeleteModal?.stopOrder} ({stopDeleteModal?.location ?? "Unknown"})</strong>?
-            This cannot be undone.
+            <strong>
+              #{stopDeleteModal?.stopOrder} (
+              {stopDeleteModal?.location ?? "Unknown"})
+            </strong>
+            ? This cannot be undone.
           </p>
         </ModalShell>
       )}
@@ -987,10 +1010,19 @@ export default function AdminRoutesUI({
       {showHallwayModal && (
         <ModalShell
           title="Create New Hallway"
-          onClose={() => { setShowHallwayModal(false); setNewHallway(""); }}
+          onClose={() => {
+            setShowHallwayModal(false);
+            setNewHallway("");
+          }}
           footer={
             <>
-              <button style={cancelBtnStyle} onClick={() => { setShowHallwayModal(false); setNewHallway(""); }}>
+              <button
+                style={cancelBtnStyle}
+                onClick={() => {
+                  setShowHallwayModal(false);
+                  setNewHallway("");
+                }}
+              >
                 Cancel
               </button>
               <button
@@ -998,9 +1030,15 @@ export default function AdminRoutesUI({
                 onClick={async () => {
                   const result = await addHallway(newHallway);
                   if (result?.success) {
-                    showAlert(`Successfully added hallway "${newHallway}"`, "success");
+                    showAlert(
+                      `Successfully added hallway "${newHallway}"`,
+                      "success",
+                    );
                   } else {
-                    showAlert(`Failed to add hallway "${newHallway}"`, "danger");
+                    showAlert(
+                      `Failed to add hallway "${newHallway}"`,
+                      "danger",
+                    );
                   }
                   setNewHallway("");
                   setShowHallwayModal(false);

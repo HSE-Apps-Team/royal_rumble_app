@@ -211,21 +211,23 @@ export const addMentor = async (data: {
   group_id?: number | null;
   hallway_stop_id?: number | null;
 }) => {
+  const job = data.job.trim().toUpperCase();
+
   await db.insert(mentorData).values({
     fName: data.f_name,
     lName: data.l_name,
     mentorId: data.mentor_id,
     gradYear: data.graduation_year,
-    job: data.job,
+    job,
     email: data.email,
     phoneNum: data.phone_number ? encrypt(data.phone_number) : data.phone_number,
   });
-  if (data.job === "AMBASSADOR") {
+  if (job === "AMBASSADOR") {
     await db.insert(ambassadorData).values({
       mentorId: data.mentor_id,
       groupId: data.group_id ?? null,
     });
-  } else if (data.job === "HALLWAY HOST") {
+  } else if (job === "HALLWAY HOST") {
     await db.insert(hallwayHostData).values({
       mentorId: data.mentor_id,
       hallwayStopId: data.hallway_stop_id ?? null,
@@ -234,7 +236,7 @@ export const addMentor = async (data: {
   const eventIds = await db
     .select({ eventId: eventsData.eventId })
     .from(eventsData)
-    .where(or(eq(eventsData.job, data.job), eq(eventsData.job, "ALL")));
+    .where(or(eq(eventsData.job, job), eq(eventsData.job, "ALL")));
   for (const event of eventIds) {
     await db.insert(mentorAttendanceData).values({
       mentorId: data.mentor_id,
@@ -278,17 +280,20 @@ export const updateMentorByID = async (
     interests_involvement?: string;
   },
 ) => {
+  const job = data.job.trim().toUpperCase();
+
   const currentJob = await db
     .select({ job: mentorData.job })
     .from(mentorData)
     .where(eq(mentorData.mentorId, mentorId))
     .limit(1);
-  if (currentJob[0].job !== data.job) {
-    if (currentJob[0].job === "AMBASSADOR") {
+  const previousJob = currentJob[0].job?.trim().toUpperCase();
+  if (previousJob !== job) {
+    if (previousJob === "AMBASSADOR") {
       await db
         .delete(ambassadorData)
         .where(eq(ambassadorData.mentorId, mentorId));
-    } else if (currentJob[0].job === "HALLWAY HOST") {
+    } else if (previousJob === "HALLWAY HOST") {
       await db
         .delete(hallwayHostData)
         .where(eq(hallwayHostData.mentorId, mentorId));
@@ -298,12 +303,12 @@ export const updateMentorByID = async (
       .delete(mentorAttendanceData)
       .where(eq(mentorAttendanceData.mentorId, mentorId));
 
-    if (data.job === "AMBASSADOR") {
+    if (job === "AMBASSADOR") {
       await db.insert(ambassadorData).values({
         mentorId: mentorId,
         groupId: null,
       });
-    } else if (data.job === "HALLWAY HOST") {
+    } else if (job === "HALLWAY HOST") {
       await db.insert(hallwayHostData).values({
         mentorId: mentorId,
         hallwayStopId: null,
@@ -313,7 +318,7 @@ export const updateMentorByID = async (
     const eventIds = await db
       .select({ eventId: eventsData.eventId })
       .from(eventsData)
-      .where(or(eq(eventsData.job, data.job), eq(eventsData.job, "ALL")));
+      .where(or(eq(eventsData.job, job), eq(eventsData.job, "ALL")));
     for (const event of eventIds) {
       await db.insert(mentorAttendanceData).values({
         mentorId: mentorId,
@@ -329,7 +334,7 @@ export const updateMentorByID = async (
       lName: data.l_name,
       email: data.email,
       gradYear: data.grad_year,
-      job: data.job,
+      job,
       pizzaType: data.pizza_type,
       languages: data.languages,
       trainingDay: data.training_day,
@@ -384,11 +389,12 @@ export const reassignMentorHallway = async (
 export const deleteMentorById = async (mentorId: number) => {
   const mentor = await getMentorById(mentorId);
   console.log("Deleting mentor:", mentor);
-  if (mentor.job === "AMBASSADOR") {
+  const job = mentor.job?.trim().toUpperCase();
+  if (job === "AMBASSADOR") {
     await db
       .delete(ambassadorData)
       .where(eq(ambassadorData.mentorId, mentorId));
-  } else if (mentor.job === "HALLWAY HOST") {
+  } else if (job === "HALLWAY HOST") {
     await db
       .delete(hallwayHostData)
       .where(eq(hallwayHostData.mentorId, mentorId));

@@ -42,7 +42,7 @@ export default async function Home() {
     FRESHMAN: "/attendee/home",
   };
 
-  const userJob = session?.user?.job;
+  const userJob = session?.user?.job?.trim().toUpperCase();
 
   const dashboardLink =
     userJob && userJob in dashboardRoutes

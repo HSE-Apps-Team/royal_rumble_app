@@ -13,11 +13,12 @@ function prodMiddleware(req: any) {
 
   const path = nextUrl.pathname;
   const user = session?.user;
+  const userJob = user?.job?.trim().toUpperCase();
 
   const isLoggedIn = !!user;
 
   if (path.startsWith("/admin")) {
-    if (!isLoggedIn || user.job !== "ADMIN") {
+    if (!isLoggedIn || userJob !== "ADMIN") {
       return NextResponse.redirect(new URL("/", nextUrl));
     }
   }
@@ -26,10 +27,10 @@ function prodMiddleware(req: any) {
     if (!isLoggedIn) {
       return NextResponse.redirect(new URL("/", nextUrl));
     }
-    if (user.job === "UNREGISTERED" && path !== "/attendee/home") {
+    if (userJob === "UNREGISTERED" && path !== "/attendee/home") {
       return NextResponse.redirect(new URL("/attendee/home", nextUrl));
     }
-    if (user.job !== "FRESHMAN" && user.job !== "UNREGISTERED") {
+    if (userJob !== "FRESHMAN" && userJob !== "UNREGISTERED") {
       return NextResponse.redirect(new URL("/", nextUrl));
     }
   }
@@ -46,7 +47,7 @@ function prodMiddleware(req: any) {
       "CCA CONVOS",
     ];
 
-    if (!allowedMentorJobs.includes(user.job ?? "")) {
+    if (!allowedMentorJobs.includes(userJob ?? "")) {
       return NextResponse.redirect(new URL("/", nextUrl));
     }
   }

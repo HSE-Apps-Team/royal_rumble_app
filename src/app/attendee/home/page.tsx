@@ -23,7 +23,7 @@ export default async function AttendeeHomepage() {
 
   if (!DEV_MODE) {
     const session = await auth();
-    const job = session?.user?.job;
+    const job = session?.user?.job?.trim().toUpperCase();
     if (job === "UNREGISTERED" || !job) {
       return (
         <main className="attendees-container">

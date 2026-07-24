@@ -44,7 +44,7 @@ export default function LoginButton() {
       const justLoggedIn = sessionStorage.getItem("justLoggedIn");
       if (justLoggedIn) {
         sessionStorage.removeItem("justLoggedIn");
-        const route = JOB_ROUTES[session.user.job];
+        const route = JOB_ROUTES[session.user.job.trim().toUpperCase()];
         if (route) router.push(route);
       }
     }

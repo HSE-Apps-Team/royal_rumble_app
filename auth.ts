@@ -44,7 +44,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
 
       user.id = String(dbUser.id);
-      user.job = dbUser.job ?? "";
+      user.job = (dbUser.job ?? "").trim().toUpperCase();
 
       return true;
     },

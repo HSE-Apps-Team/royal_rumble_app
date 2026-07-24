@@ -56,12 +56,14 @@ async function insertData(table: string, rows: any[]) {
   switch (table) {
     case "mentor_data":
       for (const row of rows) {
+        const job = typeof row["job"] === "string" ? row["job"].trim().toUpperCase() : row["job"];
+
         await db.insert(mentorData).values({
           mentorId: row["mentor_id"],
           fName: row["first_name"],
           lName: row["last_name"],
           gradYear: row["graduation_year"],
-          job: row["job"],
+          job,
           pizzaType: row["pizza"],
           languages: row["languages"],
           trainingDay: row["training_day"],
@@ -72,15 +74,15 @@ async function insertData(table: string, rows: any[]) {
           interestsInvolvement: row["interests_involvement"] ?? null,
         }).onConflictDoNothing();
 
-        if (row["job"] === "AMBASSADOR") {
+        if (job === "AMBASSADOR") {
           await db.insert(ambassadorData).values({ mentorId: row["mentor_id"], groupId: null }).onConflictDoNothing();
-        } else if (row["job"] === "HALLWAY HOST") {
+        } else if (job === "HALLWAY HOST") {
           await db.insert(hallwayHostData).values({ mentorId: row["mentor_id"], hallwayStopId: null }).onConflictDoNothing();
         }
 
         const eventIds = await db.select({ eventId: eventsData.eventId })
           .from(eventsData)
-          .where(or(eq(eventsData.job, row["job"]), eq(eventsData.job, "ALL")));
+          .where(or(eq(eventsData.job, job), eq(eventsData.job, "ALL")));
         for (const event of eventIds) {
           await db.insert(mentorAttendanceData).values({ mentorId: row["mentor_id"], eventId: event.eventId, status: false });
         }

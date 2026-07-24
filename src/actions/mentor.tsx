@@ -64,6 +64,8 @@ export const getAmbassadorEvents = async () => {
       name: eventsData.name,
       date: eventsData.date,
       time: eventsData.time,
+      date2: eventsData.date2,
+      time2: eventsData.time2,
       description: eventsData.description,
     })
     .from(eventsData)
@@ -144,6 +146,8 @@ export const getHallwayHostEvents = async () => {
       name: eventsData.name,
       date: eventsData.date,
       time: eventsData.time,
+      date2: eventsData.date2,
+      time2: eventsData.time2,
       description: eventsData.description,
     })
     .from(eventsData)
@@ -160,6 +164,8 @@ export const getUtilitySquadEvents = async () => {
       name: eventsData.name,
       date: eventsData.date,
       time: eventsData.time,
+      date2: eventsData.date2,
+      time2: eventsData.time2,
       description: eventsData.description,
     })
     .from(eventsData)
@@ -174,6 +180,8 @@ export const getCCAConvosEvents = async () => {
       name: eventsData.name,
       date: eventsData.date,
       time: eventsData.time,
+      date2: eventsData.date2,
+      time2: eventsData.time2,
       description: eventsData.description,
     })
     .from(eventsData)

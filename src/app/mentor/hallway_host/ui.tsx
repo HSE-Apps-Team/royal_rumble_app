@@ -4,6 +4,7 @@ import NavButton from "../../components/addButton";
 import MobileNav from "../../components/MobileNav";
 import InfoTable from "../../components/infoTable";
 import EditableContent from "../../components/EditableContent";
+import { formatEventDates } from "@/lib/formatEventDates";
 import "../../css/mentor.css";
 import "../../css/logo+login.css";
 import "../../css/mobile-nav.css";
@@ -32,6 +33,8 @@ export default function HallwayHostUI({
     name: string | null;
     date: string | null;
     time: string | null;
+    date2?: string | null;
+    time2?: string | null;
     description: string | null;
   }>;
   hallwayData: {
@@ -110,11 +113,10 @@ export default function HallwayHostUI({
           </div>
 
           <InfoTable
-            headers={["Event", "Date", "Time", "Description"]}
+            headers={["Event", "Date(s)", "Description"]}
             data={hallwayHostEvents.map((event) => [
               event.name ?? "N/A",
-              event.date ?? "N/A",
-              event.time ?? "N/A",
+              formatEventDates(event),
               event.description ?? "N/A",
             ])}
           />

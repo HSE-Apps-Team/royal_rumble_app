@@ -16,7 +16,6 @@ import {
   hasFreshmenData,
 } from "@/actions/group";
 import { createGroupsFromDB, createEstimatedGroups } from "@/actions/routes";
-import { Popover, OverlayTrigger } from "react-bootstrap";
 import { useAlert } from "../../context/AlertContext";
 
 export const runtime = "nodejs";
@@ -30,6 +29,7 @@ export default function AdminUpload() {
     Record<string, boolean>
   >({});
   const [estimatedGroupCount, setEstimatedGroupCount] = useState<string>("");
+  const [fileDetailsOpen, setFileDetailsOpen] = useState<string | null>(null);
 
   const { showAlert } = useAlert();
   const router = useRouter();
@@ -277,7 +277,7 @@ export default function AdminUpload() {
                       paddingLeft: "10px",
                       paddingRight: "10px",
                       width: "220px",
-                      marginTop: "15px"
+                      marginTop: "15px",
                     }}
                     onMouseEnter={buttonHover}
                     onMouseLeave={buttonUnhover}
@@ -396,7 +396,10 @@ export default function AdminUpload() {
                           : "success",
                       );
                     } catch {
-                      showAlert("Failed to assign groups. Please try again.", "danger");
+                      showAlert(
+                        "Failed to assign groups. Please try again.",
+                        "danger",
+                      );
                     } finally {
                       setGroupActionLoading((prev) => ({
                         ...prev,
@@ -549,7 +552,10 @@ export default function AdminUpload() {
                         unmatchedCount > 0 ? "warning" : "success",
                       );
                     } catch {
-                      showAlert("Failed to sync groups. Please try again.", "danger");
+                      showAlert(
+                        "Failed to sync groups. Please try again.",
+                        "danger",
+                      );
                     } finally {
                       setGroupActionLoading((prev) => ({
                         ...prev,
@@ -600,20 +606,122 @@ export default function AdminUpload() {
               {
                 label: "Mentor Data",
                 table: "mentor_data",
-                headers:
-                  "Mentor ID, First Name, Last Name, Graduation Year, Job, Pizza, Languages, Training Day, Shirt Size, Phone Number, Email, Past Mentor, Interests Involvement",
+                columns: [
+                  { name: "Mentor ID", required: true },
+                  { name: "First Name", required: true },
+                  { name: "Last Name", required: true },
+                  { name: "Email", required: true },
+                  { name: "Job", required: true },
+                  { name: "Graduation Year", required: false },
+                  { name: "Pizza", required: false },
+                  { name: "Languages", required: false },
+                  { name: "Training Day", required: false },
+                  { name: "Shirt Size", required: false },
+                  { name: "Phone Number", required: false },
+                  { name: "Past Mentor", required: false },
+                  { name: "Interests Involvement", required: false },
+                ],
+                examples: [
+                  [
+                    "262096",
+                    "Katara",
+                    "Waterbender",
+                    "2026",
+                    "AMBASSADOR",
+                    "cheese",
+                    "Vietnamese",
+                    "Friday, July 10",
+                    "Large",
+                    "7195414357",
+                    "waterkat096@hsestudents.org",
+                  ],
+                  [
+                    "271469",
+                    "Sokka",
+                    "Boomerang",
+                    "2027",
+                    "AMBASSADOR",
+                    "sausage",
+                    "English",
+                    "Friday, July 10",
+                    "Medium",
+                    "3472927192",
+                    "boomesok469@hsestudents.org",
+                  ],
+                  [
+                    "271261",
+                    "Toph",
+                    "Beifong",
+                    "2027",
+                    "AMBASSADOR",
+                    "cheese",
+                    "Mandarin",
+                    "Friday, July 10",
+                    "Medium",
+                    "9548523834",
+                    "beifotop261@hsestudents.org",
+                  ],
+                ],
               },
               {
                 label: "GoFan → Freshmen Data",
                 table: "freshmen_data",
-                headers:
-                  "Freshmen ID, First Name, Last Name, Shirt Size, Email, Primary Language, Interests, Health Concerns",
+                columns: [
+                  { name: "Freshmen ID", required: true },
+                  { name: "First Name", required: true },
+                  { name: "Last Name", required: true },
+                  { name: "Shirt Size", required: false },
+                  { name: "Email", required: true },
+                  { name: "Primary Language", required: false },
+                  { name: "Interests", required: false },
+                  { name: "Health Concerns", required: false },
+                ],
+                examples: [
+                  [
+                    "290722",
+                    "Aang",
+                    "Airbender",
+                    "MEDIUM",
+                    "aang277@gmail.com",
+                    "Personal Info",
+                    "NA",
+                  ],
+                  [
+                    "291675",
+                    "Zuko",
+                    "Firelord",
+                    "SMALL",
+                    "zuko_firelord@g...",
+                    "Athletics",
+                    "Peanut allergy",
+                  ],
+                  [
+                    "290747",
+                    "Suki",
+                    "Kyoshi",
+                    "SMALL",
+                    "sukikyoshi166@...",
+                    "Athletics",
+                    "Celiac disease",
+                  ],
+                ],
               },
               {
                 label: "Freshman Prep Classes → Seminar Data",
                 table: "seminar_data",
-                headers:
-                  "Last Name, First Name, Freshmen ID, Semester, Teacher Full Name, Period",
+                columns: [
+                  { name: "Last Name", required: true },
+                  { name: "First Name", required: true },
+                  { name: "Freshmen ID", required: true },
+                  { name: "Semester", required: true },
+                  { name: "Teacher Full Name", required: true },
+                  { name: "Period", required: true },
+                ],
+                examples: [
+                  ["Airbender", "Aang", "300400", "S1", "AANG AIR", "1"],
+                  ["Beifong", "Toph", "280420", "S1", "AANG AIR", "1"],
+                  ["Waterbender", "Katara", "301365", "S1", "AANG AIR", "1"],
+                ],
               },
             ].map((item) => (
               <div
@@ -652,28 +760,119 @@ export default function AdminUpload() {
                   )}
                 </div>
 
-                <OverlayTrigger
-                  trigger="click"
-                  rootClose
-                  placement="right"
-                  overlay={
-                    <Popover id={`popover-${item.table}`}>
-                      <Popover.Header as="h3">
-                        Column Headers should be:
-                      </Popover.Header>
-                      <Popover.Body>{item.headers}</Popover.Body>
-                    </Popover>
-                  }
+                <button
+                  style={buttonStyle}
+                  onMouseEnter={buttonHover}
+                  onMouseLeave={buttonUnhover}
+                  type="button"
+                  onClick={() => setFileDetailsOpen(item.table)}
                 >
-                  <button
-                    style={buttonStyle}
-                    onMouseEnter={buttonHover}
-                    onMouseLeave={buttonUnhover}
-                    type="button"
+                  File Details
+                </button>
+
+                <ContentModal
+                  title="File Details"
+                  icon="bi bi-info-circle"
+                  show={fileDetailsOpen === item.table}
+                  onClose={() => setFileDetailsOpen(null)}
+                >
+                  <label
+                    className="form-label"
+                    style={{
+                      fontWeight: "bold",
+                      width: "100%",
+                      textAlign: "center",
+                      marginBottom: "20px",
+                    }}
                   >
-                    Column Details
-                  </button>
-                </OverlayTrigger>
+                    {item.label} — Column Headers
+                  </label>
+                  <p
+                    style={{
+                      margin: "0 0 30px",
+                      fontSize: "18px",
+                    }}
+                  >
+                    {item.columns.map((col, i) => (
+                      <span key={col.name}>
+                        {col.name}
+                        {!col.required && (
+                          <span
+                            style={{
+                              color: "var(--secondarySilver)",
+                              fontWeight: "normal",
+                            }}
+                          >
+                            {" "}
+                            (optional)
+                          </span>
+                        )}
+                        {i < item.columns.length - 1 && ", "}
+                      </span>
+                    ))}
+                  </p>
+
+                  <label
+                    className="form-label"
+                    style={{
+                      fontWeight: "bold",
+                      width: "100%",
+                      textAlign: "center",
+                      marginBottom: "20px",
+                    }}
+                  >
+                    Example Data:
+                  </label>
+                  <div style={{ overflowX: "auto" }}>
+                    <table
+                      style={{
+                        borderCollapse: "collapse",
+                        fontSize: "15px",
+                        width: "100%",
+                      }}
+                    >
+                      <thead>
+                        <tr>
+                          {item.columns.map((col) => (
+                            <th
+                              key={col.name}
+                              style={{
+                                textAlign: "left",
+                                padding: "6px 12px",
+                                borderBottom: "2px solid var(--primaryBlue)",
+                                color: "var(--primaryBlue)",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {col.name}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {item.examples.map((row, i) => (
+                          <tr key={i}>
+                            {row.map((cell, j) => (
+                              <td
+                                key={j}
+                                style={{
+                                  padding: "6px 12px",
+                                  whiteSpace: "nowrap",
+                                  borderBottom:
+                                    i === item.examples.length - 1
+                                      ? "none"
+                                      : "1px solid #eee",
+                                }}
+                              >
+                                {cell}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </ContentModal>
 
                 <p
                   style={{
@@ -717,8 +916,21 @@ export default function AdminUpload() {
         </InfoBox>
       </section>
 
-      <div style={{ margin: "40px 0 60px", textAlign: "center", fontFamily: "Poppins, sans-serif" }}>
-        <p style={{ color: "var(--primaryBlue)", fontWeight: 600, fontSize: "1rem", marginBottom: "12px" }}>
+      <div
+        style={{
+          margin: "40px 0 60px",
+          textAlign: "center",
+          fontFamily: "Poppins, sans-serif",
+        }}
+      >
+        <p
+          style={{
+            color: "var(--primaryBlue)",
+            fontWeight: 600,
+            fontSize: "1rem",
+            marginBottom: "12px",
+          }}
+        >
           Need to clear uploaded data?
         </p>
         <button

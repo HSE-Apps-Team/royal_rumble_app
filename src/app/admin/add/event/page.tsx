@@ -17,6 +17,9 @@ export default function AdminAddEvent() {
   const [name, setName] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
+  const [hasSecondDate, setHasSecondDate] = useState(false);
+  const [date2, setDate2] = useState("");
+  const [time2, setTime2] = useState("");
   const [location, setLocation] = useState("");
   const [job, setJob] = useState("");
   const [description, setDescription] = useState("");
@@ -38,6 +41,14 @@ export default function AdminAddEvent() {
     } else if (!/^(0?[1-9]|1[0-2]):[0-5][0-9] (AM|PM)$/i.test(time.trim())) {
       newErrors.time = "Time must be in HH:MM AM/PM format.";
     }
+    if (hasSecondDate) {
+      if (!date2) newErrors.date2 = "Second date is required.";
+      if (!time2.trim()) {
+        newErrors.time2 = "Second time is required.";
+      } else if (!/^(0?[1-9]|1[0-2]):[0-5][0-9] (AM|PM)$/i.test(time2.trim())) {
+        newErrors.time2 = "Time must be in HH:MM AM/PM format.";
+      }
+    }
     if (!location.trim()) newErrors.location = "Location is required.";
     if (!job) newErrors.job = "Please select who this event is assigned to.";
     if (!description.trim()) newErrors.description = "Description is required.";
@@ -54,6 +65,8 @@ export default function AdminAddEvent() {
         name,
         date,
         time,
+        date2: hasSecondDate ? date2 : null,
+        time2: hasSecondDate ? time2 : null,
         location,
         job,
         description,
@@ -104,6 +117,22 @@ export default function AdminAddEvent() {
             </div>
           </div>
           <div className="form-row">
+            <label className="form-label">Location:</label>
+            <div>
+              <input
+                type="text"
+                className={`form-input${errors.location ? " is-invalid" : ""}`}
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+              />
+              {errors.location && (
+                <div className="invalid-feedback d-block">
+                  {errors.location}
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="form-row">
             <label className="form-label">Date:</label>
             <div>
               <input
@@ -132,22 +161,61 @@ export default function AdminAddEvent() {
               )}
             </div>
           </div>
-          <div className="form-row">
-            <label className="form-label">Location:</label>
-            <div>
+          <div className="form-row checkbox-row">
+            <label className="checkbox-label">
               <input
-                type="text"
-                className={`form-input${errors.location ? " is-invalid" : ""}`}
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
+                type="checkbox"
+                className="checkbox-input"
+                checked={hasSecondDate}
+                onChange={(e) => {
+                  setHasSecondDate(e.target.checked);
+                  if (!e.target.checked) {
+                    setDate2("");
+                    setTime2("");
+                  }
+                }}
               />
-              {errors.location && (
-                <div className="invalid-feedback d-block">
-                  {errors.location}
-                </div>
-              )}
-            </div>
+              Offer a second date/time (students pick either one; same event,
+              same attendance)
+            </label>
           </div>
+          {hasSecondDate && (
+            <>
+              <div className="form-row">
+                <label className="form-label">Date (option 2):</label>
+                <div>
+                  <input
+                    type="date"
+                    className={`form-input${errors.date2 ? " is-invalid" : ""}`}
+                    value={date2}
+                    onChange={(e) => setDate2(e.target.value)}
+                  />
+                  {errors.date2 && (
+                    <div className="invalid-feedback d-block">
+                      {errors.date2}
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="form-row">
+                <label className="form-label">Time (option 2):</label>
+                <div>
+                  <input
+                    type="text"
+                    className={`form-input${errors.time2 ? " is-invalid" : ""}`}
+                    placeholder="HH:MM AM/PM"
+                    value={time2}
+                    onChange={(e) => setTime2(e.target.value)}
+                  />
+                  {errors.time2 && (
+                    <div className="invalid-feedback d-block">
+                      {errors.time2}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
           <div className="form-row checkbox-row">
             <label className="checkbox-label">
               <input

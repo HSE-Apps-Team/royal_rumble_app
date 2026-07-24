@@ -11,6 +11,7 @@ import AddButton from "../../components/addButton";
 import "../../css/admin.css";
 import "../../css/logo+login.css";
 import { deleteEvent } from "../../../../src/actions/other";
+import { formatEventDates } from "@/lib/formatEventDates";
 
 interface Events {
   events: Array<{
@@ -18,6 +19,8 @@ interface Events {
     name: string;
     date: string;
     time: string;
+    date2: string | null;
+    time2: string | null;
     location: string;
     job: string;
     description: string | null;
@@ -169,13 +172,8 @@ export default function AdminEventsUI({
             <section key={event.eventId} className="info-section">
               <div className="info-pairs">
                 <div className="info-pair">
-                  <div className="info-label">Date:</div>
-                  <div className="info-value">{event.date}</div>
-                </div>
-
-                <div className="info-pair">
-                  <div className="info-label">Time:</div>
-                  <div className="info-value">{event.time}</div>
+                  <div className="info-label">Date(s):</div>
+                  <div className="info-value">{formatEventDates(event)}</div>
                 </div>
 
                 <div className="info-pair">

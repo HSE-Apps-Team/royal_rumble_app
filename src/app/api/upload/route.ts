@@ -14,9 +14,10 @@ import {
 import { eq, or } from "drizzle-orm";
 import * as XLSX from "xlsx";
 import { encrypt } from "@/lib/crypto";
+import { fixEmail } from "@/lib/fixEmail";
 
 const requiredColumns: Record<string, string[]> = {
-  mentor_data: ["mentor_id", "first_name", "last_name", "job"],
+  mentor_data: ["mentor_id", "first_name", "last_name", "job", "email"],
   freshmen_data: ["freshmen_id", "first_name", "last_name", "email"],
   seminar_data: ["freshmen_id", "first_name", "last_name", "semester", "teacher_full_name", "period"],
 };
@@ -44,6 +45,7 @@ function validateRows(table: string, rows: any[]) {
   const errors: string[] = [];
   rows.forEach((row, i) => {
     if (table === "mentor_data" && !row["mentor_id"]) errors.push(`Row ${i + 2}: Mentor ID is missing`);
+    if (table === "mentor_data" && !row["email"]) errors.push(`Row ${i + 2}: Email is missing`);
     if (table === "freshmen_data" && !row["freshmen_id"]) errors.push(`Row ${i + 2}: Freshmen ID is missing`);
     if (table === "seminar_data" && !row["freshmen_id"]) errors.push(`Row ${i + 2}: Freshmen ID is missing`);
   });
@@ -65,7 +67,7 @@ async function insertData(table: string, rows: any[]) {
           trainingDay: row["training_day"],
           tshirtSize: row["shirt_size"],
           phoneNum: row["phone_number"] ? encrypt(row["phone_number"]) : row["phone_number"],
-          email: row["email"]?.trim() || undefined,
+          email: fixEmail(row["email"].trim()) as string,
           pastMentor: row["past_mentor"] ?? null,
           interestsInvolvement: row["interests_involvement"] ?? null,
         }).onConflictDoNothing();
@@ -87,12 +89,13 @@ async function insertData(table: string, rows: any[]) {
 
     case "freshmen_data":
       for (const row of rows) {
+        const email = fixEmail(row["email"]?.trim?.() ?? row["email"]);
         await db.insert(freshmenData).values({
           freshmenId: row["freshmen_id"],
           fName: row["first_name"] ?? row["f_name"],
           lName: row["last_name"] ?? row["l_name"],
           tshirtSize: row["shirt_size"] ?? row["shirtsize"],
-          email: row["email"],
+          email,
           primaryLanguage: row["primary_language"] || "English",
           interests: row["interests"],
           healthConcerns: row["health_concerns"] ? encrypt(row["health_concerns"]) : row["health_concerns"],
@@ -103,7 +106,7 @@ async function insertData(table: string, rows: any[]) {
             fName: row["first_name"] ?? row["f_name"],
             lName: row["last_name"] ?? row["l_name"],
             tshirtSize: row["shirt_size"] ?? row["shirtsize"],
-            email: row["email"],
+            email,
             primaryLanguage: row["primary_language"] || "English",
             interests: row["interests"],
             healthConcerns: row["health_concerns"] ? encrypt(row["health_concerns"]) : row["health_concerns"],

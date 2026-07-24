@@ -27,6 +27,9 @@ export default function AdminEditEventsUI({
   const [description, setDescription] = useState("");
   const [name, setName] = useState("");
   const [time, setTime] = useState("");
+  const [hasSecondDate, setHasSecondDate] = useState(false);
+  const [date2, setDate2] = useState("");
+  const [time2, setTime2] = useState("");
   const [location, setLocation] = useState("");
 
   const [currentJob, setCurrentJob] = useState("");
@@ -39,6 +42,9 @@ export default function AdminEditEventsUI({
       setName(event.name ?? "");
       setDate(event.date ?? "");
       setTime(event.time ?? "");
+      setDate2(event.date2 ?? "");
+      setTime2(event.time2 ?? "");
+      setHasSecondDate(Boolean(event.date2));
       setLocation(event.location ?? "");
       setJob(event.job ?? "");
       setDescription(event.description ?? "");
@@ -57,6 +63,14 @@ export default function AdminEditEventsUI({
     } else if (!/^(0?[1-9]|1[0-2]):[0-5][0-9] (AM|PM)$/i.test(time.trim())) {
       newErrors.time = "Time must be in HH:MM AM/PM format.";
     }
+    if (hasSecondDate) {
+      if (!date2) newErrors.date2 = "Second date is required.";
+      if (!time2.trim()) {
+        newErrors.time2 = "Second time is required.";
+      } else if (!/^(0?[1-9]|1[0-2]):[0-5][0-9] (AM|PM)$/i.test(time2.trim())) {
+        newErrors.time2 = "Time must be in HH:MM AM/PM format.";
+      }
+    }
     if (!location.trim()) newErrors.location = "Location is required.";
     if (!job) newErrors.job = "Please select a job.";
     if (!description.trim()) newErrors.description = "Description is required.";
@@ -74,6 +88,8 @@ export default function AdminEditEventsUI({
         name: name,
         date: date,
         time: time,
+        date2: hasSecondDate ? date2 : null,
+        time2: hasSecondDate ? time2 : null,
         location: location,
         job: job,
         description: description,
@@ -155,6 +171,56 @@ export default function AdminEditEventsUI({
               )}
             </div>
           </div>
+          <div className="form-row checkbox-row">
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                className="checkbox-input"
+                checked={hasSecondDate}
+                onChange={(e) => {
+                  setHasSecondDate(e.target.checked);
+                  if (!e.target.checked) {
+                    setDate2("");
+                    setTime2("");
+                  }
+                }}
+              />
+              Offer a second date/time (students pick either one; same event, same attendance)
+            </label>
+          </div>
+          {hasSecondDate && (
+            <>
+              <div className="form-row">
+                <label className="form-label">Date (option 2):</label>
+                <div>
+                  <input
+                    type="date"
+                    className={`form-input${errors.date2 ? " is-invalid" : ""}`}
+                    value={date2}
+                    onChange={(e) => setDate2(e.target.value)}
+                  />
+                  {errors.date2 && (
+                    <div className="invalid-feedback d-block">{errors.date2}</div>
+                  )}
+                </div>
+              </div>
+              <div className="form-row">
+                <label className="form-label">Time (option 2):</label>
+                <div>
+                  <input
+                    type="text"
+                    className={`form-input${errors.time2 ? " is-invalid" : ""}`}
+                    placeholder="HH:MM AM/PM"
+                    value={time2}
+                    onChange={(e) => setTime2(e.target.value)}
+                  />
+                  {errors.time2 && (
+                    <div className="invalid-feedback d-block">{errors.time2}</div>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
           <div className="form-row">
             <label className="form-label">Location:</label>
             <div>

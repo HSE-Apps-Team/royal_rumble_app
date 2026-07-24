@@ -3,6 +3,7 @@ import InfoTable from "../../components/infoTable";
 import EditableContent from "../../components/EditableContent";
 import NavButton from "../../components/addButton";
 import MobileNav from "../../components/MobileNav";
+import { formatEventDates } from "@/lib/formatEventDates";
 import "../../css/mentor.css";
 import "../../css/logo+login.css";
 import "../../css/mobile-nav.css";
@@ -29,6 +30,8 @@ export default function CCAConvosUI({
     name: string | null;
     date: string | null;
     time: string | null;
+    date2?: string | null;
+    time2?: string | null;
     description: string | null;
   }>;
 }) {
@@ -68,11 +71,10 @@ export default function CCAConvosUI({
       <section className="mentor-info-box">
         <InfoBox headerText="Event Details">
           <InfoTable
-            headers={["Event", "Date", "Time", "Description"]}
+            headers={["Event", "Date(s)", "Description"]}
             data={ccaConvosEvents.map((event) => [
               event.name ?? "N/A",
-              event.date ?? "N/A",
-              event.time ?? "N/A",
+              formatEventDates(event),
               event.description ?? "N/A",
             ])}
           />

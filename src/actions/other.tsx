@@ -62,6 +62,8 @@ export const getAllEvents = async (job?: string) => {
     name: string;
     date: string;
     time: string;
+    date2: string | null;
+    time2: string | null;
     location: string;
     job: string;
     description: string | null;
@@ -99,6 +101,8 @@ export const getAllEvents = async (job?: string) => {
       date: String(event.date),
       job: String(event.job),
       time: String(event.time),
+      date2: event.date2 ? String(event.date2) : null,
+      time2: event.time2 ?? null,
       location: String(event.location),
       description: event.description,
       mentors: attendance as Array<{
@@ -125,6 +129,9 @@ export const getMentorAttendanceAllEvents = async () => {
     eventId: number;
     name: string;
     date: string;
+    time: string;
+    date2: string | null;
+    time2: string | null;
     mentors: Array<{
       fName: string;
       lName: string;
@@ -160,6 +167,9 @@ export const getMentorAttendanceAllEvents = async () => {
       eventId: event.eventId,
       name: String(event.name),
       date: String(event.date),
+      time: String(event.time),
+      date2: event.date2 ? String(event.date2) : null,
+      time2: event.time2 ?? null,
       mentors: attendance as Array<{
         fName: string;
         lName: string;
@@ -382,6 +392,8 @@ export const addEvent = async (data: {
   job: string;
   date: string;
   time: string;
+  date2?: string | null;
+  time2?: string | null;
   location: string;
   description: string;
   isRoyalRumble?: boolean;
@@ -393,6 +405,8 @@ export const addEvent = async (data: {
       job: data.job,
       date: data.date,
       time: data.time,
+      date2: data.date2 || null,
+      time2: data.time2 || null,
       location: data.location,
       description: data.description,
       isRoyalRumble: data.isRoyalRumble ?? false,
@@ -438,6 +452,8 @@ export const updateEventByID = async (
     job: string;
     date: string;
     time: string;
+    date2?: string | null;
+    time2?: string | null;
     location: string;
     description: string;
   },
@@ -450,6 +466,8 @@ export const updateEventByID = async (
       job: data.job,
       date: data.date,
       time: data.time,
+      date2: data.date2 || null,
+      time2: data.time2 || null,
       location: data.location,
       description: data.description,
     })

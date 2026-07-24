@@ -11,6 +11,7 @@ import "../../../css/logo+login.css";
 import { updateMentorAttendanceById } from "../../../../actions/other";
 import ExportToExcelButton from "@/src/app/components/ExportToExcelButton";
 import { useToast } from "../../../context/ToastContext";
+import { formatEventDates } from "@/lib/formatEventDates";
 
 interface Mentor {
   fName: string;
@@ -24,6 +25,9 @@ interface EventWithMentorsAttendance {
   eventId: number;
   name: string;
   date: string;
+  time: string;
+  date2: string | null;
+  time2: string | null;
   mentors: Mentor[];
 }
 
@@ -160,7 +164,7 @@ export default function AdminAttendanceMentorUI({
           >
             {attendanceState.map((event) => (
               <option key={event.eventId} value={event.eventId}>
-                {event.name} ({event.date})
+                {event.name} ({formatEventDates(event)})
               </option>
             ))}
           </select>

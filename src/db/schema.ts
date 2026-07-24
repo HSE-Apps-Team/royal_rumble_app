@@ -23,6 +23,8 @@ export const eventsData = pgTable("events_data", {
   job:           text("job"),
   date:          date("date"),
   time:          text("time"),
+  date2:         date("date2"),
+  time2:         text("time2"),
   location:      text("location"),
   description:   text("description"),
   isRoyalRumble: boolean("is_royal_rumble").default(false),
@@ -74,7 +76,7 @@ export const ambassadorData = pgTable("ambassador_data", {
 // ---------------- mentor_data ----------------
 export const mentorData = pgTable("mentor_data", {
   mentorId:             integer("mentor_id").primaryKey(),
-  email:                text("email"),
+  email:                text("email").notNull(),
   fName:                text("f_name"),
   lName:                text("l_name"),
   gradYear:             integer("grad_year"),

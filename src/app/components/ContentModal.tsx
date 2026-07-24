@@ -90,6 +90,9 @@ export default function ModalStyle({
               backgroundColor: "white",
               overflow: "hidden",
               width: "75%",
+              maxHeight: "90vh",
+              display: "flex",
+              flexDirection: "column",
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -104,6 +107,7 @@ export default function ModalStyle({
                 justifyContent: "space-between",
                 fontSize: "24px",
                 fontWeight: "bold",
+                flexShrink: 0,
               }}
             >
               <span>{title}</span>
@@ -115,7 +119,7 @@ export default function ModalStyle({
             </div>
 
             {/* Content */}
-            <div style={{ padding: "16px" }}>
+            <div style={{ padding: "16px", overflowY: "auto" }}>
               <div
                 style={{
                   border: "5px solid var(--primaryRed)",
@@ -127,40 +131,41 @@ export default function ModalStyle({
               >
                 {children}
               </div>
+            </div>
 
-              {/* Footer buttons */}
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  alignItems: "center",
-                  padding: "0 30px 10px",
-                  gap: "8px",
+            {/* Footer buttons */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                alignItems: "center",
+                padding: "10px 30px",
+                gap: "8px",
+                flexShrink: 0,
+              }}
+            >
+              <button
+                style={greyButtonStyle}
+                onMouseEnter={buttonHover}
+                onMouseLeave={buttonUnhover}
+                onClick={() => {
+                  setShowModal(false);
                 }}
+                type="button"
               >
-                <button
-                  style={greyButtonStyle}
-                  onMouseEnter={buttonHover}
-                  onMouseLeave={buttonUnhover}
+                Cancel
+              </button>
+              {saveAction && (
+                <SaveButton
                   onClick={() => {
+                    saveAction();
                     setShowModal(false);
                   }}
-                  type="button"
+                  style={{ width: "160px", fontSize: "20px", height: "55px" }}
                 >
-                  Cancel
-                </button>
-                {saveAction && (
-                  <SaveButton
-                    onClick={() => {
-                      saveAction();
-                      setShowModal(false);
-                    }}
-                    style={{ width: "160px", fontSize: "20px", height: "55px" }}
-                  >
-                    {btnText}
-                  </SaveButton>
-                )}
-              </div>
+                  {btnText}
+                </SaveButton>
+              )}
             </div>
           </div>
         </div>

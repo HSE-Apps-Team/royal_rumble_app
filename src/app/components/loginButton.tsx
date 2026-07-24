@@ -11,8 +11,8 @@ const DEV_MODE = process.env.NEXT_PUBLIC_DEV_MODE === "true";
 const TENANT_ID = process.env.NEXT_PUBLIC_MICROSOFT_ENTRA_TENANT_ID;
 
 const JOB_ROUTES: Record<string, string> = {
-  FRESHMAN: "/freshmen/home",
-  UNREGISTERED: "/freshmen/home",
+  FRESHMAN: "/attendee/home",
+  UNREGISTERED: "/attendee/home",
   ADMIN: "/admin",
   AMBASSADOR: "/mentor/ambassador",
   "HALLWAY HOST": "/mentor/hallway_host",
@@ -21,7 +21,7 @@ const JOB_ROUTES: Record<string, string> = {
 };
 
 const JOB_BASE_PATHS: Record<string, string> = {
-  FRESHMAN: "/freshmen",
+  FRESHMAN: "/attendee",
   ADMIN: "/admin",
   AMBASSADOR: "/mentor",
   "HALLWAY HOST": "/mentor",

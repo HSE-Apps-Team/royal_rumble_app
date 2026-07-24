@@ -81,7 +81,7 @@
   justify-content: center;
 }
 
-.freshmen-label {
+.attendee-label {
   color: var(--primaryBlue);
   font-weight: bold;
   font-size: 30px;
@@ -144,7 +144,7 @@
     font-size: 16px;
   }
 
-  .freshmen-label {
+  .attendee-label {
     font-size: 20px;
     margin: 16px 0;
   }

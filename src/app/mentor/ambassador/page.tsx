@@ -3,7 +3,7 @@ import {
   getGroupByGroupId,
   getGroupIdByMentorId,
   getMentorsByGroupId,
-  getFreshmenByGroupId,
+  getAttendeesByGroupId,
 } from "@/src/actions/group";
 import AmbassadorHomepageUI from "./ui";
 import { auth } from "@/auth";
@@ -21,7 +21,7 @@ export default async function AmbassadorHomepage() {
   const groupId = await getGroupIdByMentorId(Number(studentId));
   const groupDetails = groupId != null ? await getGroupByGroupId(groupId) : null;
   const groupMentorsData = groupId != null ? await getMentorsByGroupId(groupId) : [];
-  const groupFreshmen = groupId != null ? await getFreshmenByGroupId(groupId) : [];
+  const groupAttendees = groupId != null ? await getAttendeesByGroupId(groupId) : [];
 
   const groupMentors = groupMentorsData.map((mentor) => ({
     mentorId: mentor.mentor_id,
@@ -35,7 +35,7 @@ export default async function AmbassadorHomepage() {
       ambassadorEvents={ambassadorEvents}
       groupDetails={groupDetails}
       groupMentors={groupMentors}
-      groupFreshmen={groupFreshmen}
+      groupAttendees={groupAttendees}
     />
   );
 }

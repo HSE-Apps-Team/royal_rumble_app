@@ -8,7 +8,7 @@ import { useAlert } from "@/src/app/context/AlertContext";
 import "@/src/app/css/admin.css";
 import "@/src/app/css/logo+login.css";
 import {
-  resetFreshmenData,
+  resetAttendeeData,
   resetMentorData,
   resetEventData,
   resetGroupData,
@@ -341,11 +341,11 @@ export default function ResetPage() {
 
   // ── Section definitions ──────────────────────────────────────────────────
 
-  const freshmenSection = {
+  const attendeeSection = {
     groupTarget: {
-      label: "Freshmen Data",
-      description: "Deletes all rows in: freshmen_data, seminar_data",
-      action: resetFreshmenData,
+      label: "Attendee Data",
+      description: "Deletes all rows in: attendee_data, seminar_data",
+      action: resetAttendeeData,
     },
     individualTargets: [
       {
@@ -401,7 +401,7 @@ export default function ResetPage() {
     groupTarget: {
       label: "Group Data",
       description:
-        "Deletes all rows in: group_data, freshmen_data, seminar_data, ambassador_data, group_route_attendance",
+        "Deletes all rows in: group_data, attendee_data, seminar_data, ambassador_data, group_route_attendance",
       action: resetGroupData,
     },
     individualTargets: [
@@ -448,7 +448,7 @@ export default function ResetPage() {
   const resetAllTarget: ResetTarget = {
     label: "All Data",
     description:
-      "Deletes ALL rows in every table: freshmen_data, seminar_data, mentor_data, ambassador_data, hallway_host_data, mentor_attendance_data, events_data, group_data, group_route_attendance, tour_route, tour_route_stop, hallway_stop_data, event_order_pattern, block_schedule",
+      "Deletes ALL rows in every table: attendee_data, seminar_data, mentor_data, ambassador_data, hallway_host_data, mentor_attendance_data, events_data, group_data, group_route_attendance, tour_route, tour_route_stop, hallway_stop_data, event_order_pattern, block_schedule",
     action: resetAllData,
   };
 
@@ -493,9 +493,9 @@ export default function ResetPage() {
 
       {/* Sections */}
       <ResetSection
-        title="Freshmen"
-        groupTarget={freshmenSection.groupTarget}
-        individualTargets={freshmenSection.individualTargets}
+        title="Attendees"
+        groupTarget={attendeeSection.groupTarget}
+        individualTargets={attendeeSection.individualTargets}
         onTrigger={triggerReset}
       />
 

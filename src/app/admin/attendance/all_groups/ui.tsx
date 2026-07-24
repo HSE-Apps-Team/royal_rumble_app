@@ -8,12 +8,12 @@ import ViewDropdown from "../../../components/viewDropdown";
 import CheckBoxTable from "../../../components/checkBoxTable";
 import "../../../css/admin.css";
 import "../../../css/logo+login.css";
-import { updateFreshmanAttendanceById } from "../../../../actions/freshmen";
+import { updateAttendeeAttendanceById } from "../../../../actions/attendees";
 import { updateMentorAttendanceById } from "../../../../actions/other";
 import { useToast } from "../../../context/ToastContext";
 
-interface Freshman {
-  freshman_id: string;
+interface Attendee {
+  attendee_id: string;
   name: string;
   present: boolean;
 }
@@ -29,7 +29,7 @@ interface Group {
   name: string;
   route_num: number;
   event_order: string;
-  freshmen: Freshman[];
+  attendees: Attendee[];
   mentors: Mentor[];
 }
 
@@ -51,16 +51,16 @@ export default function AdminAttendanceAllGroupsUI({
     router.push("/admin/attendance");
   };
 
-  const handleFreshmanStatusChange = async (
+  const handleAttendeeStatusChange = async (
     groupId: number,
-    freshmanId: number,
+    attendeeId: number,
     newStatus: boolean,
   ) => {
-    const freshmanName =
+    const attendeeName =
       groups
         .find((g) => g.group_id === groupId)
-        ?.freshmen.find((f) => f.freshman_id === freshmanId.toString())
-        ?.name ?? "Freshman";
+        ?.attendees.find((f) => f.attendee_id === attendeeId.toString())
+        ?.name ?? "Attendee";
 
     // Optimistic update
     setGroups((prev) =>
@@ -69,8 +69,8 @@ export default function AdminAttendanceAllGroupsUI({
           ? g
           : {
               ...g,
-              freshmen: g.freshmen.map((f) =>
-                f.freshman_id === freshmanId.toString()
+              attendees: g.attendees.map((f) =>
+                f.attendee_id === attendeeId.toString()
                   ? { ...f, present: newStatus }
                   : f,
               ),
@@ -78,11 +78,11 @@ export default function AdminAttendanceAllGroupsUI({
       ),
     );
 
-    const result = await updateFreshmanAttendanceById(freshmanId, newStatus);
+    const result = await updateAttendeeAttendanceById(attendeeId, newStatus);
 
     if (!result?.success) {
       showToast(
-        `Failed to update attendance for ${freshmanName}`,
+        `Failed to update attendance for ${attendeeName}`,
         "danger",
       );
       // Rollback
@@ -92,8 +92,8 @@ export default function AdminAttendanceAllGroupsUI({
             ? g
             : {
                 ...g,
-                freshmen: g.freshmen.map((f) =>
-                  f.freshman_id === freshmanId.toString()
+                attendees: g.attendees.map((f) =>
+                  f.attendee_id === attendeeId.toString()
                     ? { ...f, present: !newStatus }
                     : f,
                 ),
@@ -102,7 +102,7 @@ export default function AdminAttendanceAllGroupsUI({
       );
     } else {
       showToast(
-        `${freshmanName} marked as ${newStatus ? "present" : "absent"}`,
+        `${attendeeName} marked as ${newStatus ? "present" : "absent"}`,
         newStatus ? "success" : "info",
       );
     }
@@ -237,18 +237,18 @@ export default function AdminAttendanceAllGroupsUI({
                 className="info-label"
                 style={{ marginLeft: "20px", marginBottom: "30px" }}
               >
-                Freshmen:
+                Attendees:
               </label>
               <div style={{ width: "100%" }}>
                 <CheckBoxTable
-                  headers={["Freshman Name", "Student ID"]}
-                  data={group.freshmen.map((f) => [f.name, f.freshman_id])}
-                  status={group.freshmen.map((f) => f.present)}
-                  rowIds={group.freshmen.map((f) => Number(f.freshman_id))}
-                  onStatusChange={(freshmanId, newStatus) =>
-                    handleFreshmanStatusChange(
+                  headers={["Attendee Name", "Student ID"]}
+                  data={group.attendees.map((f) => [f.name, f.attendee_id])}
+                  status={group.attendees.map((f) => f.present)}
+                  rowIds={group.attendees.map((f) => Number(f.attendee_id))}
+                  onStatusChange={(attendeeId, newStatus) =>
+                    handleAttendeeStatusChange(
                       group.group_id as number,
-                      freshmanId,
+                      attendeeId,
                       newStatus,
                     )
                   }

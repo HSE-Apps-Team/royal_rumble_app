@@ -8,7 +8,7 @@ import {
   hallwayHostData,
   mentorAttendanceData,
   eventsData,
-  freshmenData,
+  attendeeData,
   seminarData,
 } from "@/db/schema";
 import { eq, or } from "drizzle-orm";
@@ -18,7 +18,7 @@ import { fixEmail } from "@/lib/fixEmail";
 
 const requiredColumns: Record<string, string[]> = {
   mentor_data: ["mentor_id", "first_name", "last_name", "job", "email"],
-  freshmen_data: ["freshmen_id", "first_name", "last_name", "email"],
+  attendee_data: ["freshmen_id", "first_name", "last_name", "email"],
   seminar_data: ["freshmen_id", "first_name", "last_name", "semester", "teacher_full_name", "period"],
 };
 
@@ -46,7 +46,7 @@ function validateRows(table: string, rows: any[]) {
   rows.forEach((row, i) => {
     if (table === "mentor_data" && !row["mentor_id"]) errors.push(`Row ${i + 2}: Mentor ID is missing`);
     if (table === "mentor_data" && !row["email"]) errors.push(`Row ${i + 2}: Email is missing`);
-    if (table === "freshmen_data" && !row["freshmen_id"]) errors.push(`Row ${i + 2}: Freshmen ID is missing`);
+    if (table === "attendee_data" && !row["freshmen_id"]) errors.push(`Row ${i + 2}: Student ID is missing`);
     if (table === "seminar_data" && !row["freshmen_id"]) errors.push(`Row ${i + 2}: Freshmen ID is missing`);
   });
   return errors.length ? errors.join("; ") : null;
@@ -87,11 +87,11 @@ async function insertData(table: string, rows: any[]) {
       }
       break;
 
-    case "freshmen_data":
+    case "attendee_data":
       for (const row of rows) {
         const email = fixEmail(row["email"]?.trim?.() ?? row["email"]);
-        await db.insert(freshmenData).values({
-          freshmenId: row["freshmen_id"],
+        await db.insert(attendeeData).values({
+          attendeeId: row["freshmen_id"],
           fName: row["first_name"] ?? row["f_name"],
           lName: row["last_name"] ?? row["l_name"],
           tshirtSize: row["shirt_size"] ?? row["shirtsize"],
@@ -101,7 +101,7 @@ async function insertData(table: string, rows: any[]) {
           healthConcerns: row["health_concerns"] ? encrypt(row["health_concerns"]) : row["health_concerns"],
           present: false,
         }).onConflictDoUpdate({
-          target: freshmenData.freshmenId,
+          target: attendeeData.attendeeId,
           set: {
             fName: row["first_name"] ?? row["f_name"],
             lName: row["last_name"] ?? row["l_name"],

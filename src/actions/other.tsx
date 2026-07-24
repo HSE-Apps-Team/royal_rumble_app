@@ -4,7 +4,7 @@ import { db } from "@/db";
 import {
   adminData,
   eventsData,
-  freshmenData,
+  attendeeData,
   mentorAttendanceData,
   mentorData,
   groupData,
@@ -199,17 +199,17 @@ export const getUserByEmail = async (email: string) => {
     };
   }
 
-  // Check freshmen
-  const freshman = await db
+  // Check attendees
+  const attendee = await db
     .select({
-      id: freshmenData.freshmenId,
+      id: attendeeData.attendeeId,
     })
-    .from(freshmenData)
-    .where(eq(freshmenData.email, email));
+    .from(attendeeData)
+    .where(eq(attendeeData.email, email));
 
-  if (freshman.length > 0) {
+  if (attendee.length > 0) {
     return {
-      id: freshman[0].id,
+      id: attendee[0].id,
       job: "FRESHMAN",
     };
   }
@@ -233,8 +233,8 @@ export const getUserByEmail = async (email: string) => {
 
 export const getRoyalRumbleGroupAttendance = async () => {
   // Interfaces inside the function
-  interface Freshman {
-    freshman_id: string;
+  interface Attendee {
+    attendee_id: string;
     name: string;
     present: boolean;
   }
@@ -250,7 +250,7 @@ export const getRoyalRumbleGroupAttendance = async () => {
     name: string;
     route_num: number;
     event_order: string;
-    freshmen: Freshman[];
+    attendees: Attendee[];
     mentors: Mentor[];
   }
 
@@ -265,16 +265,16 @@ export const getRoyalRumbleGroupAttendance = async () => {
     .from(groupData)
     .orderBy(sql`${groupData.groupId} ASC`);
 
-  // 2️⃣ Fetch all freshmen
-  const freshmen = await db
+  // 2️⃣ Fetch all attendees
+  const attendees = await db
     .select({
-      groupId: freshmenData.groupId,
-      freshmenId: freshmenData.freshmenId,
-      fName: freshmenData.fName,
-      lName: freshmenData.lName,
-      present: freshmenData.present,
+      groupId: attendeeData.groupId,
+      attendeeId: attendeeData.attendeeId,
+      fName: attendeeData.fName,
+      lName: attendeeData.lName,
+      present: attendeeData.present,
     })
-    .from(freshmenData);
+    .from(attendeeData);
 
   // 3️⃣ Get the Royal Rumble event ID
   const royalRumbleEvent = await db
@@ -313,18 +313,18 @@ export const getRoyalRumbleGroupAttendance = async () => {
       name: g.name,
       route_num: g.routeNum ?? 0,
       event_order: g.eventOrder ? JSON.parse(g.eventOrder).join(", ") : "",
-      freshmen: [],
+      attendees: [],
       mentors: [],
     });
   }
 
-  // 6️⃣ Attach freshmen to their groups
-  for (const f of freshmen) {
+  // 6️⃣ Attach attendees to their groups
+  for (const f of attendees) {
     if (f.groupId === null) continue;
     const group = groupMap.get(f.groupId);
     if (group) {
-      group.freshmen.push({
-        freshman_id: f.freshmenId.toString(),
+      group.attendees.push({
+        attendee_id: f.attendeeId.toString(),
         name: `${f.fName} ${f.lName}`,
         present: f.present ?? false,
       });

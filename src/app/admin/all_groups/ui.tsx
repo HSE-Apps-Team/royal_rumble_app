@@ -19,12 +19,12 @@ import {
 import ModalShell from "../../components/ModalShell";
 import { useAlert } from "@/app/context/AlertContext";
 
-interface FreshmenGroup {
+interface AttendeeGroup {
   group_id: number | "Unassigned";
   name: string;
   route_num: number;
   event_order: string;
-  freshmen: Array<{ freshman_id: string; name: string }>;
+  attendees: Array<{ attendee_id: string; name: string }>;
   mentors: Array<{ mentor_id: string; name: string }>;
 }
 interface HallwayGroup {
@@ -34,16 +34,16 @@ interface HallwayGroup {
 }
 
 export default function AdminAllGroups({
-  freshmenGroups,
+  attendeeGroups,
   hallwayGroups,
 }: {
-  freshmenGroups: FreshmenGroup[];
+  attendeeGroups: AttendeeGroup[];
   hallwayGroups: HallwayGroup[];
 }) {
   const router = useRouter();
   const { showAlert } = useAlert();
 
-  const [displayFreshmenGroup, setDisplayFreshmenGroup] = useState(true);
+  const [displayAttendeeGroup, setDisplayAttendeeGroup] = useState(true);
   const [selectedGroupId, setSelectedGroupId] = useState<string>("");
   const [newHallway, setNewHallway] = useState("");
   const [showHallwayModal, setShowHallwayModal] = useState(false);
@@ -51,22 +51,22 @@ export default function AdminAllGroups({
   const handleLogoClick = () => router.push("/admin");
 
   const formatPeople = (
-    people: { name: string; freshman_id?: string; mentor_id?: string }[],
+    people: { name: string; attendee_id?: string; mentor_id?: string }[],
   ) => {
     return people
       .map((p) => {
-        const id = p.freshman_id ?? p.mentor_id ?? "";
+        const id = p.attendee_id ?? p.mentor_id ?? "";
         return `${p.name}:${id}`;
       })
       .join(", ");
   };
 
-  const exportHeaders = displayFreshmenGroup
-    ? ["Group Name", "Route #", "Event Order", "Freshmen", "Mentors"]
+  const exportHeaders = displayAttendeeGroup
+    ? ["Group Name", "Route #", "Event Order", "Attendees", "Mentors"]
     : ["Group Name", "Mentors"];
 
-  const exportData = displayFreshmenGroup
-    ? freshmenGroups
+  const exportData = displayAttendeeGroup
+    ? attendeeGroups
         .filter(
           (group) =>
             selectedGroupId === "" || group.group_id.toString() === selectedGroupId,
@@ -75,7 +75,7 @@ export default function AdminAllGroups({
           group.name,
           group.route_num,
           group.event_order,
-          formatPeople(group.freshmen),
+          formatPeople(group.attendees),
           formatPeople(group.mentors),
         ])
     : hallwayGroups
@@ -112,14 +112,14 @@ export default function AdminAllGroups({
             >
               <option value="">All Groups</option>
 
-              {displayFreshmenGroup &&
-                freshmenGroups.map((group) => (
+              {displayAttendeeGroup &&
+                attendeeGroups.map((group) => (
                   <option key={group.group_id} value={group.group_id.toString()}>
                     {group.name}
                   </option>
                 ))}
 
-              {!displayFreshmenGroup &&
+              {!displayAttendeeGroup &&
                 hallwayGroups.map((group) => (
                   <option
                     key={group.hallwayStopId}
@@ -143,13 +143,13 @@ export default function AdminAllGroups({
                   type="radio"
                   name="groupType"
                   className="checkbox-input"
-                  checked={displayFreshmenGroup}
+                  checked={displayAttendeeGroup}
                   onChange={() => {
-                    setDisplayFreshmenGroup(true);
+                    setDisplayAttendeeGroup(true);
                     setSelectedGroupId("");
                   }}
                 />
-                Freshmen Groups
+                Attendee Groups
               </label>
 
               <label className="checkbox-label">
@@ -157,9 +157,9 @@ export default function AdminAllGroups({
                   type="radio"
                   name="groupType"
                   className="checkbox-input"
-                  checked={!displayFreshmenGroup}
+                  checked={!displayAttendeeGroup}
                   onChange={() => {
-                    setDisplayFreshmenGroup(false);
+                    setDisplayAttendeeGroup(false);
                     setSelectedGroupId("");
                   }}
                 />
@@ -182,17 +182,17 @@ export default function AdminAllGroups({
         }}
       >
         {/* Add Buttons */}
-        {displayFreshmenGroup ? (
+        {displayAttendeeGroup ? (
           <>
             <AddButton
-              onClick={() => router.push("/admin/add/freshman")}
+              onClick={() => router.push("/admin/add/attendee")}
               style={{
                 fontSize: "21px",
                 justifyContent: "flex-start",
                 width: "270px",
               }}
             >
-              Add Freshman
+              Add Attendee
               <i
                 className="bi bi-plus-circle"
                 style={{ marginLeft: "30px", fontSize: "30px" }}
@@ -201,12 +201,12 @@ export default function AdminAllGroups({
             <ExportToExcelButton
               headers={exportHeaders}
               data={exportData}
-              fileName={"Freshmen_Groups_Export"}
+              fileName={"Attendee_Groups_Export"}
               style={{ fontSize: "21px", justifyContent: "flex-center" }}
             />
 
             <AddButton
-              onClick={() => router.push("/admin/add/freshmen_group")}
+              onClick={() => router.push("/admin/add/attendee_group")}
               style={{ fontSize: "21px", justifyContent: "flex-end" }}
             >
               Add Group
@@ -255,11 +255,11 @@ export default function AdminAllGroups({
       </div>
 
       {/* VIEW DROPDOWN SECTION */}
-      {displayFreshmenGroup ? (
+      {displayAttendeeGroup ? (
         <ViewDropdown
-          header={`Freshmen Group ${selectedGroupId}`}
-          editLink={`/admin/edit/freshmenGroup`}
-          sections={freshmenGroups
+          header={`Attendee Group ${selectedGroupId}`}
+          editLink={`/admin/edit/attendeeGroup`}
+          sections={attendeeGroups
             .filter(
               (group) =>
                 selectedGroupId === "" || group.group_id.toString() === selectedGroupId,
@@ -288,11 +288,11 @@ export default function AdminAllGroups({
                   />
 
                   <label className="info-label" style={{ marginTop: "30px" }}>
-                    Freshmen:
+                    Attendees:
                   </label>
                   <InfoTable
-                    headers={["Freshman Name", "Student ID"]}
-                    data={group.freshmen.map((f) => [f.name, f.freshman_id])}
+                    headers={["Attendee Name", "Student ID"]}
+                    data={group.attendees.map((f) => [f.name, f.attendee_id])}
                   />
                 </section>
               ),

@@ -33,7 +33,7 @@ export default function AdminAdd() {
         <div style={{ display: "flex", flexDirection: "row", gap: "20px" }}>
           <AdminButtons link="/admin/add/admin">Admin</AdminButtons>
           <AdminButtons link="/admin/add/mentor">Mentor</AdminButtons>
-          <AdminButtons link="/admin/add/freshman">Freshmen</AdminButtons>
+          <AdminButtons link="/admin/add/attendee">Attendees</AdminButtons>
         </div>
 
         <div style={{ display: "flex", flexDirection: "row", gap: "20px", margin: "30px" }}>

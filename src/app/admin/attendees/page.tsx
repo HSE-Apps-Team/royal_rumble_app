@@ -1,11 +1,11 @@
-// /admin/freshmen/page.tsx (server component)
-import { getFreshmen } from "@/actions/freshmen";
-import AdminFreshmen from "./ui";
+// /admin/attendees/page.tsx (server component)
+import { getAttendees } from "@/actions/attendees";
+import AdminAttendees from "./ui";
 
-export default async function FreshmenPage() {
-  const freshmen = await getFreshmen(); // fetch from DB
-  const sanitizedFreshmen = freshmen.map((f) => ({
-    freshmenId: f.freshmenId,
+export default async function AttendeesPage() {
+  const attendees = await getAttendees(); // fetch from DB
+  const sanitizedAttendees = attendees.map((f) => ({
+    attendeeId: f.attendeeId,
     fName: f.fName ?? "",
     lName: f.lName ?? "",
     email: f.email ?? "",
@@ -15,5 +15,5 @@ export default async function FreshmenPage() {
     healthConcerns: f.healthConcerns ?? "",
     present: f.present ?? false,
   }));
-  return <AdminFreshmen freshmenData={sanitizedFreshmen} />;
+  return <AdminAttendees attendeeData={sanitizedAttendees} />;
 }

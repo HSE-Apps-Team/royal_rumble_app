@@ -14,7 +14,7 @@ export default function AmbassadorUI({
   ambassadorEvents,
   groupDetails,
   groupMentors,
-  groupFreshmen,
+  groupAttendees,
 }: {
   mentorsData: {
     mentorId: number;
@@ -49,8 +49,8 @@ export default function AmbassadorUI({
     fName: string | null;
     lName: string | null;
   }>;
-  groupFreshmen: Array<{
-    freshmenId: number;
+  groupAttendees: Array<{
+    attendeeId: number;
     fName: string | null;
     lName: string | null;
     interests: string | null;
@@ -134,13 +134,13 @@ export default function AmbassadorUI({
                     {/* </div> */}
                   </div>
                   <div className="info-pairs">
-                    <div className="info-label">Freshmen:</div>
+                    <div className="info-label">Attendees:</div>
                     <InfoTable
                       headers={["Name", "Interests", "T-Shirt Size"]}
-                      data={groupFreshmen.map((freshman) => [
-                        `${freshman.fName} ${freshman.lName}`,
-                        freshman.interests ?? "",
-                        freshman.tshirtSize ?? "",
+                      data={groupAttendees.map((attendee) => [
+                        `${attendee.fName} ${attendee.lName}`,
+                        attendee.interests ?? "",
+                        attendee.tshirtSize ?? "",
                       ])}
                     />
                   </div>

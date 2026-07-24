@@ -1,16 +1,16 @@
-// src/app/admin/edit/freshmenGroup/[id]/page.tsx
+// src/app/admin/edit/attendeeGroup/[id]/page.tsx
 
-import EditFreshmenGroupUI from "./ui";
+import EditAttendeeGroupUI from "./ui";
 import {
   getGroupByGroupId,
   getMentorsByGroupId,
-  getFreshmenByGroupId,
-  getNullGroupFreshmen,
+  getAttendeesByGroupId,
+  getNullGroupAttendees,
   getNullGroupMentors,
 } from "@/actions/group";
 import { getEventOrderPatterns } from "@/actions/routes";
 
-export default async function EditFreshmenGroupPage({
+export default async function EditAttendeeGroupPage({
   params,
 }: {
   params: Promise<{ id: string }>;
@@ -27,13 +27,13 @@ export default async function EditFreshmenGroupPage({
       routeNum: null,
       eventOrder: null,
     };
-    const freshmenData = await getNullGroupFreshmen();
+    const attendeeData = await getNullGroupAttendees();
     const mentorData = await getNullGroupMentors();
 
-    const sanitizedFreshmenData = freshmenData.map((freshman) => ({
-      ...freshman,
-      fName: freshman.fName ?? "",
-      lName: freshman.lName ?? "",
+    const sanitizedAttendeeData = attendeeData.map((attendee) => ({
+      ...attendee,
+      fName: attendee.fName ?? "",
+      lName: attendee.lName ?? "",
     }));
 
     const sanitizedMentorData = mentorData.map((mentor) => ({
@@ -44,9 +44,9 @@ export default async function EditFreshmenGroupPage({
     }));
 
     return (
-      <EditFreshmenGroupUI
+      <EditAttendeeGroupUI
         groupData={groupData}
-        freshmenData={sanitizedFreshmenData}
+        attendeeData={sanitizedAttendeeData}
         mentorData={sanitizedMentorData}
         orders={orders}
       />
@@ -55,24 +55,24 @@ export default async function EditFreshmenGroupPage({
 
   const numericId = Number(id);
   const groupData = await getGroupByGroupId(numericId);
-  const freshmenData = await getFreshmenByGroupId(numericId);
+  const attendeeData = await getAttendeesByGroupId(numericId);
   const mentorData = await getMentorsByGroupId(numericId);
 
-  const sanitizedFreshmenData = freshmenData.map((freshman) => ({
-    ...freshman,
-    fName: freshman.fName ?? "",
-    lName: freshman.lName ?? "",
-    tshirtSize: freshman.tshirtSize ?? "",
-    email: freshman.email ?? "",
-    primaryLanguage: freshman.primaryLanguage ?? "",
-    interests: freshman.interests ?? "",
-    healthConcerns: freshman.healthConcerns ?? "",
+  const sanitizedAttendeeData = attendeeData.map((attendee) => ({
+    ...attendee,
+    fName: attendee.fName ?? "",
+    lName: attendee.lName ?? "",
+    tshirtSize: attendee.tshirtSize ?? "",
+    email: attendee.email ?? "",
+    primaryLanguage: attendee.primaryLanguage ?? "",
+    interests: attendee.interests ?? "",
+    healthConcerns: attendee.healthConcerns ?? "",
   }));
 
   return (
-    <EditFreshmenGroupUI
+    <EditAttendeeGroupUI
       groupData={groupData}
-      freshmenData={sanitizedFreshmenData}
+      attendeeData={sanitizedAttendeeData}
       mentorData={mentorData}
       orders={orders}
     />

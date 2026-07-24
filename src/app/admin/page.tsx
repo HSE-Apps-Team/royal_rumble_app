@@ -39,7 +39,7 @@ export default async function AdminHomepage() {
         <div style={{ display: "flex", flexDirection: "row", gap: "20px", margin: "20px" }}>
           <AdminButtons link="/admin/admin">Admin</AdminButtons>
           <AdminButtons link="/admin/mentor">Mentor</AdminButtons>
-          <AdminButtons link="/admin/freshmen">Freshmen</AdminButtons>
+          <AdminButtons link="/admin/attendees">Attendees</AdminButtons>
         </div>
 
         <div style={{ display: "flex", flexDirection: "row", gap: "20px", margin: "20px" }}>

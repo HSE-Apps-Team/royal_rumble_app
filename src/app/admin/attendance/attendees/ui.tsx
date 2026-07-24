@@ -9,56 +9,56 @@ import InfoBox from "../../../components/infoBox";
 import CheckBoxTable from "../../../components/checkBoxTable";
 import "../../../css/admin.css";
 import "../../../css/logo+login.css";
-import { updateFreshmanAttendanceById } from "../../../../actions/freshmen";
+import { updateAttendeeAttendanceById } from "../../../../actions/attendees";
 import ExportToExcelButton from "@/app/components/ExportToExcelButton";
 import { useToast } from "../../../context/ToastContext";
 
-interface Freshman {
+interface Attendee {
   fName: string;
   lName: string;
-  freshmenId: number;
+  attendeeId: number;
   present: boolean;
 }
 
-interface AdminAttendanceFreshmenUIProps {
-  freshmenAttendance: Freshman[];
+interface AdminAttendanceAttendeesUIProps {
+  attendeesAttendance: Attendee[];
 }
 
-export default function AdminAttendanceFreshmenUI({
-  freshmenAttendance,
-}: AdminAttendanceFreshmenUIProps) {
+export default function AdminAttendanceAttendeesUI({
+  attendeesAttendance,
+}: AdminAttendanceAttendeesUIProps) {
   const router = useRouter();
   const { showToast } = useToast();
 
   const [attendanceState, setAttendanceState] =
-    useState<Freshman[]>(freshmenAttendance);
+    useState<Attendee[]>(attendeesAttendance);
 
   const [searchText, setSearchText] = useState("");
 
   useEffect(() => {
-    setAttendanceState(freshmenAttendance);
-  }, [freshmenAttendance]);
+    setAttendanceState(attendeesAttendance);
+  }, [attendeesAttendance]);
 
   const handleLogoClick = () => {
     router.push("/admin/attendance");
   };
 
-  const handleStatusChange = async (freshmenId: number, newStatus: boolean) => {
-    const student = attendanceState.find((s) => s.freshmenId === freshmenId);
+  const handleStatusChange = async (attendeeId: number, newStatus: boolean) => {
+    const student = attendanceState.find((s) => s.attendeeId === attendeeId);
     const studentName = student
       ? `${student.fName} ${student.lName}`
-      : "Freshman";
+      : "Attendee";
 
     // optimistic UI update
     setAttendanceState((prev) =>
       prev.map((student) =>
-        student.freshmenId === freshmenId
+        student.attendeeId === attendeeId
           ? { ...student, present: newStatus }
           : student,
       ),
     );
 
-    const result = await updateFreshmanAttendanceById(freshmenId, newStatus);
+    const result = await updateAttendeeAttendanceById(attendeeId, newStatus);
 
     if (!result?.success) {
       showToast(`Failed to update attendance for ${studentName}`, "danger");
@@ -66,7 +66,7 @@ export default function AdminAttendanceFreshmenUI({
       // rollback on failure
       setAttendanceState((prev) =>
         prev.map((student) =>
-          student.freshmenId === freshmenId
+          student.attendeeId === attendeeId
             ? { ...student, present: !newStatus }
             : student,
         ),
@@ -79,13 +79,13 @@ export default function AdminAttendanceFreshmenUI({
     }
   };
 
-  const filteredFreshmen = useMemo(() => {
+  const filteredAttendees = useMemo(() => {
     const term = searchText.trim().toLowerCase();
     if (!term) return attendanceState;
 
     return attendanceState.filter((student) => {
       const fullName = `${student.fName} ${student.lName}`.toLowerCase();
-      const id = student.freshmenId.toString();
+      const id = student.attendeeId.toString();
 
       return fullName.includes(term) || id.includes(term);
     });
@@ -97,7 +97,7 @@ export default function AdminAttendanceFreshmenUI({
       <LoginButton />
 
       <header className="admin-header">
-        <h1 className="admin-title">Freshmen Attendance</h1>
+        <h1 className="admin-title">Attendee Attendance</h1>
       </header>
 
       <button className="back-button" onClick={handleLogoClick}>
@@ -116,30 +116,30 @@ export default function AdminAttendanceFreshmenUI({
         </div>
       </div>
 
-      <InfoBox headerText="All Freshmen">
+      <InfoBox headerText="All Attendees">
         <section style={{ display: "flex", justifyContent: "right",
                           marginBottom: "10px", width: "92%" }}
         >
           <ExportToExcelButton
             headers={["First Name", "Last Name", "Student ID", "Status"]}
-            data={filteredFreshmen.map((student) => [
+            data={filteredAttendees.map((student) => [
               student.fName,
               student.lName,
-              student.freshmenId.toString(),
+              student.attendeeId.toString(),
               student.present ? "Present" : "Absent",
             ])}
-            fileName="freshmen-attendance"
+            fileName="attendees-attendance"
             style={{ width: "150px" }}
           />
         </section>
         <CheckBoxTable
-          headers={["Freshman Name", "Student ID"]}
-          data={filteredFreshmen.map((student) => [
+          headers={["Attendee Name", "Student ID"]}
+          data={filteredAttendees.map((student) => [
             `${student.fName} ${student.lName}`,
-            student.freshmenId.toString(),
+            student.attendeeId.toString(),
           ])}
-          status={filteredFreshmen.map((student) => student.present)}
-          rowIds={filteredFreshmen.map((student) => student.freshmenId)}
+          status={filteredAttendees.map((student) => student.present)}
+          rowIds={filteredAttendees.map((student) => student.attendeeId)}
           onStatusChange={handleStatusChange}
         />
       </InfoBox>

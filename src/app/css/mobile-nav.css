@@ -38,7 +38,7 @@
 
   /* Add bottom padding to page content so it isn't hidden behind the nav bar */
   .mentor-container,
-  .freshmen-container {
+  .attendees-container {
     padding-bottom: 70px;
   }
 }

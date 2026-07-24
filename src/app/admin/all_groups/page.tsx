@@ -1,7 +1,7 @@
 import AdminAllGroups from "./ui";
 import {
   getAllGroups,
-  getNullGroupFreshmen,
+  getNullGroupAttendees,
   getNullGroupMentors,
   getNullHallwayMentors,
 } from "@/actions/group";
@@ -9,14 +9,14 @@ import { getAllHallways } from "@/actions/mentor";
 import { get } from "http";
 
 export default async function AdminPage() {
-  const freshmenGroups = await getAllGroups(); // fetch from DB
-  const transformedFreshmenGroups = freshmenGroups.map((group) => ({
+  const attendeeGroups = await getAllGroups(); // fetch from DB
+  const transformedAttendeeGroups = attendeeGroups.map((group) => ({
     group_id: group.group_id,
     name: group.name,
     route_num: group.route_num,
     event_order: String(group.event_order),
-    freshmen: group.freshmen.map((f) => ({
-      freshman_id: f.freshman_id,
+    attendees: group.attendees.map((f) => ({
+      attendee_id: f.attendee_id,
       name: f.name,
     })),
     mentors: group.mentors.map((m) => ({
@@ -32,7 +32,7 @@ export default async function AdminPage() {
   }));
 
   {
-    /* Unassigned Freshmen Group
+    /* Unassigned Attendee Group
   ==================================== */
   }
   interface GroupDetail {
@@ -40,11 +40,11 @@ export default async function AdminPage() {
     name: string;
     route_num: number;
     event_order: string;
-    freshmen: Array<{ freshman_id: string; name: string }>;
+    attendees: Array<{ attendee_id: string; name: string }>;
     mentors: Array<{ mentor_id: string; name: string }>;
   }
 
-  const nullGroupFreshmen = await getNullGroupFreshmen();
+  const nullGroupAttendees = await getNullGroupAttendees();
   const nullGroupMentors = await getNullGroupMentors();
 
   const unassignedGroup: GroupDetail[] = [{
@@ -52,8 +52,8 @@ export default async function AdminPage() {
     name: "Unassigned",
     route_num: 0,
     event_order: "",
-    freshmen: nullGroupFreshmen.map((f) => ({
-      freshman_id: f.freshmenId.toString(),
+    attendees: nullGroupAttendees.map((f) => ({
+      attendee_id: f.attendeeId.toString(),
       name: `${f.fName || ""} ${f.lName || ""}`.trim(),
     })),
     mentors: nullGroupMentors.map((m) => ({
@@ -63,7 +63,7 @@ export default async function AdminPage() {
   }];
 
   {
-    /* End of Unassigned Freshmen Group
+    /* End of Unassigned Attendee Group
 ==================================== */
   }
   {
@@ -96,7 +96,7 @@ export default async function AdminPage() {
   }
   return (
     <AdminAllGroups
-      freshmenGroups={[...unassignedGroup, ...transformedFreshmenGroups]}
+      attendeeGroups={[...unassignedGroup, ...transformedAttendeeGroups]}
       hallwayGroups={[...unassignedHallway, ...hallwayGroups]}
     />
   );

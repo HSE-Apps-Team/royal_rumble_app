@@ -10,7 +10,7 @@ import "../../../css/logo+login.css";
 import { addCustomGroup } from "../../../../actions/group";
 import { useAlert } from "@/app/context/AlertContext";
 
-export default function AdminAddFreshmenGroupPage(props: {
+export default function AdminAddAttendeeGroupPage(props: {
   orders: string[][];
 }) {
   const router = useRouter();

@@ -53,9 +53,9 @@ export const seminarData = pgTable("seminar_data", {
   groupId:         integer("group_id"),
 });
 
-// ---------------- freshmen_data ----------------
-export const freshmenData = pgTable("freshmen_data", {
-  freshmenId:      integer("freshmen_id").primaryKey(),
+// ---------------- attendee_data ----------------
+export const attendeeData = pgTable("attendee_data", {
+  attendeeId:      integer("attendee_id").primaryKey(),
   fName:           text("f_name"),
   lName:           text("l_name"),
   tshirtSize:      text("tshirt_size"),
@@ -184,9 +184,9 @@ export const groupRelations = relations(groupData, ({ many }) => ({
   routeAttendance:   many(groupRouteAttendance),
 }));
 
-export const freshmanRelations = relations(freshmenData, ({ one }) => ({
+export const attendeeRelations = relations(attendeeData, ({ one }) => ({
   seminar: one(seminarData, {
-    fields:     [freshmenData.freshmenId],
+    fields:     [attendeeData.attendeeId],
     references: [seminarData.freshmenId],
   }),
 }));

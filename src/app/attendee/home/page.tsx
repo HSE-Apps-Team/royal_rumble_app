@@ -3,13 +3,13 @@ import LoginButton from "../../components/loginButton";
 import InfoBox from "../../components/infoBox";
 import NavButton from "../../components/addButton";
 import MobileNav from "../../components/MobileNav";
-import "../../css/freshmen.css";
+import "../../css/attendees.css";
 import "../../css/logo+login.css";
 import "../../css/mobile-nav.css";
 import {
-  getFreshmanById,
-  getFreshmanByIdFromSchoolData,
-} from "../../../../src/actions/freshmen";
+  getAttendeeById,
+  getAttendeeByIdFromSchoolData,
+} from "../../../../src/actions/attendees";
 import { getMentorsByGroupId, getGroupByGroupId } from "@/src/actions/group";
 import EditableContent from "../../components/EditableContent";
 import { auth } from "@/auth";
@@ -18,7 +18,7 @@ export const dynamic = "force-dynamic";
 
 const DEV_MODE = process.env.DEV_MODE === "true";
 
-export default async function FreshmenHomepage() {
+export default async function AttendeeHomepage() {
   let studentId: string | undefined;
 
   if (!DEV_MODE) {
@@ -26,12 +26,12 @@ export default async function FreshmenHomepage() {
     const job = session?.user?.job;
     if (job === "UNREGISTERED" || !job) {
       return (
-        <main className="freshmen-container">
+        <main className="attendees-container">
           <LogoButton />
           <LoginButton />
-          <MobileNav homeHref="/" dashboardHref="/freshmen/home" />
-          <header className="freshmen-header">
-            <h1 className="freshmen-title">Welcome!</h1>
+          <MobileNav homeHref="/" dashboardHref="/attendee/home" />
+          <header className="attendees-header">
+            <h1 className="attendees-title">Welcome!</h1>
             <h3 className="check-registration">
               We couldn&apos;t find your registration details.
               <br /> To register <a>Click Here!</a> <br />
@@ -52,21 +52,21 @@ export default async function FreshmenHomepage() {
     return null;
   }
 
-  const freshmanDetails = await getFreshmanById(Number(studentId));
-  const groupMentors = freshmanDetails?.groupId != null
-    ? await getMentorsByGroupId(freshmanDetails.groupId)
+  const attendeeDetails = await getAttendeeById(Number(studentId));
+  const groupMentors = attendeeDetails?.groupId != null
+    ? await getMentorsByGroupId(attendeeDetails.groupId)
     : [];
-  const groupInfo = freshmanDetails?.groupId != null
-    ? await getGroupByGroupId(freshmanDetails.groupId)
+  const groupInfo = attendeeDetails?.groupId != null
+    ? await getGroupByGroupId(attendeeDetails.groupId)
     : null;
 
-  if (!freshmanDetails) {
-    const freshmenDetailsFromSchoolData = await getFreshmanByIdFromSchoolData(
+  if (!attendeeDetails) {
+    const attendeeDetailsFromSchoolData = await getAttendeeByIdFromSchoolData(
       Number(studentId),
     );
 
     return (
-      <main className="freshmen-container">
+      <main className="attendees-container">
         <LogoButton />
          <div className="nav-buttons">
           <NavButton href="/"
@@ -74,19 +74,19 @@ export default async function FreshmenHomepage() {
           >
             Home
           </NavButton>
-          <NavButton href="/freshmen/home"
+          <NavButton href="/attendee/home"
           style={{ width: "140px", height: "40px", padding: "5px 0px", fontSize: "15px" }}
           >
             Dashboard
           </NavButton>
         </div>
         <LoginButton />
-        <MobileNav homeHref="/" dashboardHref="/freshmen/home" />
+        <MobileNav homeHref="/" dashboardHref="/attendee/home" />
 
-        <header className="freshmen-header">
-          <h1 className="freshmen-title">
-            Welcome {freshmenDetailsFromSchoolData?.fName}{" "}
-            {freshmenDetailsFromSchoolData?.lName}!
+        <header className="attendees-header">
+          <h1 className="attendees-title">
+            Welcome {attendeeDetailsFromSchoolData?.fName}{" "}
+            {attendeeDetailsFromSchoolData?.lName}!
           </h1>
           <h3 className="check-registration">
             We couldn&apos;t find your registration details.
@@ -100,7 +100,7 @@ export default async function FreshmenHomepage() {
   }
 
   return (
-    <main className="freshmen-container">
+    <main className="attendees-container">
       <LogoButton />
       <div className="nav-buttons">
         <NavButton href="/"
@@ -108,25 +108,25 @@ export default async function FreshmenHomepage() {
         >
           Home
         </NavButton>
-        <NavButton href="/freshmen/home"
+        <NavButton href="/attendee/home"
         style={{ width: "140px", height: "40px", padding: "5px 0px", fontSize: "15px" }}
         >
           Dashboard
         </NavButton>
       </div>
       <LoginButton />
-      <MobileNav homeHref="/" dashboardHref="/freshmen/home" />
+      <MobileNav homeHref="/" dashboardHref="/attendee/home" />
 
-      <header className="freshmen-header">
-        <h1 className="freshmen-title">
-          Welcome, {freshmanDetails?.fName} {freshmanDetails?.lName}!
+      <header className="attendees-header">
+        <h1 className="attendees-title">
+          Welcome, {attendeeDetails?.fName} {attendeeDetails?.lName}!
         </h1>
         <h3 className="check-registration">
           You have successfully been registered for Royal Rumble.
         </h3>
       </header>
 
-      <section className="freshmen-info-box">
+      <section className="attendees-info-box">
         <InfoBox headerText="Event Information">
           <div
             style={{

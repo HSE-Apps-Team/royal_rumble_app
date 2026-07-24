@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { freshmenData, seminarData, groupData } from "@/db/schema";
+import { attendeeData, seminarData, groupData } from "@/db/schema";
 import { eq, asc } from "drizzle-orm";
 import { encrypt, decrypt } from "@/lib/crypto";
 
@@ -11,13 +11,13 @@ import { encrypt, decrypt } from "@/lib/crypto";
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
-export const getFreshmanById = async (freshmenId: number) => {
-  const freshman = await db
+export const getAttendeeById = async (attendeeId: number) => {
+  const attendee = await db
     .select()
-    .from(freshmenData)
-    .where(eq(freshmenData.freshmenId, freshmenId))
+    .from(attendeeData)
+    .where(eq(attendeeData.attendeeId, attendeeId))
     .limit(1);
-  const row = freshman[0];
+  const row = attendee[0];
   if (!row) return row;
   return {
     ...row,
@@ -25,29 +25,29 @@ export const getFreshmanById = async (freshmenId: number) => {
   };
 };
 
-export const getFreshmen = async () => {
-  const freshmen = await db.select().from(freshmenData);
-  return freshmen.map((row) => ({
+export const getAttendees = async () => {
+  const attendees = await db.select().from(attendeeData);
+  return attendees.map((row) => ({
     ...row,
     healthConcerns: row.healthConcerns ? decrypt(row.healthConcerns) : row.healthConcerns,
   }));
 };
 
-export const getFreshmenAttendance = async () => {
-  const freshmen = await db
+export const getAttendeesAttendance = async () => {
+  const attendees = await db
     .select({
-      fName: freshmenData.fName,
-      lName: freshmenData.lName,
-      freshmenId: freshmenData.freshmenId,
-      present: freshmenData.present,
+      fName: attendeeData.fName,
+      lName: attendeeData.lName,
+      attendeeId: attendeeData.attendeeId,
+      present: attendeeData.present,
     })
-    .from(freshmenData)
-    .orderBy(asc(freshmenData.freshmenId));
+    .from(attendeeData)
+    .orderBy(asc(attendeeData.attendeeId));
 
-  return freshmen;
+  return attendees;
 };
 
-export const getFreshmanByIdFromSchoolData = async (freshmenId: number) => {
+export const getAttendeeByIdFromSchoolData = async (freshmenId: number) => {
   const freshman = await db
     .select()
     .from(seminarData)
@@ -66,14 +66,14 @@ export const getFreshmanByIdFromSchoolData = async (freshmenId: number) => {
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
-export const addFreshman = async (data: {
+export const addAttendee = async (data: {
   f_name: string;
   l_name: string;
   freshmen_id: number;
   email: string;
   primary_language?: string;
 }) => {
-  // Check seminar data for this freshman
+  // Check seminar data for this attendee
   const seminarRecord = await db
     .select()
     .from(seminarData)
@@ -83,10 +83,10 @@ export const addFreshman = async (data: {
   const seminar = seminarRecord[0] ?? null;
   const groupId = seminar?.groupId ?? null;
 
-  await db.insert(freshmenData).values({
+  await db.insert(attendeeData).values({
     fName: data.f_name,
     lName: data.l_name,
-    freshmenId: data.freshmen_id,
+    attendeeId: data.freshmen_id,
     email: data.email,
     primaryLanguage: data.primary_language,
     groupId,
@@ -120,8 +120,8 @@ export const addFreshman = async (data: {
 //                                       Update                                         //
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
-export const updateFreshmanByID = async (
-  freshmenId: number,
+export const updateAttendeeByID = async (
+  attendeeId: number,
   data: {
     f_name?: string;
     l_name?: string;
@@ -133,7 +133,7 @@ export const updateFreshmanByID = async (
   },
 ) => {
   await db
-    .update(freshmenData)
+    .update(attendeeData)
     .set({
       fName: data.f_name,
       lName: data.l_name,
@@ -143,34 +143,34 @@ export const updateFreshmanByID = async (
       interests: data.interests,
       healthConcerns: data.health_concerns ? encrypt(data.health_concerns) : data.health_concerns,
     })
-    .where(eq(freshmenData.freshmenId, freshmenId));
-  return { success: true, id: freshmenId };
+    .where(eq(attendeeData.attendeeId, attendeeId));
+  return { success: true, id: attendeeId };
 };
 
-export const reassignFreshmenGroup = async (
-  freshmenId: number,
+export const reassignAttendeeGroup = async (
+  attendeeId: number,
   newGroupId: number | null,
 ) => {
   await db
-    .update(freshmenData)
+    .update(attendeeData)
     .set({
       groupId: newGroupId,
     })
-    .where(eq(freshmenData.freshmenId, freshmenId));
-  return { success: true, id: freshmenId };
+    .where(eq(attendeeData.attendeeId, attendeeId));
+  return { success: true, id: attendeeId };
 };
 
-export const updateFreshmanAttendanceById = async (
-  freshmenId: number,
+export const updateAttendeeAttendanceById = async (
+  attendeeId: number,
   newStatus: boolean,
 ) => {
   await db
-    .update(freshmenData)
+    .update(attendeeData)
     .set({
       present: newStatus,
     })
-    .where(eq(freshmenData.freshmenId, freshmenId));
-  return { success: true, id: freshmenId };
+    .where(eq(attendeeData.attendeeId, attendeeId));
+  return { success: true, id: attendeeId };
 };
 //                                    End of Update                                     //
 //--------------------------------------------------------------------------------------//
@@ -179,9 +179,9 @@ export const updateFreshmanAttendanceById = async (
 //                                        Delete                                        //
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
-export const deleteFreshmanById = async (freshmenId: number) => {
-  await db.delete(freshmenData).where(eq(freshmenData.freshmenId, freshmenId));
-  return { success: true, id: freshmenId };
+export const deleteAttendeeById = async (attendeeId: number) => {
+  await db.delete(attendeeData).where(eq(attendeeData.attendeeId, attendeeId));
+  return { success: true, id: attendeeId };
 };
 //--------------------------------------------------------------------------------------//
 //                                    End of Delete                                     //

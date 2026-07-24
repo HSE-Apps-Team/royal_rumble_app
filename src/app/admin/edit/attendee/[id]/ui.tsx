@@ -8,15 +8,15 @@ import SaveButton from "@/app/components/saveButton";
 import "@/app/css/admin.css";
 import "@/app/css/logo+login.css";
 import BackButton from "@/app/components/backButton";
-import { getFreshmanById, updateFreshmanByID } from "@/actions/freshmen";
+import { getAttendeeById, updateAttendeeByID } from "@/actions/attendees";
 import { useAlert } from "@/app/context/AlertContext";
 
-export default function AdminEditFreshmenUI({
+export default function AdminEditAttendeeUI({
   params,
 }: {
   params: { id: string };
 }) {
-  const freshmanId = Number(params.id);
+  const attendeeId = Number(params.id);
 
   const router = useRouter();
   const { showAlert } = useAlert();
@@ -31,18 +31,18 @@ export default function AdminEditFreshmenUI({
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    const loadFreshman = async () => {
-      const freshman = await getFreshmanById(freshmanId);
-      setFName(freshman.fName ?? "");
-      setLName(freshman.lName ?? "");
-      setTshirtSize(freshman.tshirtSize ?? "");
-      setEmail(freshman.email ?? "");
-      setPrimaryLanguage(freshman.primaryLanguage ?? "");
-      setInterests(freshman.interests ?? "");
-      setHealthConcerns(freshman.healthConcerns ?? "");
+    const loadAttendee = async () => {
+      const attendee = await getAttendeeById(attendeeId);
+      setFName(attendee.fName ?? "");
+      setLName(attendee.lName ?? "");
+      setTshirtSize(attendee.tshirtSize ?? "");
+      setEmail(attendee.email ?? "");
+      setPrimaryLanguage(attendee.primaryLanguage ?? "");
+      setInterests(attendee.interests ?? "");
+      setHealthConcerns(attendee.healthConcerns ?? "");
     };
-    loadFreshman();
-  }, [freshmanId]);
+    loadAttendee();
+  }, [attendeeId]);
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
@@ -64,7 +64,7 @@ export default function AdminEditFreshmenUI({
   const handleSave = async () => {
     if (!validate()) return;
 
-    await updateFreshmanByID(freshmanId, {
+    await updateAttendeeByID(attendeeId, {
       f_name: fName,
       l_name: lName,
       tshirt_size: tshirtSize,
@@ -73,8 +73,8 @@ export default function AdminEditFreshmenUI({
       interests: interests,
       health_concerns: healthConcerns,
     });
-    showAlert(`Freshman ${fName} ${lName} updated successfully!`, "success");
-    router.push("/admin/freshmen");
+    showAlert(`Attendee ${fName} ${lName} updated successfully!`, "success");
+    router.push("/admin/attendees");
   };
 
   const contentBoxStyle = {
@@ -98,11 +98,11 @@ export default function AdminEditFreshmenUI({
 
       <header className="admin-header">
         <h1 className="admin-title">
-          Edit Freshmen - {fName} {lName}
+          Edit Attendee - {fName} {lName}
         </h1>
       </header>
 
-      <BackButton href="/admin/freshmen" />
+      <BackButton href="/admin/attendees" />
 
       <div style={contentBoxStyle}>
         <div className="edit-user-form">
@@ -112,7 +112,7 @@ export default function AdminEditFreshmenUI({
               <input
                 type="text"
                 className={`form-input${errors.fName ? " is-invalid" : ""}`}
-                placeholder="Freshman First Name"
+                placeholder="Attendee First Name"
                 value={fName}
                 onChange={(e) => setFName(e.target.value)}
               />
@@ -127,7 +127,7 @@ export default function AdminEditFreshmenUI({
               <input
                 type="text"
                 className={`form-input${errors.lName ? " is-invalid" : ""}`}
-                placeholder="Freshman Last Name"
+                placeholder="Attendee Last Name"
                 value={lName}
                 onChange={(e) => setLName(e.target.value)}
               />
@@ -142,7 +142,7 @@ export default function AdminEditFreshmenUI({
               <input
                 type="text"
                 className={`form-input${errors.email ? " is-invalid" : ""}`}
-                placeholder="Freshman Email"
+                placeholder="Attendee Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -156,7 +156,7 @@ export default function AdminEditFreshmenUI({
             <input
               type="text"
               className="form-input"
-              placeholder="Freshman T-Shirt Size"
+              placeholder="Attendee T-Shirt Size"
               value={tshirtSize}
               onChange={(e) => setTshirtSize(e.target.value)}
             />
@@ -167,7 +167,7 @@ export default function AdminEditFreshmenUI({
               <input
                 type="text"
                 className={`form-input${errors.primaryLanguage ? " is-invalid" : ""}`}
-                placeholder="Freshman Primary Language"
+                placeholder="Attendee Primary Language"
                 value={primaryLanguage}
                 onChange={(e) => setPrimaryLanguage(e.target.value)}
               />
@@ -183,7 +183,7 @@ export default function AdminEditFreshmenUI({
             <input
               type="text"
               className="form-input"
-              placeholder="Freshman Interests"
+              placeholder="Attendee Interests"
               value={interests}
               onChange={(e) => setInterests(e.target.value)}
             />
@@ -193,7 +193,7 @@ export default function AdminEditFreshmenUI({
             <input
               type="text"
               className="form-input"
-              placeholder="Freshman Health Concerns"
+              placeholder="Attendee Health Concerns"
               value={healthConcerns}
               onChange={(e) => setHealthConcerns(e.target.value)}
             />

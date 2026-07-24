@@ -13,7 +13,7 @@ import {
   createSeminarGroups,
   syncGroups,
   hasSeminarData,
-  hasFreshmenData,
+  hasAttendeeData,
 } from "@/actions/group";
 import { createGroupsFromDB, createEstimatedGroups } from "@/actions/routes";
 import { useAlert } from "../../context/AlertContext";
@@ -527,10 +527,10 @@ export default function AdminUpload() {
                       syncGroups: true,
                     }));
                     try {
-                      const freshmenExists = await hasFreshmenData();
-                      if (!freshmenExists) {
+                      const attendeesExist = await hasAttendeeData();
+                      if (!attendeesExist) {
                         showAlert(
-                          "Freshmen data has not been uploaded yet. Please upload freshmen data before syncing groups.",
+                          "Attendee data has not been uploaded yet. Please upload attendee data before syncing groups.",
                           "danger",
                         );
                         return;
@@ -547,8 +547,8 @@ export default function AdminUpload() {
                       const unmatchedCount = syncResult.unmatched.length;
                       showAlert(
                         unmatchedCount > 0
-                          ? `Groups synced! ${unmatchedCount} freshman could not be matched.`
-                          : "Groups synced successfully! All freshmen matched.",
+                          ? `Groups synced! ${unmatchedCount} attendee(s) could not be matched.`
+                          : "Groups synced successfully! All attendees matched.",
                         unmatchedCount > 0 ? "warning" : "success",
                       );
                     } catch {
@@ -589,7 +589,7 @@ export default function AdminUpload() {
                     className="info-value"
                     style={{ fontSize: "18px", textAlign: "left" }}
                   >
-                    Matches each freshman from GoFan to their seminar group by
+                    Matches each attendee from GoFan to their seminar group by
                     ID or name, and updates their group assignment.
                   </div>
                 </div>
@@ -664,10 +664,10 @@ export default function AdminUpload() {
                 ],
               },
               {
-                label: "GoFan → Freshmen Data",
-                table: "freshmen_data",
+                label: "GoFan → Attendee Data",
+                table: "attendee_data",
                 columns: [
-                  { name: "Freshmen ID", required: true },
+                  { name: "Student ID", required: true },
                   { name: "First Name", required: true },
                   { name: "Last Name", required: true },
                   { name: "Shirt Size", required: false },

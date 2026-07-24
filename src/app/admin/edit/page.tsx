@@ -26,7 +26,7 @@ export default function AdminEdit() {
         <div style={{ display: "flex", flexDirection: "row", gap: "20px" }}>
           <AdminButtons link="/admin/edit/admin">Admin</AdminButtons>
           <AdminButtons link="/admin/edit/mentor">Mentor</AdminButtons>
-          <AdminButtons link="/admin/edit/freshmen">Freshmen</AdminButtons>
+          <AdminButtons link="/admin/edit/attendee">Attendees</AdminButtons>
         </div>
 
         <div

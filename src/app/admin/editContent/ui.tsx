@@ -285,7 +285,7 @@ export default function AdminEditContentPageUI({
       {activeSection === "Text Content" && (
         <>
           <EditableContentBox
-            title="Freshmen More Details Text"
+            title="Attendee More Details Text"
             contentKey="freshmen_more_details"
           />
           <EditableContentBox

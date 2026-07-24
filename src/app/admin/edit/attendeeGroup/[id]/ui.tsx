@@ -15,7 +15,7 @@ import "@/app/css/logo+login.css";
 import { useAlert } from "@/app/context/AlertContext";
 
 import { deleteMentorById, reassignMentorGroup } from "@/actions/mentor";
-import { deleteFreshmanById, reassignFreshmenGroup } from "@/actions/freshmen";
+import { deleteAttendeeById, reassignAttendeeGroup } from "@/actions/attendees";
 import { updateGroupByGroupId, getGroupIds } from "@/actions/group";
 
 /* ---------------- TYPES ---------------- */
@@ -33,8 +33,8 @@ interface MentorData {
   lname: string;
 }
 
-interface FreshmanData {
-  freshmenId: number;
+interface AttendeeData {
+  attendeeId: number;
   fName: string;
   lName: string;
 }
@@ -60,14 +60,14 @@ const normalizeEventOrder = (value: string | null): string => {
 
 /* ---------------- COMPONENT ---------------- */
 
-export default function EditFreshmenGroupUI({
+export default function EditAttendeeGroupUI({
   groupData,
-  freshmenData: f,
+  attendeeData: f,
   mentorData,
   orders,
 }: {
   groupData: GroupData;
-  freshmenData: FreshmanData[];
+  attendeeData: AttendeeData[];
   mentorData: MentorData[];
   orders: string[][];
 }) {
@@ -147,7 +147,7 @@ export default function EditFreshmenGroupUI({
       showAlert(`Failed to update group.`, "danger");
     }
 
-    router.push("/admin/edit/freshmenGroup/" + groupData.groupId);
+    router.push("/admin/edit/attendeeGroup/" + groupData.groupId);
   };
 
   /* ---------------- UI ---------------- */
@@ -276,22 +276,22 @@ export default function EditFreshmenGroupUI({
             possibleGroups={possibleGroups}
           />
 
-          {/* FRESHMEN */}
+          {/* ATTENDEES */}
           <div className="form-row">
-            <label className="form-label">Freshmen:</label>
+            <label className="form-label">Attendees:</label>
           </div>
 
           <ReassignTable
             headers={["ID", "First Name", "Last Name"]}
-            data={f.map((freshman) => [freshman.freshmenId, freshman.fName, freshman.lName])}
+            data={f.map((attendee) => [attendee.attendeeId, attendee.fName, attendee.lName])}
             visibleColumns={[0, 1, 2]}
             deleteAction={async (id) => {
-              const result = await deleteFreshmanById(Number(id));
+              const result = await deleteAttendeeById(Number(id));
               return { success: result.success };
             }}
             reassignAction={async (id, newGroupId) => {
               const parsed = newGroupId === "unassigned" ? null : Number(newGroupId);
-              const result = await reassignFreshmenGroup(Number(id), parsed);
+              const result = await reassignAttendeeGroup(Number(id), parsed);
               return { success: result.success };
             }}
             currentGroupId={groupData.groupId ?? "unassigned"}

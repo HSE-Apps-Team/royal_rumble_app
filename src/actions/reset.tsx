@@ -2,7 +2,7 @@
 
 import { db } from "@/db";
 import {
-  freshmenData,
+  attendeeData,
   seminarData,
   mentorData,
   ambassadorData,
@@ -18,11 +18,11 @@ import {
   blockSchedule,
 } from "@/db/schema";
 
-// ── Freshmen ──────────────────────────────────────────────────────────────────
+// ── Attendees ─────────────────────────────────────────────────────────────────
 
-export async function resetFreshmenData() {
+export async function resetAttendeeData() {
   await db.delete(seminarData);
-  await db.delete(freshmenData);
+  await db.delete(attendeeData);
   return { success: true };
 }
 
@@ -49,8 +49,8 @@ export async function resetEventData() {
 export async function resetGroupData() {
   await db.delete(groupRouteAttendance);
   await db.delete(seminarData);
-  // Null out foreign keys before deleting freshmen rows tied to groups
-  await db.delete(freshmenData);
+  // Null out foreign keys before deleting attendee rows tied to groups
+  await db.delete(attendeeData);
   await db.delete(ambassadorData);
   await db.delete(groupData);
   return { success: true };
@@ -132,7 +132,7 @@ export async function resetAllData() {
   await db.delete(hallwayStopData);
   await db.delete(ambassadorData);
   await db.delete(seminarData);
-  await db.delete(freshmenData);
+  await db.delete(attendeeData);
   await db.delete(mentorData);
   await db.delete(eventsData);
   await db.delete(groupData);

@@ -6,31 +6,31 @@ import LogoButton from "../../../components/logoButton";
 import LoginButton from "../../../components/loginButton";
 import AddButton from "../../../components/addButton";
 import ContentModal from "../../../components/ContentModal";
-import { addFreshman } from "../../../../actions/freshmen";
+import { addAttendee } from "../../../../actions/attendees";
 import "../../../css/admin.css";
 import "../../../css/logo+login.css";
 import { useAlert } from "@/app/context/AlertContext";
 
-interface AddedFreshmanInfo {
+interface AddedAttendeeInfo {
   name: string;
   teacher: string | null;
   groupName: string | null;
 }
 
-export default function AdminAddFreshman() {
+export default function AdminAddAttendee() {
   const router = useRouter();
   const { showAlert } = useAlert();
 
   const [f_name, setf_name] = useState("");
   const [l_name, setl_name] = useState("");
-  const [freshmenId, setFreshmenId] = useState("");
+  const [attendeeId, setAttendeeId] = useState("");
   const [email, setEmail] = useState("");
 
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [addedInfo, setAddedInfo] = useState<AddedFreshmanInfo | null>(null);
+  const [addedInfo, setAddedInfo] = useState<AddedAttendeeInfo | null>(null);
 
   const handleLogoClick = () => {
-    router.push("/admin/freshmen");
+    router.push("/admin/attendees");
   };
 
   const validate = () => {
@@ -38,10 +38,10 @@ export default function AdminAddFreshman() {
 
     if (!f_name.trim()) newErrors.f_name = "First name is required.";
     if (!l_name.trim()) newErrors.l_name = "Last name is required.";
-    if (!freshmenId.trim()) {
-      newErrors.freshmenId = "Student ID is required.";
-    } else if (!/^\d+$/.test(freshmenId) || parseInt(freshmenId) <= 0) {
-      newErrors.freshmenId = "Student ID must be a positive integer.";
+    if (!attendeeId.trim()) {
+      newErrors.attendeeId = "Student ID is required.";
+    } else if (!/^\d+$/.test(attendeeId) || parseInt(attendeeId) <= 0) {
+      newErrors.attendeeId = "Student ID must be a positive integer.";
     }
     if (!email.trim()) {
       newErrors.email = "Email is required.";
@@ -56,23 +56,23 @@ export default function AdminAddFreshman() {
     if (!validate()) return;
 
     try {
-      const freshmen_return = await addFreshman({
+      const attendee_return = await addAttendee({
         f_name: f_name,
         l_name: l_name,
-        freshmen_id: Number(freshmenId),
+        freshmen_id: Number(attendeeId),
         email,
       });
-      if (!freshmen_return.success) {
-        throw new Error("Failed to add freshman");
+      if (!attendee_return.success) {
+        throw new Error("Failed to add attendee");
       }
       setAddedInfo({
-        name: `${freshmen_return.f_name} ${freshmen_return.l_name}`,
-        teacher: freshmen_return.teacher,
-        groupName: freshmen_return.groupName,
+        name: `${attendee_return.f_name} ${attendee_return.l_name}`,
+        teacher: attendee_return.teacher,
+        groupName: attendee_return.groupName,
       });
     } catch (error) {
       console.error(error);
-      showAlert(`Failed to add freshman: ${f_name} ${l_name}`, "danger");
+      showAlert(`Failed to add attendee: ${f_name} ${l_name}`, "danger");
     }
   };
 
@@ -82,7 +82,7 @@ export default function AdminAddFreshman() {
       <LoginButton />
 
       <header className="admin-header">
-        <h1 className="admin-title">Add New Freshman</h1>
+        <h1 className="admin-title">Add New Attendee</h1>
       </header>
 
       <button className="back-button" onClick={handleLogoClick}>
@@ -124,13 +124,13 @@ export default function AdminAddFreshman() {
             <div>
               <input
                 type="text"
-                className={`form-input${errors.freshmenId ? " is-invalid" : ""}`}
-                value={freshmenId}
-                onChange={(e) => setFreshmenId(e.target.value)}
+                className={`form-input${errors.attendeeId ? " is-invalid" : ""}`}
+                value={attendeeId}
+                onChange={(e) => setAttendeeId(e.target.value)}
               />
-              {errors.freshmenId && (
+              {errors.attendeeId && (
                 <div className="invalid-feedback d-block">
-                  {errors.freshmenId}
+                  {errors.attendeeId}
                 </div>
               )}
             </div>
@@ -162,10 +162,10 @@ export default function AdminAddFreshman() {
       </div>
 
       <ContentModal
-        title="Freshman Added"
+        title="Attendee Added"
         icon="bi bi-check-circle"
         show={!!addedInfo}
-        onClose={() => router.push("/admin/freshmen")}
+        onClose={() => router.push("/admin/attendees")}
       >
         {addedInfo && (
           <div style={{ fontSize: "18px", lineHeight: "2" }}>

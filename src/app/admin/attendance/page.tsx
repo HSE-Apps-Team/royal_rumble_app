@@ -33,7 +33,7 @@ export default function AdminAttendance() {
         <div style={{ display: "flex", flexDirection: "row", gap: "20px" }}>
           <AdminButtons link="/admin/attendance/mentor">Mentor</AdminButtons>
           <AdminButtons link="/admin/attendance/all_groups">All Groups</AdminButtons>
-          <AdminButtons link="/admin/attendance/freshmen">Freshmen</AdminButtons>
+          <AdminButtons link="/admin/attendance/attendees">Attendees</AdminButtons>
         </div>
       </section>
     </main>

@@ -1,14 +1,14 @@
 import React from "react";
-import AdminAttendanceFreshmenUI from "./ui";
-import { getFreshmenAttendance } from "../../../../actions/freshmen";
+import AdminAttendanceAttendeesUI from "./ui";
+import { getAttendeesAttendance } from "../../../../actions/attendees";
 
-export default async function AdminAttendanceFreshmenPage() {
-  const data = await getFreshmenAttendance();
-  const freshmenAttendance = data.map((item) => ({
+export default async function AdminAttendanceAttendeesPage() {
+  const data = await getAttendeesAttendance();
+  const attendeesAttendance = data.map((item) => ({
     fName: item.fName || "",
     lName: item.lName || "",
-    freshmenId: item.freshmenId,
+    attendeeId: item.attendeeId,
     present: item.present ?? false,
   }));
-  return <AdminAttendanceFreshmenUI freshmenAttendance={freshmenAttendance} />;
+  return <AdminAttendanceAttendeesUI attendeesAttendance={attendeesAttendance} />;
 }

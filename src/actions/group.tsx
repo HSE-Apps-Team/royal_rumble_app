@@ -4,7 +4,7 @@ import { db } from "@/db";
 import {
   seminarData,
   groupData,
-  freshmenData,
+  attendeeData,
   ambassadorData,
   mentorData,
   hallwayHostData,
@@ -42,14 +42,14 @@ export async function getAllGroups() {
     .from(groupData)
     .orderBy(asc(groupData.groupId));
 
-  const freshmen = await db
+  const attendees = await db
     .select({
-      groupId: freshmenData.groupId,
-      freshmenId: freshmenData.freshmenId,
-      fName: freshmenData.fName,
-      lName: freshmenData.lName,
+      groupId: attendeeData.groupId,
+      attendeeId: attendeeData.attendeeId,
+      fName: attendeeData.fName,
+      lName: attendeeData.lName,
     })
-    .from(freshmenData);
+    .from(attendeeData);
   const mentors = await db
     .select({
       groupId: ambassadorData.groupId,
@@ -65,7 +65,7 @@ export async function getAllGroups() {
     name: string;
     route_num: number;
     event_order: string;
-    freshmen: Array<{ freshman_id: string; name: string }>;
+    attendees: Array<{ attendee_id: string; name: string }>;
     mentors: Array<{ mentor_id: string; name: string }>;
   }
 
@@ -77,15 +77,15 @@ export async function getAllGroups() {
       name: g.name,
       route_num: g.routeNum ?? 0,
       event_order: g.eventOrder ? JSON.parse(g.eventOrder).join(", ") : "",
-      freshmen: [],
+      attendees: [],
       mentors: [],
     });
   }
 
-  for (const f of freshmen) {
+  for (const f of attendees) {
     if (!f.groupId) continue;
-    groupMap.get(f.groupId)?.freshmen.push({
-      freshman_id: f.freshmenId.toString(),
+    groupMap.get(f.groupId)?.attendees.push({
+      attendee_id: f.attendeeId.toString(),
       name: f.fName + " " + f.lName,
     });
   }
@@ -110,12 +110,12 @@ export async function getGroupByGroupId(groupId: number) {
   return group[0];
 }
 
-export async function getFreshmenByGroupId(groupId: number) {
-  const freshmen = await db
+export async function getAttendeesByGroupId(groupId: number) {
+  const attendees = await db
     .select()
-    .from(freshmenData)
-    .where(eq(freshmenData.groupId, groupId));
-  return freshmen;
+    .from(attendeeData)
+    .where(eq(attendeeData.groupId, groupId));
+  return attendees;
 }
 
 export async function getMentorsByGroupId(groupId: number) {
@@ -142,17 +142,17 @@ export async function getMentorsByGroupId(groupId: number) {
   return mentors;
 }
 
-export async function getNullGroupFreshmen() {
-  const freshmen = await db
+export async function getNullGroupAttendees() {
+  const attendees = await db
     .select({
-      groupId: freshmenData.groupId,
-      freshmenId: freshmenData.freshmenId,
-      fName: freshmenData.fName,
-      lName: freshmenData.lName,
+      groupId: attendeeData.groupId,
+      attendeeId: attendeeData.attendeeId,
+      fName: attendeeData.fName,
+      lName: attendeeData.lName,
     })
-    .from(freshmenData)
-    .where(isNull(freshmenData.groupId));
-  return freshmen;
+    .from(attendeeData)
+    .where(isNull(attendeeData.groupId));
+  return attendees;
 }
 
 export async function getNullGroupMentors() {
@@ -180,16 +180,16 @@ export async function getGroupIdByMentorId(mentorId: number) {
   return groupLeader[0]?.groupId ?? null;
 }
 
-export async function getFreshmenAttendanceByGroupId(groupId: number) {
+export async function getAttendeesAttendanceByGroupId(groupId: number) {
   const attendance = await db
     .select({
-      freshmenId: freshmenData.freshmenId,
-      fName: freshmenData.fName,
-      lName: freshmenData.lName,
-      present: freshmenData.present,
+      attendeeId: attendeeData.attendeeId,
+      fName: attendeeData.fName,
+      lName: attendeeData.lName,
+      present: attendeeData.present,
     })
-    .from(freshmenData)
-    .where(eq(freshmenData.groupId, groupId));
+    .from(attendeeData)
+    .where(eq(attendeeData.groupId, groupId));
   return attendance;
 }
 
@@ -391,8 +391,8 @@ export async function hasSeminarData(): Promise<boolean> {
   return rows.length > 0;
 }
 
-export async function hasFreshmenData(): Promise<boolean> {
-  const rows = await db.select({ freshmenId: freshmenData.freshmenId }).from(freshmenData).limit(2);
+export async function hasAttendeeData(): Promise<boolean> {
+  const rows = await db.select({ attendeeId: attendeeData.attendeeId }).from(attendeeData).limit(2);
   return rows.length > 1;
 }
 
@@ -494,20 +494,20 @@ export async function syncGroups() {
   // Get all groups so we can map seminar groupId → groupData.groupId
   // With the new schema, seminarData.groupId IS groupData.groupId (both int),
   // so we assign directly.
-  const freshmenRows = await db.select().from(freshmenData);
+  const attendeeRows = await db.select().from(attendeeData);
 
-  const unmatched: { freshmenId: string; fName: string; lName: string }[] = [];
+  const unmatched: { attendeeId: string; fName: string; lName: string }[] = [];
 
-  for (const student of freshmenRows) {
+  for (const student of attendeeRows) {
     let matched = false;
 
     // Attempt 1: match by ID
-    if (student.freshmenId && seminarById.has(student.freshmenId)) {
-      const match = seminarById.get(student.freshmenId)!;
+    if (student.attendeeId && seminarById.has(student.attendeeId)) {
+      const match = seminarById.get(student.attendeeId)!;
       await db
-        .update(freshmenData)
+        .update(attendeeData)
         .set({ groupId: match.groupId })
-        .where(eq(freshmenData.freshmenId, student.freshmenId));
+        .where(eq(attendeeData.attendeeId, student.attendeeId));
       matched = true;
     } else if (student.fName && student.lName) {
       // Attempt 2: match by unique name
@@ -518,12 +518,12 @@ export async function syncGroups() {
         const match = possible[0];
         if (match.freshmenId != null) {
           await db
-            .update(freshmenData)
+            .update(attendeeData)
             .set({
-              freshmenId: match.freshmenId,
+              attendeeId: match.freshmenId,
               groupId: match.groupId,
             })
-            .where(eq(freshmenData.freshmenId, student.freshmenId));
+            .where(eq(attendeeData.attendeeId, student.attendeeId));
           matched = true;
         }
       }
@@ -531,7 +531,7 @@ export async function syncGroups() {
 
     if (!matched) {
       unmatched.push({
-        freshmenId: student.freshmenId.toString(),
+        attendeeId: student.attendeeId.toString(),
         fName: student.fName ?? "",
         lName: student.lName ?? "",
       });
@@ -593,9 +593,9 @@ export async function updateHallwayByID(hallwayId: number, location: string) {
 
 export async function deleteGroupByGroupId(groupId: number) {
   await db
-    .update(freshmenData)
+    .update(attendeeData)
     .set({ groupId: null })
-    .where(eq(freshmenData.groupId, groupId));
+    .where(eq(attendeeData.groupId, groupId));
   await db
     .update(ambassadorData)
     .set({ groupId: null })

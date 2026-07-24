@@ -7,55 +7,55 @@ import CheckBoxTable from "../../../components/checkBoxTable";
 import BackButton from "../../../components/backButton";
 import NavButton from "../../../components/addButton";
 import MobileNav from "../../../components/MobileNav";
-import { updateFreshmanAttendanceById } from "../../../../actions/freshmen";
+import { updateAttendeeAttendanceById } from "../../../../actions/attendees";
 import "../../../css/mentor.css";
 import "../../../css/logo+login.css";
 import "../../../css/mobile-nav.css";
 import { useState } from "react";
 import { useToast } from "../../../context/ToastContext";
 
-interface Freshman {
+interface Attendee {
   fName: string;
   lName: string;
-  freshmenId: number;
+  attendeeId: number;
   present: boolean;
 }
 
-export default function FreshmenAttendancePageUI({
+export default function AttendeeAttendancePageUI({
   attendanceData,
 }: {
   attendanceData: Array<{
-    freshmenId: number;
+    attendeeId: number;
     fName: string | null;
     lName: string | null;
     present: boolean | null;
   }>;
 }) {
   const { showToast } = useToast();
-  const [attendanceState, setAttendanceState] = useState<Freshman[]>(
+  const [attendanceState, setAttendanceState] = useState<Attendee[]>(
     attendanceData.map((student) => ({
       fName: student.fName || "",
       lName: student.lName || "",
-      freshmenId: student.freshmenId,
+      attendeeId: student.attendeeId,
       present: student.present ?? false,
     })),
   );
-  const handleStatusChange = async (freshmenId: number, newStatus: boolean) => {
-    const student = attendanceState.find((s) => s.freshmenId === freshmenId);
+  const handleStatusChange = async (attendeeId: number, newStatus: boolean) => {
+    const student = attendanceState.find((s) => s.attendeeId === attendeeId);
     const studentName = student
       ? `${student.fName} ${student.lName}`
-      : "Freshman";
+      : "Attendee";
 
     // optimistic UI update
     setAttendanceState((prev) =>
       prev.map((student) =>
-        student.freshmenId === freshmenId
+        student.attendeeId === attendeeId
           ? { ...student, present: newStatus }
           : student,
       ),
     );
 
-    const result = await updateFreshmanAttendanceById(freshmenId, newStatus);
+    const result = await updateAttendeeAttendanceById(attendeeId, newStatus);
 
     if (!result?.success) {
       showToast(`Failed to update attendance for ${studentName}`, "danger");
@@ -63,7 +63,7 @@ export default function FreshmenAttendancePageUI({
       // rollback on failure
       setAttendanceState((prev) =>
         prev.map((student) =>
-          student.freshmenId === freshmenId
+          student.attendeeId === attendeeId
             ? { ...student, present: !newStatus }
             : student,
         ),
@@ -94,7 +94,7 @@ export default function FreshmenAttendancePageUI({
       <MobileNav homeHref="/" dashboardHref="/mentor/ambassador" />
 
       <header className="mentor-header">
-        <h1 className="mentor-title">Freshmen Attendance</h1>
+        <h1 className="mentor-title">Attendee Attendance</h1>
       </header>
 
       <BackButton href="/mentor/ambassador" />
@@ -107,7 +107,7 @@ export default function FreshmenAttendancePageUI({
               `${student.fName} ${student.lName}`,
             ])}
             status={attendanceState.map((student) => student.present)}
-            rowIds={attendanceState.map((student) => student.freshmenId)}
+            rowIds={attendanceState.map((student) => student.attendeeId)}
             onStatusChange={handleStatusChange}
           />
         </InfoBox>

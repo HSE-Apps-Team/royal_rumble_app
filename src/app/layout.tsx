@@ -34,7 +34,7 @@ export default function RootLayout({
               {DEV_MODE && (
                 <nav style={{ textAlign: "center", padding: "30px" }}>
                   <Link href="/">Home</Link> | <Link href="/faq">FAQ</Link> |{" "}
-                  <Link href="/freshmen/home">Freshmen</Link> |{" "}
+                  <Link href="/attendee/home">Attendee</Link> |{" "}
                   <Link href="/mentor/ambassador">Ambassador</Link> |{" "}
                   <Link href="/mentor/hallway_host">Hallway Host</Link> |{" "}
                   <Link href="/mentor/utility_squad">Utility Squad</Link> |{" "}

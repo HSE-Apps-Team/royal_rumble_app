@@ -8,14 +8,14 @@ import AddButton from "../../components/addButton";
 import "../../css/admin.css";
 import "../../css/logo+login.css";
 import BackButton from "@/app/components/backButton";
-import { deleteFreshmanById } from "@/actions/freshmen";
+import { deleteAttendeeById } from "@/actions/attendees";
 import ExportToExcelButton from "../../components/ExportToExcelButton";
 
-export default function AdminFreshmen({
-  freshmenData,
+export default function AdminAttendees({
+  attendeeData,
 }: {
-  freshmenData: Array<{
-    freshmenId: number;
+  attendeeData: Array<{
+    attendeeId: number;
     fName: string;
     lName: string;
     email: string;
@@ -54,9 +54,9 @@ export default function AdminFreshmen({
     "Present",
   ];
 
-  // Convert freshmen data to the format EditTable expects
-  const tableData = freshmenData.map((f) => [
-    f.freshmenId,
+  // Convert attendee data to the format EditTable expects
+  const tableData = attendeeData.map((f) => [
+    f.attendeeId,
     f.fName,
     f.lName,
     f.email,
@@ -69,7 +69,7 @@ export default function AdminFreshmen({
 
   // Unique languages from data (excluding English, sorted)
   const languageOptions = [
-    ...new Set(freshmenData.map((f) => f.primaryLanguage)),
+    ...new Set(attendeeData.map((f) => f.primaryLanguage)),
   ]
     .filter((lang) => Boolean(lang) && lang !== "English")
     .sort();
@@ -125,7 +125,7 @@ export default function AdminFreshmen({
       <LoginButton />
 
       <header className="admin-header">
-        <h1 className="admin-title">Freshmen Information</h1>
+        <h1 className="admin-title">Attendee Information</h1>
       </header>
 
       <BackButton href="/admin" />
@@ -164,9 +164,9 @@ export default function AdminFreshmen({
             </select>
           </div>
         </div>
-        {/* --- ADD FRESHMAN BUTTON --- */}
+        {/* --- ADD ATTENDEE BUTTON --- */}
         <div style={{ marginLeft: "16%" }}>
-          <AddButton href="/admin/add/freshman"
+          <AddButton href="/admin/add/attendee"
             style={{ fontSize: "30px", width: "230px" }}>
             Add
             <i
@@ -280,13 +280,13 @@ export default function AdminFreshmen({
           headers={ALL_HEADERS}
           data={filteredData}
           visibleColumns={visibleColumns}
-          editLink="/admin/edit/freshman"
+          editLink="/admin/edit/attendee"
           deleteAction={async (id) => {
-            const result = await deleteFreshmanById(Number(id));
+            const result = await deleteAttendeeById(Number(id));
             return { success: result.success };
           }}
           idIndex={0}
-          fileName="freshmen-data"
+          fileName="attendee-data"
         />
       </div>
     </main>

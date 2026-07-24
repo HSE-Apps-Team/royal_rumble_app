@@ -10,8 +10,8 @@ import InfoTable from "../../components/infoTable";
 import "../../css/admin.css";
 import "../../css/logo+login.css";
 
-interface Freshman {
-  freshmenId: number;
+interface Attendee {
+  attendeeId: number;
   fName: string | null;
   lName: string | null;
   primaryLanguage: string | null;
@@ -31,15 +31,15 @@ interface Mentor {
 }
 
 interface Props {
-  freshmen: Freshman[];
+  attendees: Attendee[];
   mentors: Mentor[];
 }
 
-export default function AdminSearchUI({ freshmen, mentors }: Props) {
+export default function AdminSearchUI({ attendees, mentors }: Props) {
   const router = useRouter();
 
   const [nameQuery, setNameQuery] = useState("");
-  const [showFreshmen, setShowFreshmen] = useState(false);
+  const [showAttendees, setShowAttendees] = useState(false);
   const [showMentors, setShowMentors] = useState(false);
   const [filterJob, setFilterJob] = useState<string[]>([]);
 
@@ -54,15 +54,15 @@ export default function AdminSearchUI({ freshmen, mentors }: Props) {
     const rows: string[][] = [];
     const headers: string[] = ["Name", "Type"];
 
-    if (showFreshmen || (!showFreshmen && !showMentors)) {
-      for (const f of freshmen) {
+    if (showAttendees || (!showAttendees && !showMentors)) {
+      for (const f of attendees) {
         const name = `${f.fName ?? ""} ${f.lName ?? ""}`.trim();
         if (q && !name.toLowerCase().includes(q)) continue;
-        rows.push([name, "Freshmen"]);
+        rows.push([name, "Attendee"]);
       }
     }
 
-    if (showMentors || (!showFreshmen && !showMentors)) {
+    if (showMentors || (!showAttendees && !showMentors)) {
       for (const m of mentors) {
         const name = `${m.fName ?? ""} ${m.lName ?? ""}`.trim();
         if (q && !name.toLowerCase().includes(q)) continue;
@@ -72,7 +72,7 @@ export default function AdminSearchUI({ freshmen, mentors }: Props) {
     }
 
     return { headers, rows };
-  }, [nameQuery, showFreshmen, showMentors, filterJob, freshmen, mentors]);
+  }, [nameQuery, showAttendees, showMentors, filterJob, attendees, mentors]);
 
   return (
     <main className="admin-container">
@@ -107,10 +107,10 @@ export default function AdminSearchUI({ freshmen, mentors }: Props) {
                 <input
                   type="checkbox"
                   className="checkbox-input"
-                  checked={showFreshmen}
-                  onChange={(e) => setShowFreshmen(e.target.checked)}
+                  checked={showAttendees}
+                  onChange={(e) => setShowAttendees(e.target.checked)}
                 />
-                Freshmen only
+                Attendees only
               </label>
               <label className="checkbox-label">
                 <input
@@ -123,7 +123,7 @@ export default function AdminSearchUI({ freshmen, mentors }: Props) {
               </label>
             </div>
 
-            {(showMentors || (!showFreshmen && !showMentors)) && (
+            {(showMentors || (!showAttendees && !showMentors)) && (
               <div className="form-row checkbox-row">
                 {["AMBASSADOR", "HALLWAY HOST", "CCA CONVOS", "UTILITY SQUAD"].map((job) => (
                   <label key={job} className="checkbox-label">

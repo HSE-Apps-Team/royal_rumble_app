@@ -1,10 +1,10 @@
-import AdminEditFreshmenUI from "./ui";
+import AdminEditAttendeeUI from "./ui";
 
-export default async function AdminEditFreshmenPage({
+export default async function AdminEditAttendeePage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const resolvedParams = await params;
-  return <AdminEditFreshmenUI params={resolvedParams} />;
+  return <AdminEditAttendeeUI params={resolvedParams} />;
 }

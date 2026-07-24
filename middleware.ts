@@ -22,12 +22,12 @@ function prodMiddleware(req: any) {
     }
   }
 
-  if (path.startsWith("/freshmen")) {
+  if (path.startsWith("/attendee")) {
     if (!isLoggedIn) {
       return NextResponse.redirect(new URL("/", nextUrl));
     }
-    if (user.job === "UNREGISTERED" && path !== "/freshmen/home") {
-      return NextResponse.redirect(new URL("/freshmen/home", nextUrl));
+    if (user.job === "UNREGISTERED" && path !== "/attendee/home") {
+      return NextResponse.redirect(new URL("/attendee/home", nextUrl));
     }
     if (user.job !== "FRESHMAN" && user.job !== "UNREGISTERED") {
       return NextResponse.redirect(new URL("/", nextUrl));

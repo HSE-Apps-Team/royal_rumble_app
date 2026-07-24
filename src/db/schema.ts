@@ -127,7 +127,6 @@ export const eventOrderPattern = pgTable("event_order_pattern", {
 export const blockSchedule = pgTable("block_schedule", {
   blockScheduleId: serial("block_schedule_id").primaryKey(),
   blockName:       text("block_name").notNull().unique(),
-  startTime:       text("start_time").notNull(),
   durationMinutes: integer("duration_minutes").notNull(),
 });
 

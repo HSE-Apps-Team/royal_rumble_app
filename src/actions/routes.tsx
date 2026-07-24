@@ -133,10 +133,8 @@ export async function getBlockSchedule() {
   return db.select().from(blockSchedule).orderBy(asc(blockSchedule.blockName));
 }
 
-// Block start times are now derived (chained from the overall event start
-// time using each block's duration), so callers only supply duration.
-// startTime is still persisted internally as a placeholder to satisfy the
-// existing NOT NULL column without requiring a schema migration.
+// Block start times are derived (chained from the overall event start time
+// using each block's duration), so callers only supply duration.
 export async function upsertBlockSchedule(
   blockName: string,
   durationMinutes: number,
@@ -156,7 +154,7 @@ export async function upsertBlockSchedule(
   } else {
     const [inserted] = await db
       .insert(blockSchedule)
-      .values({ blockName, startTime: "—", durationMinutes })
+      .values({ blockName, durationMinutes })
       .returning();
     return { success: true, action: "created", blockName, inserted };
   }

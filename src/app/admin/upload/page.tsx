@@ -1093,9 +1093,117 @@ export default function AdminUpload() {
                 )}
               </div>
 
+              <button
+                style={buttonStyle}
+                onMouseEnter={buttonHover}
+                onMouseLeave={buttonUnhover}
+                type="button"
+                onClick={() => setFileDetailsOpen("mentor_attendance")}
+              >
+                File Details
+              </button>
+
+              <ContentModal
+                title="File Details"
+                icon="bi bi-info-circle"
+                show={fileDetailsOpen === "mentor_attendance"}
+                onClose={() => setFileDetailsOpen(null)}
+              >
+                <label
+                  className="form-label"
+                  style={{
+                    fontWeight: "bold",
+                    width: "100%",
+                    textAlign: "center",
+                    marginBottom: "20px",
+                  }}
+                >
+                  Mentor Attendance (QR Scan) — Column Headers
+                </label>
+                <p
+                  style={{
+                    margin: "0 0 30px",
+                    fontSize: "18px",
+                  }}
+                >
+                  Mentor ID, Job
+                  <span
+                    style={{
+                      color: "var(--secondarySilver)",
+                      fontWeight: "normal",
+                    }}
+                  >
+                    {" "}
+                    (extra columns are ignored)
+                  </span>
+                </p>
+
+                <label
+                  className="form-label"
+                  style={{
+                    fontWeight: "bold",
+                    width: "100%",
+                    textAlign: "center",
+                    marginBottom: "20px",
+                  }}
+                >
+                  Example Data:
+                </label>
+                <div style={{ overflowX: "auto" }}>
+                  <table
+                    style={{
+                      borderCollapse: "collapse",
+                      fontSize: "15px",
+                      width: "100%",
+                    }}
+                  >
+                    <thead>
+                      <tr>
+                        {["Mentor ID", "Job"].map((col) => (
+                          <th
+                            key={col}
+                            style={{
+                              textAlign: "left",
+                              padding: "6px 12px",
+                              borderBottom: "2px solid var(--primaryBlue)",
+                              color: "var(--primaryBlue)",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {col}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        ["262096", "AMBASSADOR"],
+                        ["271469", "AMBASSADOR"],
+                        ["271261", "HALLWAY HOST"],
+                      ].map((row, i) => (
+                        <tr key={i}>
+                          {row.map((cell, j) => (
+                            <td
+                              key={j}
+                              style={{
+                                padding: "6px 12px",
+                                whiteSpace: "nowrap",
+                                borderBottom: i === 2 ? "none" : "1px solid #eee",
+                              }}
+                            >
+                              {cell}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </ContentModal>
+
               <p
                 style={{
-                  gridColumn: "1 / 4",
+                  gridColumn: "1 / 2",
                   margin: 0,
                   color: attendanceMessage.startsWith("❌") ? "red" : "green",
                   fontWeight: "bold",

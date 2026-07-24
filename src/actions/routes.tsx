@@ -12,8 +12,62 @@ import {
   groupData,
   groupRouteAttendance,
   seminarData,
+  siteContent,
 } from "@/db/schema";
 import { eq, asc, sql, and } from "drizzle-orm";
+
+// ============================================================
+//  EVENT START TIME (single overall start time, chained across
+//  each group's block order to derive per-block start times)
+// ============================================================
+
+const EVENT_START_TIME_KEY = "eventStartTime";
+
+export async function getEventStartTime(): Promise<string> {
+  const result = await db
+    .select({ content: siteContent.content })
+    .from(siteContent)
+    .where(eq(siteContent.key, EVENT_START_TIME_KEY))
+    .limit(1);
+  return result[0]?.content ?? "";
+}
+
+export async function setEventStartTime(startTime: string) {
+  const existing = await db
+    .select()
+    .from(siteContent)
+    .where(eq(siteContent.key, EVENT_START_TIME_KEY));
+
+  if (existing.length > 0) {
+    await db
+      .update(siteContent)
+      .set({ content: startTime })
+      .where(eq(siteContent.key, EVENT_START_TIME_KEY));
+  } else {
+    await db
+      .insert(siteContent)
+      .values({ key: EVENT_START_TIME_KEY, content: startTime });
+  }
+  return { success: true, startTime };
+}
+
+// Parses "9:00 AM" style strings into minutes since midnight.
+function parseTimeToMinutes(time: string): number | null {
+  const match = time.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (!match) return null;
+  const [, hoursStr, minsStr, period] = match;
+  let totalMinutes = (parseInt(hoursStr) % 12) * 60 + parseInt(minsStr);
+  if (period.toUpperCase() === "PM") totalMinutes += 12 * 60;
+  return totalMinutes;
+}
+
+function formatMinutesToTime(totalMinutes: number): string {
+  const normalized = ((totalMinutes % (24 * 60)) + 24 * 60) % (24 * 60);
+  const h = Math.floor(normalized / 60) % 12 || 12;
+  const m = normalized % 60;
+  const ap = normalized < 12 * 60 ? "AM" : "PM";
+  return `${h}:${m.toString().padStart(2, "0")} ${ap}`;
+}
 
 // ============================================================
 //  EVENT ORDER PATTERNS
@@ -76,12 +130,15 @@ export async function deleteEventOrderPattern(patternId: number) {
 // ============================================================
 
 export async function getBlockSchedule() {
-  return db.select().from(blockSchedule).orderBy(asc(blockSchedule.startTime));
+  return db.select().from(blockSchedule).orderBy(asc(blockSchedule.blockName));
 }
 
+// Block start times are now derived (chained from the overall event start
+// time using each block's duration), so callers only supply duration.
+// startTime is still persisted internally as a placeholder to satisfy the
+// existing NOT NULL column without requiring a schema migration.
 export async function upsertBlockSchedule(
   blockName: string,
-  startTime: string,
   durationMinutes: number,
 ) {
   const existing = await db
@@ -93,13 +150,13 @@ export async function upsertBlockSchedule(
   if (existing.length > 0) {
     await db
       .update(blockSchedule)
-      .set({ startTime, durationMinutes })
+      .set({ durationMinutes })
       .where(eq(blockSchedule.blockName, blockName));
     return { success: true, action: "updated", blockName };
   } else {
     const [inserted] = await db
       .insert(blockSchedule)
-      .values({ blockName, startTime, durationMinutes })
+      .values({ blockName, startTime: "—", durationMinutes })
       .returning();
     return { success: true, action: "created", blockName, inserted };
   }
@@ -563,7 +620,13 @@ export async function createEstimatedGroups(count: number) {
 }
 
 // ============================================================
-//  COMPUTED ARRIVAL TIMES  (group leader route page)
+//  COMPUTED BLOCK START TIMES  (group leader route page)
+//
+//  The admin only sets ONE overall event start time. Each block's
+//  start time is derived by chaining durations along that group's
+//  own event order: block[n].startTime = block[n-1].startTime +
+//  block[n-1].durationMinutes. Tour stops no longer get a computed
+//  arrival time — only their duration is shown.
 // ============================================================
 
 export async function getGroupSchedule(groupId: number) {
@@ -580,6 +643,9 @@ export async function getGroupSchedule(groupId: number) {
 
   const blocks = await db.select().from(blockSchedule);
   const blockMap = new Map(blocks.map((b) => [b.blockName, b]));
+
+  const eventStartTime = await getEventStartTime();
+  let totalMinutes = parseTimeToMinutes(eventStartTime);
 
   const route = await db
     .select()
@@ -610,35 +676,14 @@ export async function getGroupSchedule(groupId: number) {
       return { blockName, startTime: "TBD", stops: [] };
     }
 
-    if (blockName !== "Tour") {
-      return {
-        blockName,
-        startTime:       block.startTime,
-        durationMinutes: block.durationMinutes,
-        stops:           [],
-      };
-    }
-
-    // Tour block — compute arrival time at each stop
-    const [hours, minutesPart] = block.startTime.split(":");
-    const [mins, period] = minutesPart.split(" ");
-    let totalMinutes = (parseInt(hours) % 12) * 60 + parseInt(mins);
-    if (period === "PM") totalMinutes += 12 * 60;
-
-    const stopsWithTimes = stops.map((stop) => {
-      const h  = Math.floor(totalMinutes / 60) % 12 || 12;
-      const m  = totalMinutes % 60;
-      const ap = totalMinutes < 12 * 60 ? "AM" : "PM";
-      const arrivalTime = `${h}:${m.toString().padStart(2, "0")} ${ap}`;
-      totalMinutes += stop.durationMinutes;
-      return { ...stop, arrivalTime };
-    });
+    const startTime = totalMinutes === null ? "TBD" : formatMinutesToTime(totalMinutes);
+    if (totalMinutes !== null) totalMinutes += block.durationMinutes;
 
     return {
       blockName,
-      startTime:       block.startTime,
+      startTime,
       durationMinutes: block.durationMinutes,
-      stops:           stopsWithTimes,
+      stops: blockName === "Tour" ? stops : [],
     };
   });
 

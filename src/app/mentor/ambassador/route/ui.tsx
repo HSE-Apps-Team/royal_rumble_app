@@ -15,7 +15,6 @@ interface Stop {
   stopOrder: number;
   location: string | null;
   durationMinutes: number;
-  arrivalTime: string;
 }
 
 interface ScheduleBlock {
@@ -174,11 +173,11 @@ export default function AmbassadorRouteUI({
                       Stops:
                     </div>
                     <InfoTable
-                      headers={["#", "Location", "Arrival Time"]}
+                      headers={["#", "Location", "Duration"]}
                       data={block.stops.map((stop) => [
                         stop.stopOrder,
                         stop.location ?? "Unknown",
-                        stop.arrivalTime,
+                        `${stop.durationMinutes} min`,
                       ])}
                     />
                   </>

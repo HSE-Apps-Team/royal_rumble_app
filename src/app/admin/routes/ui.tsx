@@ -23,6 +23,7 @@ import {
   deleteBlockSchedule,
   addTourRouteStop,
   deleteTourRouteStop,
+  setEventStartTime,
 } from "@/actions/routes";
 
 interface Pattern {
@@ -34,7 +35,6 @@ interface Pattern {
 interface Block {
   blockScheduleId: number;
   blockName: string;
-  startTime: string;
   durationMinutes: number;
 }
 
@@ -62,6 +62,7 @@ interface Props {
   blocks: Block[];
   routes: Route[];
   hallways: Hallway[];
+  eventStartTime: string;
 }
 
 const makeModalBtn = (bg: string): React.CSSProperties => ({
@@ -114,6 +115,7 @@ export default function AdminRoutesUI({
   blocks,
   routes,
   hallways,
+  eventStartTime,
 }: Props) {
   const router = useRouter();
   const { showAlert } = useAlert();
@@ -181,21 +183,31 @@ export default function AdminRoutesUI({
 
   const [blocksState, setBlocksState] = useState<Block[]>(blocks);
   const [blockEdits, setBlockEdits] = useState<
-    Record<number, { startTime: string; durationMinutes: string }>
+    Record<number, { durationMinutes: string }>
   >(
     Object.fromEntries(
       blocks.map((b) => [
         b.blockScheduleId,
         {
-          startTime: b.startTime,
           durationMinutes: b.durationMinutes.toString(),
         },
       ]),
     ),
   );
   const [newBlockName, setNewBlockName] = useState("");
-  const [newBlockTime, setNewBlockTime] = useState("");
   const [newBlockDuration, setNewBlockDuration] = useState("");
+
+  const [eventStartTimeInput, setEventStartTimeInput] =
+    useState(eventStartTime);
+
+  const handleSaveEventStartTime = async () => {
+    if (!eventStartTimeInput.trim()) {
+      showAlert("Please enter an event start time.", "danger");
+      return;
+    }
+    await setEventStartTime(eventStartTimeInput.trim());
+    showAlert("Event start time saved!", "success");
+  };
 
   // Block delete modal state
   const [blockDeleteModal, setBlockDeleteModal] = useState<{
@@ -214,15 +226,15 @@ export default function AdminRoutesUI({
   const handleSaveBlock = async (block: Block) => {
     const edit = blockEdits[block.blockScheduleId];
     const duration = parseInt(edit?.durationMinutes ?? "");
-    if (!edit?.startTime || isNaN(duration)) {
-      showAlert("Please fill in all block fields.", "danger");
+    if (isNaN(duration)) {
+      showAlert("Please enter a valid duration.", "danger");
       return;
     }
-    await upsertBlockSchedule(block.blockName, edit.startTime, duration);
+    await upsertBlockSchedule(block.blockName, duration);
     setBlocksState((prev) =>
       prev.map((b) =>
         b.blockScheduleId === block.blockScheduleId
-          ? { ...b, startTime: edit.startTime, durationMinutes: duration }
+          ? { ...b, durationMinutes: duration }
           : b,
       ),
     );
@@ -242,28 +254,22 @@ export default function AdminRoutesUI({
 
   const handleAddBlock = async () => {
     const duration = parseInt(newBlockDuration);
-    if (!newBlockName || !newBlockTime || isNaN(duration)) {
+    if (!newBlockName || isNaN(duration)) {
       showAlert("Please fill in all fields for the new block.", "danger");
       return;
     }
-    const result = await upsertBlockSchedule(
-      newBlockName.trim(),
-      newBlockTime.trim(),
-      duration,
-    );
+    const result = await upsertBlockSchedule(newBlockName.trim(), duration);
     if (result.action === "created" && result.inserted) {
       setBlocksState((prev) => [...prev, result.inserted]);
       setBlockEdits((prev) => ({
         ...prev,
         [result.inserted.blockScheduleId]: {
-          startTime: result.inserted.startTime,
           durationMinutes: result.inserted.durationMinutes.toString(),
         },
       }));
     }
     showAlert(`Block "${newBlockName}" added!`, "success");
     setNewBlockName("");
-    setNewBlockTime("");
     setNewBlockDuration("");
   };
 
@@ -498,13 +504,41 @@ export default function AdminRoutesUI({
               color: "var(--textBlack)",
               fontWeight: "normal",
               fontSize: "18px",
-              marginBottom: "30px",
+              marginBottom: "20px",
             }}
           >
-            Set the start time and duration for each block. Block names must
-            match exactly what is used in the Event Order Patterns (e.g. Tour,
-            Leonard, Gym).
+            Set the overall event start time and each block's duration. Block
+            start times are calculated automatically by chaining durations in
+            each group's event order. Block names must match exactly what is
+            used in the Event Order Patterns (e.g. Tour, Leonard, Gym).
           </p>
+
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "center",
+              gap: "20px",
+              paddingBottom: "20px",
+              marginBottom: "20px",
+              borderBottom: "3px solid var(--primaryRed)",
+            }}
+          >
+            <label style={labelStyle}>Event Start Time:</label>
+            <input
+              type="text"
+              style={{ ...inputStyle, width: "180px" }}
+              placeholder="e.g. 9:00 AM"
+              value={eventStartTimeInput}
+              onChange={(e) => setEventStartTimeInput(e.target.value)}
+            />
+            <SaveButton
+              onClick={handleSaveEventStartTime}
+              style={{ width: "120px", fontSize: "18px", height: "48px" }}
+            >
+              Save
+            </SaveButton>
+          </div>
 
           {blocksState.length === 0 && (
             <p
@@ -538,27 +572,6 @@ export default function AdminRoutesUI({
                 <span style={{ ...labelStyle, minWidth: "80px" }}>
                   {block.blockName}
                 </span>
-
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: "10px" }}
-                >
-                  <label style={labelStyle}>Start Time:</label>
-                  <input
-                    type="text"
-                    style={{ ...inputStyle, width: "180px" }}
-                    placeholder="e.g. 9:00 AM"
-                    value={blockEdits[block.blockScheduleId]?.startTime ?? ""}
-                    onChange={(e) =>
-                      setBlockEdits((prev) => ({
-                        ...prev,
-                        [block.blockScheduleId]: {
-                          ...prev[block.blockScheduleId],
-                          startTime: e.target.value,
-                        },
-                      }))
-                    }
-                  />
-                </div>
 
                 <div
                   style={{ display: "flex", alignItems: "center", gap: "10px" }}
@@ -646,18 +659,6 @@ export default function AdminRoutesUI({
                   placeholder="e.g. Tour"
                   value={newBlockName}
                   onChange={(e) => setNewBlockName(e.target.value)}
-                />
-              </div>
-              <div
-                style={{ display: "flex", alignItems: "center", gap: "10px" }}
-              >
-                <label style={labelStyle}>Start Time:</label>
-                <input
-                  type="text"
-                  style={{ ...inputStyle, width: "180px" }}
-                  placeholder="e.g. 9:00 AM"
-                  value={newBlockTime}
-                  onChange={(e) => setNewBlockTime(e.target.value)}
                 />
               </div>
               <div

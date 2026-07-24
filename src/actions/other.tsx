@@ -11,7 +11,7 @@ import {
   ambassadorData,
   faqContentData,
 } from "@/db/schema";
-import { eq, asc, and, sql } from "drizzle-orm";
+import { eq, asc, and, sql, inArray } from "drizzle-orm";
 
 //--------------------------------------------------------------------------------------//
 //                                                                                      //
@@ -114,6 +114,29 @@ export const getAllEvents = async (job?: string) => {
     });
   }
   return allEventsWithMentors;
+};
+
+export const getEventOptions = async () => {
+  const events = await db
+    .select({
+      eventId: eventsData.eventId,
+      name: eventsData.name,
+      date: eventsData.date,
+      time: eventsData.time,
+      date2: eventsData.date2,
+      time2: eventsData.time2,
+    })
+    .from(eventsData)
+    .orderBy(asc(eventsData.date));
+
+  return events.map((event) => ({
+    eventId: event.eventId,
+    name: String(event.name),
+    date: String(event.date),
+    time: String(event.time),
+    date2: event.date2 ? String(event.date2) : null,
+    time2: event.time2 ?? null,
+  }));
 };
 
 export const getEventById = async (eventId: number) => {
@@ -504,6 +527,24 @@ export const updateMentorAttendanceById = async (
     mentorId: mentorId,
     status: status,
   };
+};
+
+export const confirmMentorAttendanceOverrides = async (
+  eventId: number,
+  mentorIds: number[],
+) => {
+  if (mentorIds.length > 0) {
+    await db
+      .update(mentorAttendanceData)
+      .set({ status: true })
+      .where(
+        and(
+          eq(mentorAttendanceData.eventId, eventId),
+          inArray(mentorAttendanceData.mentorId, mentorIds),
+        ),
+      );
+  }
+  return { success: true, eventId, mentorIds };
 };
 
 export const updateFAQEntryById = async (

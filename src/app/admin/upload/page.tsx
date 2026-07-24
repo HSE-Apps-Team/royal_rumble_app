@@ -7,7 +7,7 @@ import InfoBox from "../../components/infoBox";
 import ContentModal from "../../components/ContentModal";
 import "../../css/admin.css";
 import "../../css/logo+login.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   createSeminarGroups,
@@ -16,7 +16,30 @@ import {
   hasAttendeeData,
 } from "@/actions/group";
 import { createGroupsFromDB, createEstimatedGroups } from "@/actions/routes";
+import {
+  getEventOptions,
+  confirmMentorAttendanceOverrides,
+} from "@/actions/other";
+import { formatEventDates } from "@/lib/formatEventDates";
+import CheckBoxTable from "../../components/checkBoxTable";
 import { useAlert } from "../../context/AlertContext";
+
+interface EventOption {
+  eventId: number;
+  name: string;
+  date: string;
+  time: string;
+  date2: string | null;
+  time2: string | null;
+}
+
+interface MentorAttendanceMismatch {
+  mentorId: number;
+  fName: string | null;
+  lName: string | null;
+  assignedJob: string | null;
+  uploadedJob: string | null;
+}
 
 export const runtime = "nodejs";
 
@@ -31,11 +54,111 @@ export default function AdminUpload() {
   const [estimatedGroupCount, setEstimatedGroupCount] = useState<string>("");
   const [fileDetailsOpen, setFileDetailsOpen] = useState<string | null>(null);
 
+  const [eventOptions, setEventOptions] = useState<EventOption[]>([]);
+  const [selectedAttendanceEvent, setSelectedAttendanceEvent] = useState<
+    number | ""
+  >("");
+  const [attendanceUploading, setAttendanceUploading] = useState(false);
+  const [attendanceMessage, setAttendanceMessage] = useState("");
+  const [mismatches, setMismatches] = useState<MentorAttendanceMismatch[]>(
+    [],
+  );
+  const [mismatchSelection, setMismatchSelection] = useState<
+    Record<number, boolean>
+  >({});
+  const [mismatchModalOpen, setMismatchModalOpen] = useState(false);
+  const [mismatchEventId, setMismatchEventId] = useState<number | null>(null);
+  const [confirmingOverrides, setConfirmingOverrides] = useState(false);
+
   const { showAlert } = useAlert();
   const router = useRouter();
 
+  useEffect(() => {
+    getEventOptions().then((events) => {
+      setEventOptions(events);
+      if (events.length > 0) setSelectedAttendanceEvent(events[0].eventId);
+    });
+  }, []);
+
   const handleLogoClick = () => {
     router.push("/admin");
+  };
+
+  const handleMentorAttendanceUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (selectedAttendanceEvent === "") {
+      showAlert("Please select an event first.", "danger");
+      e.target.value = "";
+      return;
+    }
+
+    setAttendanceUploading(true);
+    setAttendanceMessage("");
+
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const base64 = Buffer.from(arrayBuffer).toString("base64");
+
+      const res = await fetch("/api/upload/mentor-attendance", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fileData: base64,
+          eventId: selectedAttendanceEvent,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.error) {
+        setAttendanceMessage(`❌ ${data.error}`);
+        showAlert(data.error, "danger");
+      } else {
+        setAttendanceMessage(`✅ ${data.message}`);
+        if (data.mismatches && data.mismatches.length > 0) {
+          setMismatches(data.mismatches);
+          setMismatchSelection({});
+          setMismatchEventId(Number(selectedAttendanceEvent));
+          setMismatchModalOpen(true);
+        } else {
+          showAlert(data.message, "success");
+        }
+      }
+    } catch (err) {
+      setAttendanceMessage("❌ Upload failed. Please try again.");
+      showAlert("Upload failed. Please try again.", "danger");
+    } finally {
+      setAttendanceUploading(false);
+      e.target.value = "";
+    }
+  };
+
+  const handleConfirmOverrides = async () => {
+    if (mismatchEventId === null) return;
+    const selectedIds = mismatches
+      .filter((m) => mismatchSelection[m.mentorId])
+      .map((m) => m.mentorId);
+
+    setConfirmingOverrides(true);
+    try {
+      await confirmMentorAttendanceOverrides(mismatchEventId, selectedIds);
+      showAlert(
+        selectedIds.length > 0
+          ? `${selectedIds.length} mentor(s) marked present despite job mismatch.`
+          : "No additional mentors marked present.",
+        "success",
+      );
+      setMismatchModalOpen(false);
+      setMismatches([]);
+    } catch {
+      showAlert("Failed to update attendance. Please try again.", "danger");
+    } finally {
+      setConfirmingOverrides(false);
+    }
   };
 
   // Upload handler — identical to original
@@ -912,9 +1035,148 @@ export default function AdminUpload() {
                 )}
               </div>
             ))}
+
+            <div
+              className="upload-row"
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1.5fr 2fr 2fr",
+                rowGap: "0.5rem",
+                alignItems: "center",
+                marginBottom: "2rem",
+              }}
+            >
+              <label style={{ gridColumn: "1 / 2" }}>
+                Upload Mentor Attendance (QR Scan):
+              </label>
+              <div
+                className="file-input-wrapper d-flex align-items-center"
+                style={{ gridColumn: "2 / 4", gap: "0.5rem" }}
+              >
+                <select
+                  className="form-select"
+                  value={selectedAttendanceEvent}
+                  onChange={(e) =>
+                    setSelectedAttendanceEvent(
+                      e.target.value === "" ? "" : Number(e.target.value),
+                    )
+                  }
+                  style={{ maxWidth: "260px" }}
+                  disabled={attendanceUploading || eventOptions.length === 0}
+                >
+                  {eventOptions.length === 0 && (
+                    <option value="">No events available</option>
+                  )}
+                  {eventOptions.map((event) => (
+                    <option key={event.eventId} value={event.eventId}>
+                      {event.name} ({formatEventDates(event)})
+                    </option>
+                  ))}
+                </select>
+                <input
+                  type="file"
+                  className="file-input flex-grow-1"
+                  accept=".xlsx,.xls"
+                  onChange={handleMentorAttendanceUpload}
+                  disabled={
+                    attendanceUploading || selectedAttendanceEvent === ""
+                  }
+                />
+                {attendanceUploading ? (
+                  <div className="spinner-border text-danger" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                ) : (
+                  <button className="upload-icon" disabled>
+                    <i className="bi bi-cloud-upload-fill"></i>
+                  </button>
+                )}
+              </div>
+
+              <p
+                style={{
+                  gridColumn: "1 / 4",
+                  margin: 0,
+                  color: attendanceMessage.startsWith("❌") ? "red" : "green",
+                  fontWeight: "bold",
+                }}
+              >
+                {attendanceMessage}
+              </p>
+            </div>
           </div>
         </InfoBox>
       </section>
+
+      <ContentModal
+        title="Mentor Attendance Mismatches"
+        icon="bi bi-exclamation-triangle"
+        show={mismatchModalOpen}
+        onClose={() => setMismatchModalOpen(false)}
+      >
+        <label
+          className="form-label"
+          style={{
+            fontWeight: "bold",
+            width: "100%",
+            textAlign: "center",
+            marginBottom: "20px",
+          }}
+        >
+          These mentors scanned in with a job that doesn&apos;t match their
+          assigned job. Check any you&apos;d like to mark present anyway.
+        </label>
+        <CheckBoxTable
+          headers={[
+            "Student ID",
+            "First Name",
+            "Last Name",
+            "Assigned Job",
+            "Scanned Job",
+          ]}
+          data={mismatches.map((m) => [
+            m.mentorId.toString(),
+            m.fName ?? "",
+            m.lName ?? "",
+            m.assignedJob ?? "",
+            m.uploadedJob ?? "",
+          ])}
+          status={mismatches.map((m) => mismatchSelection[m.mentorId] ?? false)}
+          rowIds={mismatches.map((m) => m.mentorId)}
+          onStatusChange={(mentorId, newStatus) =>
+            setMismatchSelection((prev) => ({
+              ...prev,
+              [mentorId]: newStatus,
+            }))
+          }
+        />
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            marginTop: "20px",
+          }}
+        >
+          <button
+            style={buttonStyle}
+            onMouseEnter={buttonHover}
+            onMouseLeave={buttonUnhover}
+            type="button"
+            disabled={confirmingOverrides}
+            onClick={handleConfirmOverrides}
+          >
+            {confirmingOverrides ? (
+              <span
+                className="spinner-border spinner-border-sm"
+                role="status"
+                aria-hidden="true"
+              />
+            ) : (
+              "Confirm"
+            )}
+          </button>
+        </div>
+      </ContentModal>
 
       <div
         style={{

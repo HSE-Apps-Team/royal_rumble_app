@@ -29,7 +29,7 @@ function levenshtein(a: string, b: string): number {
 export function fixEmail(rawEmail: string | null | undefined): string | null | undefined {
   if (!rawEmail) return rawEmail;
 
-  const trimmed = rawEmail.trim();
+  const trimmed = rawEmail.trim().toLowerCase();
   if (!trimmed) return rawEmail;
 
   const atIndex = trimmed.lastIndexOf("@");

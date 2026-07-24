@@ -219,7 +219,7 @@ export const addMentor = async (data: {
     mentorId: data.mentor_id,
     gradYear: data.graduation_year,
     job,
-    email: data.email,
+    email: data.email.trim().toLowerCase(),
     phoneNum: data.phone_number ? encrypt(data.phone_number) : data.phone_number,
   });
   if (job === "AMBASSADOR") {
@@ -332,7 +332,7 @@ export const updateMentorByID = async (
     .set({
       fName: data.f_name,
       lName: data.l_name,
-      email: data.email,
+      email: data.email.trim().toLowerCase(),
       gradYear: data.grad_year,
       job,
       pizzaType: data.pizza_type,

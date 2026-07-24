@@ -75,7 +75,7 @@ export default function AdminMentors({
     m.mentorId,
     m.fName,
     m.lName,
-    m.email,
+    m.email.toLowerCase(),
     m.job,
     m.tshirtSize,
     m.gradYear,

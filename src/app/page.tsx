@@ -15,11 +15,9 @@ import nithik from "./assets/nithik.png";
 import habig from "./assets/habig.png";
 import holle from "./assets/holle.png";
 import pucillo from "./assets/pucillo.png";
-import p4 from "./assets/pusti.png";
 import clayton from "./assets/clayton.jpg";
 import roberts from "./assets/roberts.png";
 import guenin from "./assets/guenin.jpg";
-import vinson from "./assets/vinson.png";
 
 import royalRumbleLogo from "./assets/logo.png";
 import "./css/homepage.css";
@@ -224,39 +222,53 @@ export default async function Home() {
           </div>
 
           <div className="person">
-            <Image src={p4} alt="Person 4" />
-            <h3>Ms. Emily Pusti</h3>
-            <p>epusti@hse.k12.in.us</p>
-          </div>
-
-          <div className="person">
-            <Image src={roberts} alt="Person 5" />
+            <Image src={roberts} alt="Person 4" />
             <h3>Ms. Kassie Roberts</h3>
             <p>kroberts@hse.k12.in.us</p>
           </div>
 
           <div className="person">
-            <Image src={royalRumbleLogo} alt="Person 6" />
+            <Image src={royalRumbleLogo} alt="Person 5" />
             <h3>Mrs. Morgan Porter</h3>
             <p>mporter@hse.k12.in.us</p>
           </div>
 
           <div className="person">
-            <Image src={guenin} alt="Person 7" />
+            <Image src={guenin} alt="Person 6" />
             <h3>Mr. Steve Guenin</h3>
             <p>sguenin@hse.k12.in.us</p>
           </div>
 
           <div className="person">
-            <Image src={clayton} alt="Person 8" />
+            <Image src={clayton} alt="Person 7" />
             <h3>Mrs. Katie Clayton</h3>
             <p>kclayton@hse.k12.in.us</p>
           </div>
 
           <div className="person">
-            <Image src={vinson} alt="Person 9" />
-            <h3>Ms. Paige Vinson</h3>
-            <p>pgvinson@hse.k12.in.us</p>
+            <Image src={royalRumbleLogo} alt="Person 8" />
+            <h3>Mrs. Kayla Creely</h3>
+            <p>kcreely@hse.k12.in.us</p>
+          </div>
+
+          <div className="person">
+            <Image src={royalRumbleLogo} alt="Person 9" />
+            <h3>Mr. Garrett Hudson</h3>
+            <p>ghudson@hse.k12.in.us</p>
+          </div>
+        </div>
+
+        <div className="people-grid-leftover">
+          <div className="person">
+            <Image src={royalRumbleLogo} alt="Person 10" />
+            <h3>Ms. Kacey Hudson</h3>
+            <p>khudson@hse.k12.in.us</p>
+          </div>
+
+          <div className="person">
+            <Image src={royalRumbleLogo} alt="Person 11" />
+            <h3>Mrs. Amanda Ruble</h3>
+            <p>aruble@hse.k12.in.us</p>
           </div>
         </div>
 

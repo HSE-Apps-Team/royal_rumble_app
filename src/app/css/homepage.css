@@ -159,6 +159,17 @@
   gap: 3rem;
 }
 
+.people-grid-leftover {
+  display: flex;
+  justify-content: center;
+  gap: 3rem;
+  margin-top: 3rem;
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
 /* ===== Person Card ===== */
 
 .person {
@@ -276,10 +287,6 @@
     font-size: 20px;
   }
 
-  .people-grid-three {
-    grid-template-columns: repeat(2, 250px);
-  }
-
   .people-grid-two {
     gap: 2rem;
   }
@@ -372,7 +379,16 @@
 
   /* ===== PEOPLE SECTION ===== */
 
-  .people-grid-three,
+  .people-grid-three {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .people-grid-leftover {
+    flex-direction: column;
+    align-items: center;
+  }
+
   .people-grid-two {
     grid-template-columns: 1fr;
     justify-items: center;

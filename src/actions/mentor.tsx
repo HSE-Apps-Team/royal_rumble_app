@@ -223,26 +223,35 @@ export const addMentor = async (data: {
     phoneNum: data.phone_number ? encrypt(data.phone_number) : data.phone_number,
   });
   if (job === "AMBASSADOR") {
-    await db.insert(ambassadorData).values({
-      mentorId: data.mentor_id,
-      groupId: data.group_id ?? null,
-    });
+    await db
+      .insert(ambassadorData)
+      .values({
+        mentorId: data.mentor_id,
+        groupId: data.group_id ?? null,
+      })
+      .onConflictDoNothing();
   } else if (job === "HALLWAY HOST") {
-    await db.insert(hallwayHostData).values({
-      mentorId: data.mentor_id,
-      hallwayStopId: data.hallway_stop_id ?? null,
-    });
+    await db
+      .insert(hallwayHostData)
+      .values({
+        mentorId: data.mentor_id,
+        hallwayStopId: data.hallway_stop_id ?? null,
+      })
+      .onConflictDoNothing();
   }
   const eventIds = await db
     .select({ eventId: eventsData.eventId })
     .from(eventsData)
     .where(or(eq(eventsData.job, job), eq(eventsData.job, "ALL")));
   for (const event of eventIds) {
-    await db.insert(mentorAttendanceData).values({
-      mentorId: data.mentor_id,
-      eventId: event.eventId,
-      status: false,
-    });
+    await db
+      .insert(mentorAttendanceData)
+      .values({
+        mentorId: data.mentor_id,
+        eventId: event.eventId,
+        status: false,
+      })
+      .onConflictDoNothing();
   }
   // return to display confirmation
   return {
@@ -304,15 +313,21 @@ export const updateMentorByID = async (
       .where(eq(mentorAttendanceData.mentorId, mentorId));
 
     if (job === "AMBASSADOR") {
-      await db.insert(ambassadorData).values({
-        mentorId: mentorId,
-        groupId: null,
-      });
+      await db
+        .insert(ambassadorData)
+        .values({
+          mentorId: mentorId,
+          groupId: null,
+        })
+        .onConflictDoNothing();
     } else if (job === "HALLWAY HOST") {
-      await db.insert(hallwayHostData).values({
-        mentorId: mentorId,
-        hallwayStopId: null,
-      });
+      await db
+        .insert(hallwayHostData)
+        .values({
+          mentorId: mentorId,
+          hallwayStopId: null,
+        })
+        .onConflictDoNothing();
     }
 
     const eventIds = await db
@@ -320,11 +335,14 @@ export const updateMentorByID = async (
       .from(eventsData)
       .where(or(eq(eventsData.job, job), eq(eventsData.job, "ALL")));
     for (const event of eventIds) {
-      await db.insert(mentorAttendanceData).values({
-        mentorId: mentorId,
-        eventId: event.eventId,
-        status: false,
-      });
+      await db
+        .insert(mentorAttendanceData)
+        .values({
+          mentorId: mentorId,
+          eventId: event.eventId,
+          status: false,
+        })
+        .onConflictDoNothing();
     }
   }
   await db

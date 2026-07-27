@@ -10,11 +10,17 @@ export const groupData = pgTable("group_data", {
 });
 
 // ---------------- mentor_attendance_data ----------------
-export const mentorAttendanceData = pgTable("mentor_attendance_data", {
-  mentorId: integer("mentor_id"),
-  eventId:  integer("event_id"),
-  status:   boolean("status"),
-});
+export const mentorAttendanceData = pgTable(
+  "mentor_attendance_data",
+  {
+    mentorId: integer("mentor_id"),
+    eventId:  integer("event_id"),
+    status:   boolean("status"),
+  },
+  (t) => ({
+    uniqueMentorEvent: unique("unique_mentor_event").on(t.mentorId, t.eventId),
+  }),
+);
 
 // ---------------- events_data ----------------
 export const eventsData = pgTable("events_data", {
@@ -37,21 +43,33 @@ export const hallwayStopData = pgTable("hallway_stop_data", {
 });
 
 // ---------------- hallway_host_data ----------------
-export const hallwayHostData = pgTable("hallway_host_data", {
-  mentorId:      integer("mentor_id"),
-  hallwayStopId: integer("hallway_stop_id"),
-});
+export const hallwayHostData = pgTable(
+  "hallway_host_data",
+  {
+    mentorId:      integer("mentor_id"),
+    hallwayStopId: integer("hallway_stop_id"),
+  },
+  (t) => ({
+    uniqueHallwayHostMentor: unique("unique_hallway_host_mentor").on(t.mentorId),
+  }),
+);
 
 // ---------------- seminar_data ----------------
-export const seminarData = pgTable("seminar_data", {
-  fName:           text("f_name"),
-  lName:           text("l_name"),
-  freshmenId:      integer("freshmen_id"),
-  semester:        text("semester"),
-  teacherFullName: text("teacher_full_name"),
-  period:          text("period"),
-  groupId:         integer("group_id"),
-});
+export const seminarData = pgTable(
+  "seminar_data",
+  {
+    fName:           text("f_name"),
+    lName:           text("l_name"),
+    freshmenId:      integer("freshmen_id"),
+    semester:        text("semester"),
+    teacherFullName: text("teacher_full_name"),
+    period:          text("period"),
+    groupId:         integer("group_id"),
+  },
+  (t) => ({
+    uniqueSeminarFreshmen: unique("unique_seminar_freshmen").on(t.freshmenId),
+  }),
+);
 
 // ---------------- attendee_data ----------------
 export const attendeeData = pgTable("attendee_data", {
@@ -68,10 +86,16 @@ export const attendeeData = pgTable("attendee_data", {
 });
 
 // ---------------- ambassador_data ----------------
-export const ambassadorData = pgTable("ambassador_data", {
-  mentorId: integer("mentor_id"),
-  groupId:  integer("group_id"),
-});
+export const ambassadorData = pgTable(
+  "ambassador_data",
+  {
+    mentorId: integer("mentor_id"),
+    groupId:  integer("group_id"),
+  },
+  (t) => ({
+    uniqueAmbassadorMentor: unique("unique_ambassador_mentor").on(t.mentorId),
+  }),
+);
 
 // ---------------- mentor_data ----------------
 export const mentorData = pgTable("mentor_data", {

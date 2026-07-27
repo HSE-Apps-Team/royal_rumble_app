@@ -26,11 +26,14 @@ const assignMentorsToEvent = async (
   if (job === "ALL") {
     const allMentors = await db.select().from(mentorData);
     for (const mentor of allMentors) {
-      await db.insert(mentorAttendanceData).values({
-        eventId: eventId,
-        mentorId: mentor.mentorId,
-        status: false,
-      });
+      await db
+        .insert(mentorAttendanceData)
+        .values({
+          eventId: eventId,
+          mentorId: mentor.mentorId,
+          status: false,
+        })
+        .onConflictDoNothing();
     }
   } else {
     const specificMentors = await db
@@ -38,11 +41,14 @@ const assignMentorsToEvent = async (
       .from(mentorData)
       .where(eq(mentorData.job, String(job)));
     for (const mentor of specificMentors) {
-      await db.insert(mentorAttendanceData).values({
-        eventId: eventId,
-        mentorId: mentor.mentorId,
-        status: false,
-      });
+      await db
+        .insert(mentorAttendanceData)
+        .values({
+          eventId: eventId,
+          mentorId: mentor.mentorId,
+          status: false,
+        })
+        .onConflictDoNothing();
     }
   }
 };

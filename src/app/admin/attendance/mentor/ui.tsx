@@ -46,6 +46,10 @@ export default function AdminAttendanceMentorUI({
 
   const [selectedEvent, setSelectedEvent] = useState<number>(-1);
   const [searchText, setSearchText] = useState("");
+  const [sortOrder, setSortOrder] = useState<"default" | "notPresentFirst">(
+    "default",
+  );
+  const [showPresent, setShowPresent] = useState(true);
 
   useEffect(() => {
     setAttendanceState(mentorAttendance);
@@ -118,15 +122,30 @@ export default function AdminAttendanceMentorUI({
     if (!selectedEventData) return [];
 
     const term = searchText.trim().toLowerCase();
-    if (!term) return selectedEventData.mentors;
+    let mentors = selectedEventData.mentors;
 
-    return selectedEventData.mentors.filter((mentor) => {
-      const fullName = `${mentor.fName} ${mentor.lName}`.toLowerCase();
-      const mentorId = mentor.mentor_id.toString();
+    if (term) {
+      mentors = mentors.filter((mentor) => {
+        const fullName = `${mentor.fName} ${mentor.lName}`.toLowerCase();
+        const mentorId = mentor.mentor_id.toString();
 
-      return fullName.includes(term) || mentorId.includes(term);
-    });
-  }, [selectedEventData, searchText]);
+        return fullName.includes(term) || mentorId.includes(term);
+      });
+    }
+
+    if (!showPresent) {
+      mentors = mentors.filter((mentor) => !mentor.status);
+    }
+
+    if (sortOrder === "notPresentFirst") {
+      mentors = [...mentors].sort((a, b) => {
+        if (a.status === b.status) return 0;
+        return a.status ? 1 : -1;
+      });
+    }
+
+    return mentors;
+  }, [selectedEventData, searchText, sortOrder, showPresent]);
 
   return (
     <main className="admin-container">
@@ -168,6 +187,38 @@ export default function AdminAttendanceMentorUI({
               </option>
             ))}
           </select>
+        </div>
+        <div className="search-dropdown">
+          <select
+            className="form-select"
+            value={sortOrder}
+            onChange={(e) =>
+              setSortOrder(e.target.value as "default" | "notPresentFirst")
+            }
+          >
+            <option value="default">Default order</option>
+            <option value="notPresentFirst">Not present first</option>
+          </select>
+        </div>
+        <div
+          className="form-check"
+          style={{ display: "flex", alignItems: "center", gap: "8px" }}
+        >
+          <input
+            type="checkbox"
+            className="form-check-input"
+            id="showPresentCheckbox"
+            checked={showPresent}
+            onChange={(e) => setShowPresent(e.target.checked)}
+            style={{ width: "18px", height: "18px", cursor: "pointer" }}
+          />
+          <label
+            className="form-check-label"
+            htmlFor="showPresentCheckbox"
+            style={{ cursor: "pointer", whiteSpace: "nowrap" }}
+          >
+            Show mentors marked as present
+          </label>
         </div>
       </div>
 

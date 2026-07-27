@@ -31,6 +31,7 @@ export default function AdminAddMentor() {
   const [hallways, setHallways] = useState<Array<{ hallwayStopId: number; location: string | null }>>([]);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     getGroupIds().then(setGroups);
@@ -75,8 +76,10 @@ export default function AdminAddMentor() {
   };
 
   const handleAdd = async () => {
+    if (isSubmitting) return;
     if (!validate()) return;
 
+    setIsSubmitting(true);
     try {
       const mentor_return = await addMentor({
         f_name,
@@ -99,6 +102,7 @@ export default function AdminAddMentor() {
       router.push("/admin/mentor");
     } catch {
       showAlert(`Failed to add mentor: ${f_name} ${l_name}`, "danger");
+      setIsSubmitting(false);
     }
   };
 
@@ -275,7 +279,11 @@ export default function AdminAddMentor() {
         </div>
       </section>
       <div className="add-button-align">
-        <AddButton onClick={handleAdd} style={{ fontSize: "30px" }}>
+        <AddButton
+          onClick={handleAdd}
+          disabled={isSubmitting}
+          style={{ fontSize: "30px" }}
+        >
           Add
           <i
             className="bi bi-plus-circle"

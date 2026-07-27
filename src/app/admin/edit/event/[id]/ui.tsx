@@ -35,6 +35,7 @@ export default function AdminEditEventsUI({
   const [currentJob, setCurrentJob] = useState("");
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const loadEvent = async () => {
@@ -80,24 +81,31 @@ export default function AdminEditEventsUI({
   };
 
   const handleSave = async () => {
+    if (isSubmitting) return;
     if (!validate()) return;
 
-    await updateEventByID(
-      eventId,
-      {
-        name: name,
-        date: date,
-        time: time,
-        date2: hasSecondDate ? date2 : null,
-        time2: hasSecondDate ? time2 : null,
-        location: location,
-        job: job,
-        description: description,
-      },
-      currentJob,
-    );
-    showAlert(`Event ${name} updated successfully!`, "success");
-    router.push("/admin/events");
+    setIsSubmitting(true);
+    try {
+      await updateEventByID(
+        eventId,
+        {
+          name: name,
+          date: date,
+          time: time,
+          date2: hasSecondDate ? date2 : null,
+          time2: hasSecondDate ? time2 : null,
+          location: location,
+          job: job,
+          description: description,
+        },
+        currentJob,
+      );
+      showAlert(`Event ${name} updated successfully!`, "success");
+      router.push("/admin/events");
+    } catch (error) {
+      showAlert(`Error updating event: ${name}`, "danger");
+      setIsSubmitting(false);
+    }
   };
 
   const contentBoxStyle = {
@@ -288,7 +296,9 @@ export default function AdminEditEventsUI({
         </div>
       </div>
       <div style={{ display: "flex", alignItems: "center" }}>
-        <SaveButton onClick={handleSave}>Save</SaveButton>
+        <SaveButton onClick={handleSave} disabled={isSubmitting}>
+          Save
+        </SaveButton>
       </div>
     </main>
   );

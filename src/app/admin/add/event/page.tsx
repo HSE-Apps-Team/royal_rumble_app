@@ -26,6 +26,7 @@ export default function AdminAddEvent() {
   const [isRoyalRumble, setIsRoyalRumble] = useState(false);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleLogoClick = () => {
     router.push("/admin/events");
@@ -58,8 +59,10 @@ export default function AdminAddEvent() {
   };
 
   const handleAddClick = async () => {
+    if (isSubmitting) return;
     if (!validate()) return;
 
+    setIsSubmitting(true);
     try {
       const event_return = await addEvent({
         name,
@@ -84,6 +87,7 @@ export default function AdminAddEvent() {
       }
     } catch (error) {
       showAlert(`Error adding event: ${name}`, "danger");
+      setIsSubmitting(false);
     }
   };
 
@@ -314,7 +318,11 @@ export default function AdminAddEvent() {
         </div>
       </section>
       <div className="add-button-align">
-        <AddButton onClick={handleAddClick} style={{ fontSize: "30px" }}>
+        <AddButton
+          onClick={handleAddClick}
+          disabled={isSubmitting}
+          style={{ fontSize: "30px" }}
+        >
           Add
           <i
             className="bi bi-plus-circle"

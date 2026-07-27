@@ -34,6 +34,7 @@ export default function AdminEditMentorUI({
   const [interestsInvolvement, setInterestsInvolvement] = useState("");
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const loadMentor = async () => {
@@ -81,24 +82,31 @@ export default function AdminEditMentorUI({
   };
 
   const handleSave = async () => {
+    if (isSubmitting) return;
     if (!validate()) return;
 
-    await updateMentorByID(mentorId, {
-      f_name: fName,
-      l_name: lName,
-      tshirt_size: tshirtSize,
-      email: email,
-      grad_year: Number(gradYear),
-      job: job,
-      pizza_type: pizzaType,
-      languages: languages,
-      training_day: trainingDay,
-      phone_num: phoneNum,
-      past_mentor: pastMentor,
-      interests_involvement: interestsInvolvement,
-    });
-    showAlert(`Mentor ${fName} ${lName} updated successfully!`, "success");
-    router.push("/admin/mentor");
+    setIsSubmitting(true);
+    try {
+      await updateMentorByID(mentorId, {
+        f_name: fName,
+        l_name: lName,
+        tshirt_size: tshirtSize,
+        email: email,
+        grad_year: Number(gradYear),
+        job: job,
+        pizza_type: pizzaType,
+        languages: languages,
+        training_day: trainingDay,
+        phone_num: phoneNum,
+        past_mentor: pastMentor,
+        interests_involvement: interestsInvolvement,
+      });
+      showAlert(`Mentor ${fName} ${lName} updated successfully!`, "success");
+      router.push("/admin/mentor");
+    } catch (error) {
+      showAlert(`Error updating mentor: ${fName} ${lName}`, "danger");
+      setIsSubmitting(false);
+    }
   };
 
   const contentBoxStyle = {
@@ -264,7 +272,9 @@ export default function AdminEditMentorUI({
         </div>
       </div>
       <div style={{ display: "flex", alignItems: "center" }}>
-        <SaveButton onClick={handleSave}>Save</SaveButton>
+        <SaveButton onClick={handleSave} disabled={isSubmitting}>
+          Save
+        </SaveButton>
       </div>
     </main>
   );

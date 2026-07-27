@@ -9,6 +9,7 @@ type AddButtonProps = {
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void; // properly typed
   href?: string;
   style?: React.CSSProperties;
+  disabled?: boolean;
 };
 
 export default function AddButton({
@@ -16,6 +17,7 @@ export default function AddButton({
   onClick,
   href,
   style,
+  disabled,
 }: AddButtonProps) {
   const router = useRouter();
   const buttonStyle = {
@@ -34,23 +36,26 @@ export default function AddButton({
     width: style?.width || "270px",
     height: style?.height || "70px",
     textAlign: "center" as const,
-    cursor: "pointer",
+    cursor: disabled ? "not-allowed" : "pointer",
+    opacity: disabled ? 0.6 : 1,
     transition: "background-color 0.3s",
     margin: style?.margin || "10px",
   };
 
   const buttonHover = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (disabled) return;
     e.currentTarget.style.backgroundColor = "white";
     e.currentTarget.style.color = "var(--primaryBlue)";
     e.currentTarget.style.borderColor = "var(--primaryBlue)";
   };
 
   const buttonUnhover = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (disabled) return;
     e.currentTarget.style.backgroundColor = "var(--primaryBlue)";
     e.currentTarget.style.color = "white";
     e.currentTarget.style.borderColor = "transparent";
   };
-  
+
 
   return (
     <button
@@ -59,6 +64,7 @@ export default function AddButton({
       onMouseLeave={buttonUnhover}
       onClick={onClick ? onClick : () => href && router.push(href)}
       type="button"
+      disabled={disabled}
     >
       {children}
     </button>

@@ -84,7 +84,7 @@ async function insertData(table: string, rows: any[]) {
           .from(eventsData)
           .where(or(eq(eventsData.job, job), eq(eventsData.job, "ALL")));
         for (const event of eventIds) {
-          await db.insert(mentorAttendanceData).values({ mentorId: row["mentor_id"], eventId: event.eventId, status: false });
+          await db.insert(mentorAttendanceData).values({ mentorId: row["mentor_id"], eventId: event.eventId, status: false }).onConflictDoNothing();
         }
       }
       break;

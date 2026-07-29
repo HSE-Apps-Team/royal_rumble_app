@@ -28,12 +28,20 @@ interface GhostGroup {
   freshmen: Array<{ freshmen_id: string; name: string }>;
 }
 
+interface NonGhostGroup {
+  group_id: number;
+  name: string;
+  attendees: Array<{ attendee_id: string; name: string }>;
+}
+
 export default function AdminGhostGroups({
   ghostGroups,
   groupIds,
+  nonGhostGroups,
 }: {
   ghostGroups: GhostGroup[];
   groupIds: { groupId: number; name: string }[];
+  nonGhostGroups: NonGhostGroup[];
 }) {
   const router = useRouter();
   const { showAlert } = useAlert();
@@ -66,11 +74,9 @@ export default function AdminGhostGroups({
   const [appliedTeacher, setAppliedTeacher] = useState("");
   const [appliedPeriod, setAppliedPeriod] = useState("");
 
-  const handleLogoClick = () => router.push("/admin");
+  const [includeNonGhostGroups, setIncludeNonGhostGroups] = useState(false);
 
-  const formatPeople = (people: { name: string; freshmen_id: string }[]) => {
-    return people.map((p) => `${p.name}:${p.freshmen_id}`).join(", ");
-  };
+  const handleLogoClick = () => router.push("/admin");
 
   const teacherOptions = Array.from(
     new Set(ghostGroups.map((g) => g.teacher).filter((t) => t && t.trim() !== "")),
@@ -128,12 +134,28 @@ export default function AdminGhostGroups({
         freshmanQuery === "" || group.freshmen.some(matchesFreshmanSearch),
     );
 
-  const exportHeaders = ["Group Name", "Freshmen"];
+  const exportHeaders = ["Last name", "First name", "Student ID", "Group number"];
 
-  const exportData = filteredGroups.map((group) => [
-    group.name,
-    formatPeople(group.freshmen),
-  ]);
+  const exportData = filteredGroups
+    .flatMap((group) =>
+      group.freshmen.map((f) => {
+        const [firstName, ...rest] = f.name.split(" ");
+        const lastName = rest.join(" ");
+        return [lastName, firstName, f.freshmen_id, group.group_id];
+      }),
+    )
+    .concat(
+      includeNonGhostGroups
+        ? nonGhostGroups.flatMap((group) =>
+            group.attendees.map((a) => {
+              const [firstName, ...rest] = a.name.split(" ");
+              const lastName = rest.join(" ");
+              return [lastName, firstName, a.attendee_id, group.group_id];
+            }),
+          )
+        : [],
+    )
+    .sort((a, b) => (a[0] as string).localeCompare(b[0] as string));
 
   const handleReassign = async (
     freshmenId: string | number,
@@ -358,12 +380,41 @@ export default function AdminGhostGroups({
           Emptied a group? Click here to fix the group numbers
         </button>
 
-        <ExportToExcelButton
-          headers={exportHeaders}
-          data={exportData}
-          fileName={"Ghost_Groups_Export"}
-          style={{ fontSize: "21px", justifyContent: "flex-center" }}
-        />
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "6px",
+          }}
+        >
+          {nonGhostGroups.length > 0 && (
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                fontFamily: "Poppins, sans-serif",
+                fontSize: "13px",
+                cursor: "pointer",
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={includeNonGhostGroups}
+                onChange={(e) => setIncludeNonGhostGroups(e.target.checked)}
+              />
+              Found {nonGhostGroups.length} non-ghost group
+              {nonGhostGroups.length === 1 ? "" : "s"} — include in export
+            </label>
+          )}
+          <ExportToExcelButton
+            headers={exportHeaders}
+            data={exportData}
+            fileName={"Ghost_Groups_Export"}
+            style={{ fontSize: "21px", justifyContent: "flex-center" }}
+          />
+        </div>
 
         <AddButton
           onClick={() => {

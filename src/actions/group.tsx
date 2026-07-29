@@ -217,6 +217,65 @@ export async function getAllGhostGroups() {
   return [unassigned, ...sortedGroups];
 }
 
+// Real (event-day) groups from group_data that have no corresponding ghost
+// group number in seminar_data — i.e. groups that exist for the actual event
+// but aren't reflected in the Freshmen Prep roster projection.
+export async function getNonGhostGroups() {
+  const ghostGroups = await getAllGhostGroups();
+  const ghostNumbers = new Set(
+    ghostGroups
+      .filter((g) => g.group_id !== "Unassigned")
+      .map((g) => g.group_id as number),
+  );
+
+  const groups = await db
+    .select({
+      groupId: groupData.groupId,
+      name: groupData.name,
+    })
+    .from(groupData)
+    .orderBy(asc(groupData.groupId));
+
+  // groupData.groupId is an unrelated serial id (see comment in
+  // getAllGhostGroups); the real group number is encoded in the name, which
+  // is always created as `Group {seminarGroupId}` (see resolveGroupId above).
+  const parseGroupNumber = (name: string) => {
+    const match = name.trim().match(/^Group (\d+)$/i);
+    return match ? Number(match[1]) : null;
+  };
+
+  const nonGhostGroups = groups
+    .map((g) => ({ ...g, groupNumber: parseGroupNumber(g.name) }))
+    .filter((g) => g.groupNumber !== null && !ghostNumbers.has(g.groupNumber));
+
+  const attendees = await db
+    .select({
+      groupId: attendeeData.groupId,
+      attendeeId: attendeeData.attendeeId,
+      fName: attendeeData.fName,
+      lName: attendeeData.lName,
+    })
+    .from(attendeeData)
+    .where(inArray(attendeeData.groupId, nonGhostGroups.map((g) => g.groupId)));
+
+  const attendeesByGroup = new Map<number, Array<{ attendee_id: string; name: string }>>();
+  for (const a of attendees) {
+    if (a.groupId === null) continue;
+    const list = attendeesByGroup.get(a.groupId) ?? [];
+    list.push({
+      attendee_id: a.attendeeId.toString(),
+      name: `${a.fName ?? ""} ${a.lName ?? ""}`.trim(),
+    });
+    attendeesByGroup.set(a.groupId, list);
+  }
+
+  return nonGhostGroups.map((g) => ({
+    group_id: g.groupNumber as number,
+    name: g.name,
+    attendees: attendeesByGroup.get(g.groupId) ?? [],
+  }));
+}
+
 export async function getSeminarGroupIds() {
   const ghostGroups = await getAllGhostGroups();
   return ghostGroups

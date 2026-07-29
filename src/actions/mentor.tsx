@@ -50,8 +50,9 @@ export const getAmbassadorAssignments = async () => {
       fName: mentorData.fName,
       lName: mentorData.lName,
     })
-    .from(ambassadorData)
-    .innerJoin(mentorData, eq(ambassadorData.mentorId, mentorData.mentorId))
+    .from(mentorData)
+    .where(sql`upper(trim(${mentorData.job})) = 'AMBASSADOR'`)
+    .leftJoin(ambassadorData, eq(ambassadorData.mentorId, mentorData.mentorId))
     .leftJoin(groupData, eq(ambassadorData.groupId, groupData.groupId))
     .orderBy(sql`${ambassadorData.groupId} ASC NULLS FIRST`);
   return groups;

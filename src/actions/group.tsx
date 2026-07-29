@@ -57,8 +57,9 @@ export async function getAllGroups() {
       fName: mentorData.fName,
       lName: mentorData.lName,
     })
-    .from(ambassadorData)
-    .innerJoin(mentorData, eq(ambassadorData.mentorId, mentorData.mentorId));
+    .from(mentorData)
+    .where(sql`upper(trim(${mentorData.job})) = 'AMBASSADOR'`)
+    .leftJoin(ambassadorData, eq(ambassadorData.mentorId, mentorData.mentorId));
 
   interface GroupDetail {
     group_id: number;
@@ -228,9 +229,11 @@ export async function getNullGroupMentors() {
       fName: mentorData.fName,
       lName: mentorData.lName,
     })
-    .from(ambassadorData)
-    .where(isNull(ambassadorData.groupId))
-    .innerJoin(mentorData, eq(ambassadorData.mentorId, mentorData.mentorId));
+    .from(mentorData)
+    .where(
+      sql`upper(trim(${mentorData.job})) = 'AMBASSADOR' AND (${ambassadorData.groupId} IS NULL OR ${ambassadorData.mentorId} IS NULL)`,
+    )
+    .leftJoin(ambassadorData, eq(ambassadorData.mentorId, mentorData.mentorId));
   return groupLeaders;
 }
 

@@ -8,11 +8,13 @@ export default function ModalShell({
   onClose,
   children,
   footer,
+  width,
 }: {
   title: string;
   onClose: () => void;
   children: React.ReactNode;
   footer: React.ReactNode;
+  width?: string;
 }) {
   return (
     <div
@@ -34,7 +36,7 @@ export default function ModalShell({
           fontFamily: "Poppins, sans-serif",
           backgroundColor: "white",
           overflow: "hidden",
-          width: "min(500px, 90vw)",
+          width: `min(${width ?? "500px"}, 90vw)`,
         }}
         onClick={(e) => e.stopPropagation()}
       >

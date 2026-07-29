@@ -9,11 +9,13 @@ import ViewDropdown from "../../components/viewDropdown";
 import DropdownTable from "../../components/dropdownTable";
 import ExportToExcelButton from "../../components/ExportToExcelButton";
 import ModalShell from "../../components/ModalShell";
+import AddButton from "../../components/addButton";
 import "../../css/admin.css";
 import "../../css/logo+login.css";
 import {
   reassignSeminarFreshman,
   compactSeminarGroupNumbers,
+  addSeminarFreshman,
 } from "@/actions/group";
 import { useAlert } from "@/app/context/AlertContext";
 
@@ -39,6 +41,21 @@ export default function AdminGhostGroups({
   const [selectedGroupId, setSelectedGroupId] = useState<string>("");
   const [showFixModal, setShowFixModal] = useState(false);
   const [fixing, setFixing] = useState(false);
+
+  // Add Attendee modal
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [adding, setAdding] = useState(false);
+  const [newFreshmanId, setNewFreshmanId] = useState("");
+  const [newFirstName, setNewFirstName] = useState("");
+  const [newLastName, setNewLastName] = useState("");
+  const [newGroupId, setNewGroupId] = useState("");
+
+  const resetAddForm = () => {
+    setNewFreshmanId("");
+    setNewFirstName("");
+    setNewLastName("");
+    setNewGroupId("");
+  };
 
   // Freshman search (by first/last name or ID)
   const [freshmanSearch, setFreshmanSearch] = useState("");
@@ -130,6 +147,45 @@ export default function AdminGhostGroups({
       router.refresh();
     } else {
       showAlert(`Failed to reassign freshman ${freshmenId}`, "danger");
+    }
+  };
+
+  const handleAddAttendee = async () => {
+    const parsedId = Number(newFreshmanId);
+    if (!newFreshmanId.trim() || isNaN(parsedId)) {
+      showAlert("Please enter a valid Freshman ID", "danger");
+      return;
+    }
+    if (!newFirstName.trim() || !newLastName.trim()) {
+      showAlert("Please enter a first and last name", "danger");
+      return;
+    }
+
+    const isUnassigned = newGroupId === "" || newGroupId === "unassigned";
+    const selectedGroup = isUnassigned
+      ? null
+      : ghostGroups.find((g) => g.group_id.toString() === newGroupId);
+
+    setAdding(true);
+    const result = await addSeminarFreshman({
+      freshmenId: parsedId,
+      fName: newFirstName.trim(),
+      lName: newLastName.trim(),
+      teacherFullName: selectedGroup?.teacher ?? "",
+      period: selectedGroup?.period ?? "",
+      groupId: isUnassigned ? null : Number(newGroupId),
+    });
+    setAdding(false);
+
+    if (result.success) {
+      showAlert(`Successfully added ${newFirstName} ${newLastName}`, "success");
+      resetAddForm();
+      setShowAddModal(false);
+      router.refresh();
+    } else if (result.error === "duplicate") {
+      showAlert(`Freshman ID ${newFreshmanId} is already in the roster`, "danger");
+    } else {
+      showAlert("Failed to add attendee", "danger");
     }
   };
 
@@ -308,6 +364,21 @@ export default function AdminGhostGroups({
           fileName={"Ghost_Groups_Export"}
           style={{ fontSize: "21px", justifyContent: "flex-center" }}
         />
+
+        <AddButton
+          onClick={() => {
+            resetAddForm();
+            if (selectedGroupId !== "") setNewGroupId(selectedGroupId);
+            setShowAddModal(true);
+          }}
+          style={{ fontSize: "15px", width: "auto", height: "auto", padding: "8px 18px", margin: 0 }}
+        >
+          Add Attendee
+          <i
+            className="bi bi-plus-circle"
+            style={{ marginLeft: "10px", fontSize: "18px" }}
+          />
+        </AddButton>
       </div>
 
       {/* VIEW DROPDOWN SECTION */}
@@ -414,6 +485,115 @@ export default function AdminGhostGroups({
             <br />
             <strong>This affects all freshmen in the seminar roster and cannot be undone.</strong>
           </p>
+        </ModalShell>
+      )}
+
+      {showAddModal && (
+        <ModalShell
+          title="Add Attendee to Ghost Group"
+          width="700px"
+          onClose={() => {
+            setShowAddModal(false);
+            resetAddForm();
+          }}
+          footer={
+            <>
+              <button
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: "var(--secondarySilver)",
+                  color: "white",
+                  fontFamily: "Poppins, sans-serif",
+                  fontWeight: "bold",
+                  fontSize: "15px",
+                  border: "5px solid transparent",
+                  borderRadius: "14px",
+                  padding: "8px 18px",
+                  cursor: "pointer",
+                  minWidth: "100px",
+                }}
+                onClick={() => {
+                  setShowAddModal(false);
+                  resetAddForm();
+                }}
+                disabled={adding}
+              >
+                Cancel
+              </button>
+              <button
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: "var(--primaryBlue)",
+                  color: "white",
+                  fontFamily: "Poppins, sans-serif",
+                  fontWeight: "bold",
+                  fontSize: "15px",
+                  border: "5px solid transparent",
+                  borderRadius: "14px",
+                  padding: "8px 18px",
+                  cursor: "pointer",
+                  minWidth: "100px",
+                  opacity: adding ? 0.6 : 1,
+                }}
+                onClick={handleAddAttendee}
+                disabled={adding}
+              >
+                {adding ? "Adding..." : "Add"}
+              </button>
+            </>
+          }
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
+            <div className="form-row">
+              <label className="form-label">Freshman ID:</label>
+              <input
+                type="text"
+                className="form-input"
+                placeholder="Freshman ID"
+                value={newFreshmanId}
+                onChange={(e) => setNewFreshmanId(e.target.value)}
+              />
+            </div>
+            <div className="form-row">
+              <label className="form-label">First Name:</label>
+              <input
+                type="text"
+                className="form-input"
+                placeholder="First Name"
+                value={newFirstName}
+                onChange={(e) => setNewFirstName(e.target.value)}
+              />
+            </div>
+            <div className="form-row">
+              <label className="form-label">Last Name:</label>
+              <input
+                type="text"
+                className="form-input"
+                placeholder="Last Name"
+                value={newLastName}
+                onChange={(e) => setNewLastName(e.target.value)}
+              />
+            </div>
+            <div className="form-row">
+              <label className="form-label">Ghost Group:</label>
+              <select
+                className="form-select"
+                value={newGroupId}
+                onChange={(e) => setNewGroupId(e.target.value)}
+              >
+                <option value="unassigned">Unassigned</option>
+                {groupIds.map((g) => (
+                  <option key={g.groupId} value={g.groupId.toString()}>
+                    {g.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
         </ModalShell>
       )}
     </main>

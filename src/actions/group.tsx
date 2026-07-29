@@ -744,6 +744,40 @@ export async function reassignSeminarFreshman(
   return { success: true, freshmenId };
 }
 
+// Adds a freshman not currently in the seminar roster directly into a ghost
+// group, so admins can fix rostering gaps without re-uploading seminar data.
+export async function addSeminarFreshman(data: {
+  freshmenId: number;
+  fName: string;
+  lName: string;
+  teacherFullName?: string;
+  period?: string;
+  semester?: string;
+  groupId: number | null;
+}) {
+  const existing = await db
+    .select({ freshmenId: seminarData.freshmenId })
+    .from(seminarData)
+    .where(eq(seminarData.freshmenId, data.freshmenId))
+    .limit(1);
+
+  if (existing.length > 0) {
+    return { success: false, error: "duplicate" as const };
+  }
+
+  await db.insert(seminarData).values({
+    freshmenId: data.freshmenId,
+    fName: data.fName,
+    lName: data.lName,
+    teacherFullName: data.teacherFullName ?? "",
+    period: data.period ?? "",
+    semester: data.semester ?? "",
+    groupId: data.groupId,
+  });
+
+  return { success: true, freshmenId: data.freshmenId };
+}
+
 // Renumbers seminar_data.group_id to consecutive integers starting at 1,
 // preserving relative order, so gaps left by emptying/deleting a group
 // (e.g. moving everyone out of group 2) collapse instead of leaving a hole.

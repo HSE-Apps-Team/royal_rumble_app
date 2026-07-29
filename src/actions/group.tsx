@@ -101,6 +101,59 @@ export async function getAllGroups() {
   return Array.from(groupMap.values());
 }
 
+export async function getAllGhostGroups() {
+  const students = await db
+    .select({
+      groupId: seminarData.groupId,
+      freshmenId: seminarData.freshmenId,
+      fName: seminarData.fName,
+      lName: seminarData.lName,
+    })
+    .from(seminarData);
+
+  interface GhostGroupDetail {
+    group_id: number | "Unassigned";
+    name: string;
+    freshmen: Array<{ freshmen_id: string; name: string }>;
+  }
+
+  // seminar_data.group_id has no reliable correspondence to group_data.group_id
+  // (group_data's serial keys are unrelated and can contain duplicate "Group N"
+  // names from being regenerated), so ghost groups are keyed purely off
+  // seminar_data.group_id rather than joined against group_data.
+  const groupMap = new Map<number, GhostGroupDetail>();
+
+  const unassigned: GhostGroupDetail = {
+    group_id: "Unassigned",
+    name: "Unassigned",
+    freshmen: [],
+  };
+
+  for (const s of students) {
+    let target: GhostGroupDetail;
+    if (s.groupId === null) {
+      target = unassigned;
+    } else {
+      target = groupMap.get(s.groupId) ?? {
+        group_id: s.groupId,
+        name: `Group ${s.groupId}`,
+        freshmen: [],
+      };
+      groupMap.set(s.groupId, target);
+    }
+    target.freshmen.push({
+      freshmen_id: (s.freshmenId ?? "").toString(),
+      name: `${s.fName ?? ""} ${s.lName ?? ""}`.trim(),
+    });
+  }
+
+  const sortedGroups = Array.from(groupMap.values()).sort(
+    (a, b) => (a.group_id as number) - (b.group_id as number),
+  );
+
+  return [unassigned, ...sortedGroups];
+}
+
 export async function getGroupByGroupId(groupId: number) {
   const group = await db
     .select()

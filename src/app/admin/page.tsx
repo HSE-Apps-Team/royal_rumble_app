@@ -55,6 +55,7 @@ export default async function AdminHomepage() {
         </div>
 
         <div style={{ display: "flex", flexDirection: "row", gap: "20px", margin: "20px" }}>
+          <AdminButtons link="/admin/ghost_groups">Ghost Groups</AdminButtons>
           <AdminButtons link="/admin/reset">Reset Tables</AdminButtons>
         </div>
       </section>

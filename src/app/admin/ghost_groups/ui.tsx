@@ -70,10 +70,13 @@ export default function AdminGhostGroups({
           textAlign: "center",
         }}
       >
-        <i className="bi bi-exclamation-triangle-fill" style={{ marginRight: "10px" }}></i>
-        These are ghost groups — this is what the groups would look like if every
-        freshman in the seminar roster were attending Royal Rumble, not just those
-        currently registered.
+        <i
+          className="bi bi-exclamation-triangle-fill"
+          style={{ marginRight: "10px" }}
+        ></i>
+        These are ghost groups — this is what the groups would look like if
+        every freshman in the Freshmen Prep roster were attending Royal Rumble,
+        not just those currently registered.
       </div>
 
       <button className="back-button" onClick={handleLogoClick}>
@@ -127,9 +130,7 @@ export default function AdminGhostGroups({
           title: group.name,
           content: (
             <section>
-              <label className="info-label">
-                Freshmen:
-              </label>
+              <label className="info-label">Freshmen:</label>
               <InfoTable
                 headers={["Freshman Name", "Freshmen ID"]}
                 data={group.freshmen.map((f) => [f.name, f.freshmen_id])}

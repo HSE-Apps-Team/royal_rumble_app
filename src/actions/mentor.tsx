@@ -132,12 +132,17 @@ export const getHallwayHostAssignments = async () => {
   const hosts = await db
     .select({
       hallwayStopId: hallwayHostData.hallwayStopId,
+      location: hallwayStopData.location,
       mentorId: hallwayHostData.mentorId,
       fName: mentorData.fName,
       lName: mentorData.lName,
     })
     .from(hallwayHostData)
-    .innerJoin(mentorData, eq(hallwayHostData.mentorId, mentorData.mentorId));
+    .innerJoin(mentorData, eq(hallwayHostData.mentorId, mentorData.mentorId))
+    .leftJoin(
+      hallwayStopData,
+      eq(hallwayHostData.hallwayStopId, hallwayStopData.hallwayStopId),
+    );
   return hosts;
 };
 

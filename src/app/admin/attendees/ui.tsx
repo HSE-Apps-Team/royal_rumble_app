@@ -24,6 +24,7 @@ export default function AdminAttendees({
     interests: string;
     healthConcerns: string;
     present: boolean;
+    assignedGroup: string;
   }>;
 }) {
   // Column toggle states
@@ -36,6 +37,7 @@ export default function AdminAttendees({
   const [interestsSelected, setInterestsSelected] = useState(false);
   const [healthConcernsSelected, setHealthConcernsSelected] = useState(false);
   const [presentSelected, setPresentSelected] = useState(false);
+  const [assignedGroupSelected, setAssignedGroupSelected] = useState(false);
 
   // Search & filter state
   const [searchText, setSearchText] = useState("");
@@ -52,6 +54,7 @@ export default function AdminAttendees({
     "Interests",
     "Health Concerns",
     "Present",
+    "Assigned Group",
   ];
 
   // Convert attendee data to the format EditTable expects
@@ -65,6 +68,7 @@ export default function AdminAttendees({
     f.interests,
     f.healthConcerns,
     f.present ? "Yes" : "No",
+    f.assignedGroup ?? "",
   ]);
 
   // Unique languages from data (excluding English, sorted)
@@ -121,6 +125,7 @@ export default function AdminAttendees({
   if (interestsSelected) visibleColumns.push(6);
   if (healthConcernsSelected) visibleColumns.push(7);
   if (presentSelected) visibleColumns.push(8);
+  if (assignedGroupSelected) visibleColumns.push(9);
 
   // If none selected → default to first + last name
   if (visibleColumns.length === 0) visibleColumns.push(1, 2);
@@ -274,6 +279,16 @@ export default function AdminAttendees({
                   onChange={(e) => setPresentSelected(e.target.checked)}
                 />
                 Present
+              </label>
+
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  className="checkbox-input"
+                  checked={assignedGroupSelected}
+                  onChange={(e) => setAssignedGroupSelected(e.target.checked)}
+                />
+                Assigned Group
               </label>
             </div>
           </form>

@@ -27,6 +27,9 @@ export default function AdminMentors({
     pizzaType: string;
     pastMentor: boolean | null;
     interestsInvolvement: string | null;
+    assignedGroup: string;
+    assignedHallway: string;
+    otherMentorsInGroup: string;
   }>;
 }) {
   //   Column toggle states
@@ -43,6 +46,9 @@ export default function AdminMentors({
   const [pizzaSelected, setPizzaSelected] = useState(false);
   const [pastMentorSelected, setPastMentorSelected] = useState(false);
   const [interestsSelected, setInterestsSelected] = useState(false);
+  const [assignedGroupSelected, setAssignedGroupSelected] = useState(false);
+  const [assignedHallwaySelected, setAssignedHallwaySelected] = useState(false);
+  const [otherMentorsSelected, setOtherMentorsSelected] = useState(false);
 
   // Search & filter state
   const [searchText, setSearchText] = useState("");
@@ -68,6 +74,9 @@ export default function AdminMentors({
     "Pizza Type",
     "Past Mentor",
     "Interests / Involvement",
+    "Assigned Group",
+    "Assigned Hallway",
+    "Other Mentors in Group",
   ];
 
   // Convert data to the format EditTable expects
@@ -85,6 +94,9 @@ export default function AdminMentors({
     m.pizzaType,
     m.pastMentor ? "Yes" : "No",
     m.interestsInvolvement ?? "",
+    m.assignedGroup ?? "",
+    m.assignedHallway ?? "",
+    m.otherMentorsInGroup ?? "",
   ]);
 
   // Dynamic dropdown options derived from actual data
@@ -160,6 +172,15 @@ export default function AdminMentors({
     return true;
   });
 
+  // Ambassador-only column: only offer/show "Assigned Group" when the Job filter is set to Ambassador
+  const isAmbassadorJobSelected =
+    selectedJob.trim().toUpperCase() === "AMBASSADOR";
+  const isHallwayHostJobSelected =
+    selectedJob.trim().toUpperCase() === "HALLWAY HOST";
+  // "Other Mentors in Group" applies to both Ambassadors (same group) and
+  // Hallway Hosts (same hallway stop)
+  const isGroupedJobSelected = isAmbassadorJobSelected || isHallwayHostJobSelected;
+
   //   Generate visible columns
   const visibleColumns: number[] = [];
   if (IDSelected) visibleColumns.push(0);
@@ -175,6 +196,9 @@ export default function AdminMentors({
   if (pizzaSelected) visibleColumns.push(10);
   if (pastMentorSelected) visibleColumns.push(11);
   if (interestsSelected) visibleColumns.push(12);
+  if (isAmbassadorJobSelected && assignedGroupSelected) visibleColumns.push(13);
+  if (isHallwayHostJobSelected && assignedHallwaySelected) visibleColumns.push(14);
+  if (isGroupedJobSelected && otherMentorsSelected) visibleColumns.push(15);
 
   // If none selected → default to first + last name
   if (visibleColumns.length === 0) visibleColumns.push(1, 2);
@@ -448,6 +472,41 @@ export default function AdminMentors({
                 Interests
               </label>
             </div>
+            {isGroupedJobSelected && (
+              <div className="form-row checkbox-row">
+                {isAmbassadorJobSelected && (
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      className="checkbox-input"
+                      checked={assignedGroupSelected}
+                      onChange={(e) => setAssignedGroupSelected(e.target.checked)}
+                    />
+                    Assigned Group
+                  </label>
+                )}
+                {isHallwayHostJobSelected && (
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      className="checkbox-input"
+                      checked={assignedHallwaySelected}
+                      onChange={(e) => setAssignedHallwaySelected(e.target.checked)}
+                    />
+                    Assigned Hallway
+                  </label>
+                )}
+                <label className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    className="checkbox-input"
+                    checked={otherMentorsSelected}
+                    onChange={(e) => setOtherMentorsSelected(e.target.checked)}
+                  />
+                  Other Mentors in Group
+                </label>
+              </div>
+            )}
           </form>
         </div>
       </div>

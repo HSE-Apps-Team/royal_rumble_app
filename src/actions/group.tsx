@@ -154,6 +154,18 @@ export async function getAllGhostGroups() {
   return [unassigned, ...sortedGroups];
 }
 
+export async function getSeminarGroupIds() {
+  const rows = await db
+    .selectDistinct({ groupId: seminarData.groupId })
+    .from(seminarData)
+    .orderBy(asc(seminarData.groupId));
+
+  return rows
+    .map((r) => r.groupId)
+    .filter((id): id is number => id !== null)
+    .map((id) => ({ groupId: id, name: `Group ${id}` }));
+}
+
 export async function getGroupByGroupId(groupId: number) {
   const group = await db
     .select()
@@ -449,6 +461,11 @@ export async function hasAttendeeData(): Promise<boolean> {
   return rows.length > 1;
 }
 
+export async function hasGroupData(): Promise<boolean> {
+  const rows = await db.select({ groupId: groupData.groupId }).from(groupData).limit(1);
+  return rows.length > 0;
+}
+
 export async function createSeminarGroups() {
   const allStudents = await db.select().from(seminarData);
 
@@ -631,6 +648,60 @@ export async function updateHallwayByID(hallwayId: number, location: string) {
 
 {
   /* End of Hallway Update
+==================================== */
+}
+
+{
+  /* Ghost Group (seminar_data) Update
+==================================== */
+}
+
+export async function reassignSeminarFreshman(
+  freshmenId: number,
+  newGroupId: number | null,
+) {
+  await db
+    .update(seminarData)
+    .set({ groupId: newGroupId })
+    .where(eq(seminarData.freshmenId, freshmenId));
+  return { success: true, freshmenId };
+}
+
+// Renumbers seminar_data.group_id to consecutive integers starting at 1,
+// preserving relative order, so gaps left by emptying/deleting a group
+// (e.g. moving everyone out of group 2) collapse instead of leaving a hole.
+export async function compactSeminarGroupNumbers() {
+  const rows = await db
+    .selectDistinct({ groupId: seminarData.groupId })
+    .from(seminarData)
+    .orderBy(asc(seminarData.groupId));
+
+  const oldIds = rows
+    .map((r) => r.groupId)
+    .filter((id): id is number => id !== null);
+
+  // Renumber via a temporary offset first so intermediate updates can never
+  // collide with an existing (not-yet-renumbered) group_id.
+  const offset = 1_000_000;
+  for (let i = 0; i < oldIds.length; i++) {
+    await db
+      .update(seminarData)
+      .set({ groupId: offset + i + 1 })
+      .where(eq(seminarData.groupId, oldIds[i]));
+  }
+
+  for (let i = 0; i < oldIds.length; i++) {
+    await db
+      .update(seminarData)
+      .set({ groupId: i + 1 })
+      .where(eq(seminarData.groupId, offset + i + 1));
+  }
+
+  return { success: true, groupCount: oldIds.length };
+}
+
+{
+  /* End of Ghost Group (seminar_data) Update
 ==================================== */
 }
 

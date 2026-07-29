@@ -5,6 +5,7 @@ import LogoButton from "../../components/logoButton";
 import LoginButton from "../../components/loginButton";
 import InfoBox from "../../components/infoBox";
 import ContentModal from "../../components/ContentModal";
+import ModalShell from "../../components/ModalShell";
 import "../../css/admin.css";
 import "../../css/logo+login.css";
 import { useEffect, useState } from "react";
@@ -14,6 +15,7 @@ import {
   syncGroups,
   hasSeminarData,
   hasAttendeeData,
+  hasGroupData,
 } from "@/actions/group";
 import { createGroupsFromDB, createEstimatedGroups } from "@/actions/routes";
 import {
@@ -53,6 +55,7 @@ export default function AdminUpload() {
   >({});
   const [estimatedGroupCount, setEstimatedGroupCount] = useState<string>("");
   const [fileDetailsOpen, setFileDetailsOpen] = useState<string | null>(null);
+  const [showCreateGroupsWarning, setShowCreateGroupsWarning] = useState(false);
 
   const [eventOptions, setEventOptions] = useState<EventOption[]>([]);
   const [selectedAttendanceEvent, setSelectedAttendanceEvent] = useState<
@@ -586,6 +589,11 @@ export default function AdminUpload() {
                       createGroups: true,
                     }));
                     try {
+                      const groupsExist = await hasGroupData();
+                      if (groupsExist) {
+                        setShowCreateGroupsWarning(true);
+                        return;
+                      }
                       const groupTotal = await createGroupsFromDB();
                       showAlert(
                         `Created ${groupTotal} groups from seminar data and seeded tour routes automatically.`,
@@ -1320,6 +1328,64 @@ export default function AdminUpload() {
           Go to Reset Tables
         </button>
       </div>
+
+      {showCreateGroupsWarning && (
+        <ModalShell
+          title="Groups Already Exist"
+          onClose={() => setShowCreateGroupsWarning(false)}
+          footer={
+            <>
+              <button
+                style={buttonStyle}
+                onMouseEnter={buttonHover}
+                onMouseLeave={buttonUnhover}
+                type="button"
+                onClick={() => setShowCreateGroupsWarning(false)}
+              >
+                Cancel
+              </button>
+              <button
+                style={buttonStyle2}
+                onMouseEnter={buttonHover2}
+                onMouseLeave={buttonUnhover2}
+                type="button"
+                disabled={groupActionLoading["createGroups"]}
+                onClick={async () => {
+                  setShowCreateGroupsWarning(false);
+                  setGroupActionLoading((prev) => ({
+                    ...prev,
+                    createGroups: true,
+                  }));
+                  try {
+                    const groupTotal = await createGroupsFromDB();
+                    showAlert(
+                      `Created ${groupTotal} groups from seminar data and seeded tour routes automatically.`,
+                      "success",
+                    );
+                  } finally {
+                    setGroupActionLoading((prev) => ({
+                      ...prev,
+                      createGroups: false,
+                    }));
+                  }
+                }}
+              >
+                Continue Anyway
+              </button>
+            </>
+          }
+        >
+          <p style={{ margin: 0, fontSize: "17px" }}>
+            Groups already exist in the database — likely from{" "}
+            <strong>Create Estimated Groups</strong> or a previous run of{" "}
+            <strong>Create Groups</strong>. Running this again will create a
+            second, duplicate set of groups instead of replacing the existing
+            ones. Clear the groups from{" "}
+            <strong>Reset Tables</strong> first if you want a clean set, or
+            continue only if you&apos;re sure you want duplicates.
+          </p>
+        </ModalShell>
+      )}
     </main>
   );
 }

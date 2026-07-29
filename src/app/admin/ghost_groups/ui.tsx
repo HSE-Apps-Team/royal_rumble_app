@@ -6,10 +6,16 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import LogoButton from "../../components/logoButton";
 import LoginButton from "../../components/loginButton";
 import ViewDropdown from "../../components/viewDropdown";
-import InfoTable from "../../components/infoTable";
+import DropdownTable from "../../components/dropdownTable";
 import ExportToExcelButton from "../../components/ExportToExcelButton";
+import ModalShell from "../../components/ModalShell";
 import "../../css/admin.css";
 import "../../css/logo+login.css";
+import {
+  reassignSeminarFreshman,
+  compactSeminarGroupNumbers,
+} from "@/actions/group";
+import { useAlert } from "@/app/context/AlertContext";
 
 interface GhostGroup {
   group_id: number | "Unassigned";
@@ -19,12 +25,17 @@ interface GhostGroup {
 
 export default function AdminGhostGroups({
   ghostGroups,
+  groupIds,
 }: {
   ghostGroups: GhostGroup[];
+  groupIds: { groupId: number; name: string }[];
 }) {
   const router = useRouter();
+  const { showAlert } = useAlert();
 
   const [selectedGroupId, setSelectedGroupId] = useState<string>("");
+  const [showFixModal, setShowFixModal] = useState(false);
+  const [fixing, setFixing] = useState(false);
 
   const handleLogoClick = () => router.push("/admin");
 
@@ -43,6 +54,21 @@ export default function AdminGhostGroups({
     group.name,
     formatPeople(group.freshmen),
   ]);
+
+  const handleReassign = async (
+    freshmenId: string | number,
+    newGroupId: string | number,
+  ) => {
+    const parsed = newGroupId === "unassigned" ? null : Number(newGroupId);
+    const result = await reassignSeminarFreshman(Number(freshmenId), parsed);
+
+    if (result.success) {
+      showAlert(`Successfully reassigned freshman ${freshmenId}`, "success");
+      router.refresh();
+    } else {
+      showAlert(`Failed to reassign freshman ${freshmenId}`, "danger");
+    }
+  };
 
   return (
     <main className="admin-container">
@@ -109,12 +135,33 @@ export default function AdminGhostGroups({
         style={{
           width: "87%",
           display: "flex",
-          justifyContent: "flex-end",
+          justifyContent: "space-between",
           alignItems: "center",
           marginTop: "20px",
           fontSize: "15px",
         }}
       >
+        <button
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "var(--secondarySilver)",
+            color: "white",
+            fontFamily: "Poppins, sans-serif",
+            fontWeight: "bold",
+            fontSize: "15px",
+            border: "3px solid var(--textBlack)",
+            borderRadius: "14px",
+            padding: "8px 18px",
+            cursor: "pointer",
+          }}
+          onClick={() => setShowFixModal(true)}
+        >
+          <i className="bi bi-tools" style={{ marginRight: "8px" }} />
+          Emptied a group? Click here to fix the group numbers
+        </button>
+
         <ExportToExcelButton
           headers={exportHeaders}
           data={exportData}
@@ -129,17 +176,106 @@ export default function AdminGhostGroups({
         sections={filteredGroups.map((group) => ({
           title: group.name,
           content: (
-            <section>
+            <section style={{ width: "100%" }}>
               <label className="info-label">Freshmen:</label>
-              <InfoTable
+              <DropdownTable
                 headers={["Freshman Name", "Freshmen ID"]}
-                data={group.freshmen.map((f) => [f.name, f.freshmen_id])}
+                data={group.freshmen.map((f) => [
+                  f.freshmen_id,
+                  f.name,
+                  group.group_id === "Unassigned" ? null : group.group_id,
+                ])}
+                idIndex={0}
+                visibleColumns={[1, 0]}
+                currentDropdownColumnIndex={2}
+                dropdownHeader="Reassign"
+                dropdownValues={groupIds.map((g) => g.groupId)}
+                dropdownDisplayTexts={groupIds.map((g) => g.name)}
+                reassignAction={handleReassign}
               />
             </section>
           ),
           sectionId: group.group_id,
         }))}
       />
+
+      {showFixModal && (
+        <ModalShell
+          title="Fix Group Numbers"
+          onClose={() => setShowFixModal(false)}
+          footer={
+            <>
+              <button
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: "var(--secondarySilver)",
+                  color: "white",
+                  fontFamily: "Poppins, sans-serif",
+                  fontWeight: "bold",
+                  fontSize: "15px",
+                  border: "5px solid transparent",
+                  borderRadius: "14px",
+                  padding: "8px 18px",
+                  cursor: "pointer",
+                  minWidth: "100px",
+                }}
+                onClick={() => setShowFixModal(false)}
+                disabled={fixing}
+              >
+                Cancel
+              </button>
+              <button
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: "var(--primaryBlue)",
+                  color: "white",
+                  fontFamily: "Poppins, sans-serif",
+                  fontWeight: "bold",
+                  fontSize: "15px",
+                  border: "5px solid transparent",
+                  borderRadius: "14px",
+                  padding: "8px 18px",
+                  cursor: "pointer",
+                  minWidth: "100px",
+                  opacity: fixing ? 0.6 : 1,
+                }}
+                onClick={async () => {
+                  setFixing(true);
+                  const result = await compactSeminarGroupNumbers();
+                  setFixing(false);
+                  if (result?.success) {
+                    showAlert(
+                      `Successfully renumbered groups 1-${result.groupCount}`,
+                      "success",
+                    );
+                  } else {
+                    showAlert("Failed to fix group numbers", "danger");
+                  }
+                  setShowFixModal(false);
+                  router.refresh();
+                }}
+                disabled={fixing}
+              >
+                {fixing ? "Fixing..." : "Fix Numbers"}
+              </button>
+            </>
+          }
+        >
+          <p style={{ margin: 0, fontSize: "16px" }}>
+            This will renumber every ghost group so there are no gaps — e.g. if
+            group 2 is empty, group 3 becomes group 2, group 4 becomes group 3,
+            and so on. Use this after emptying a group (moving everyone out of
+            it via reassign) so the numbering stays consecutive.
+            <br />
+            <br />
+            <strong>This affects all freshmen in the seminar roster and cannot be undone.</strong>
+          </p>
+        </ModalShell>
+      )}
     </main>
   );
 }

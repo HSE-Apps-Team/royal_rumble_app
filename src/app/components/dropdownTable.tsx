@@ -9,6 +9,7 @@ interface DropdownTableProps {
   dropdownValues: (string | number)[];
   dropdownDisplayTexts?: (string | null)[];
   currentDropdownColumnIndex: number;
+  dropdownHeader?: string;
   reassignAction?: (
     id: string | number,
     newValue: string | number,
@@ -23,6 +24,7 @@ export default function DropdownTable({
   dropdownValues,
   dropdownDisplayTexts,
   currentDropdownColumnIndex,
+  dropdownHeader,
   reassignAction,
 }: DropdownTableProps) {
   const colCount = visibleColumns.length + 1;
@@ -55,7 +57,18 @@ export default function DropdownTable({
                 {headers[colIndex]}
               </th>
             ))}
-            <th style={{ backgroundColor: "var(--primaryBlue)" }}></th>
+            <th
+              style={{
+                backgroundColor: "var(--primaryBlue)",
+                color: "white",
+                fontWeight: "bold",
+                textAlign: "center",
+                padding: "12px",
+                border: "2px solid var(--primaryBlue)",
+              }}
+            >
+              {dropdownHeader}
+            </th>
           </tr>
         </thead>
 

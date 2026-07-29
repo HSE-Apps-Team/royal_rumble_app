@@ -594,7 +594,7 @@ export async function createSeminarGroups() {
 }
 
 export async function syncGroups() {
-  // get seminar data — groupId is now an integer matching groupData.groupId
+  // get seminar data — groupId here is the ghost-group number, not groupData.groupId
   const seminarRows = await db
     .select({
       freshmenId: seminarData.freshmenId,
@@ -621,9 +621,22 @@ export async function syncGroups() {
     }
   }
 
-  // Get all groups so we can map seminar groupId → groupData.groupId
-  // With the new schema, seminarData.groupId IS groupData.groupId (both int),
-  // so we assign directly.
+  // seminarData.groupId is only the ghost-group number (e.g. 1, 2, 3…), while
+  // groupData.groupId is a separate serial id that gets regenerated whenever
+  // groups are (re)created. Groups are created with name `Group {seminarGroupId}`,
+  // so resolve through that name to get the real groupData.groupId to assign.
+  const groupRows = await db
+    .select({ groupId: groupData.groupId, name: groupData.name })
+    .from(groupData);
+  const groupIdByName = new Map<string, number>();
+  for (const g of groupRows) {
+    groupIdByName.set(g.name.trim().toLowerCase(), g.groupId);
+  }
+  const resolveGroupId = (seminarGroupId: number | null) => {
+    if (seminarGroupId === null) return null;
+    return groupIdByName.get(`group ${seminarGroupId}`.toLowerCase()) ?? null;
+  };
+
   const attendeeRows = await db.select().from(attendeeData);
 
   const unmatched: { attendeeId: string; fName: string; lName: string }[] = [];
@@ -634,11 +647,14 @@ export async function syncGroups() {
     // Attempt 1: match by ID
     if (student.attendeeId && seminarById.has(student.attendeeId)) {
       const match = seminarById.get(student.attendeeId)!;
-      await db
-        .update(attendeeData)
-        .set({ groupId: match.groupId })
-        .where(eq(attendeeData.attendeeId, student.attendeeId));
-      matched = true;
+      const resolvedGroupId = resolveGroupId(match.groupId);
+      if (resolvedGroupId !== null) {
+        await db
+          .update(attendeeData)
+          .set({ groupId: resolvedGroupId })
+          .where(eq(attendeeData.attendeeId, student.attendeeId));
+        matched = true;
+      }
     } else if (student.fName && student.lName) {
       // Attempt 2: match by unique name
       const nameKey = `${student.fName.toLowerCase()}|${student.lName.toLowerCase()}`;
@@ -646,12 +662,13 @@ export async function syncGroups() {
 
       if (possible && possible.length === 1) {
         const match = possible[0];
-        if (match.freshmenId != null) {
+        const resolvedGroupId = resolveGroupId(match.groupId);
+        if (match.freshmenId != null && resolvedGroupId !== null) {
           await db
             .update(attendeeData)
             .set({
               attendeeId: match.freshmenId,
-              groupId: match.groupId,
+              groupId: resolvedGroupId,
             })
             .where(eq(attendeeData.attendeeId, student.attendeeId));
           matched = true;

@@ -110,6 +110,10 @@ export default function AmbassadorUI({
               <section>
                 <div className="info-pairs">
                   <div className="info-pair">
+                    <div className="info-label">Group:</div>
+                    <div className="info-value">{groupDetails.name}</div>
+                  </div>
+                  <div className="info-pair">
                     <div className="info-label">Route #:</div>
                     <div className="info-value">{groupDetails.routeNum}</div>
                   </div>

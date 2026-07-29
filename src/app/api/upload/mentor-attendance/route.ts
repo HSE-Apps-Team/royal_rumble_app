@@ -88,19 +88,16 @@ export async function POST(req: Request) {
         { status: 400 },
       );
     }
-    if (!jobCol) {
-      return NextResponse.json(
-        { error: "Could not find a job column in the uploaded file." },
-        { status: 400 },
-      );
-    }
 
     const scanned = rows
       .map((row) => {
         const idRaw = row[idCol];
         const mentorId = idRaw === null || idRaw === "" ? NaN : Number(idRaw);
-        const uploadedJob =
-          typeof row[jobCol] === "string" ? row[jobCol].trim().toUpperCase() : row[jobCol];
+        const uploadedJob = jobCol
+          ? typeof row[jobCol] === "string"
+            ? row[jobCol].trim().toUpperCase()
+            : row[jobCol]
+          : null;
         return { mentorId, uploadedJob };
       })
       .filter((row) => !Number.isNaN(row.mentorId));
@@ -135,7 +132,7 @@ export async function POST(req: Request) {
         notFound.push(mentorId);
         continue;
       }
-      if ((mentor.job ?? null) === (uploadedJob ?? null)) {
+      if (!jobCol || (mentor.job ?? null) === (uploadedJob ?? null)) {
         matchedIds.push(mentorId);
       } else {
         mismatches.push({

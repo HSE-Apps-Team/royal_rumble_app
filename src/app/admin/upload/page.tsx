@@ -1134,7 +1134,7 @@ export default function AdminUpload() {
                     fontSize: "18px",
                   }}
                 >
-                  Mentor ID, Job
+                  Mentor ID
                   <span
                     style={{
                       color: "var(--secondarySilver)",
@@ -1142,8 +1142,21 @@ export default function AdminUpload() {
                     }}
                   >
                     {" "}
-                    (extra columns are ignored)
+                    (required)
                   </span>
+                  , Job
+                  <span
+                    style={{
+                      color: "var(--secondarySilver)",
+                      fontWeight: "normal",
+                    }}
+                  >
+                    {" "}
+                    (optional — if included, it&apos;s checked against each
+                    mentor&apos;s assigned job; if omitted, everyone scanned is
+                    marked present)
+                  </span>
+                  . Extra columns are ignored.
                 </p>
 
                 <label

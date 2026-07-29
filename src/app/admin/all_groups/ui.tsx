@@ -257,7 +257,15 @@ export default function AdminAllGroups({
       {/* VIEW DROPDOWN SECTION */}
       {displayAttendeeGroup ? (
         <ViewDropdown
-          header={`Attendee Group ${selectedGroupId}`}
+          header={
+            selectedGroupId === ""
+              ? "Attendee Groups"
+              : `Attendee Group: ${
+                  attendeeGroups.find(
+                    (group) => group.group_id.toString() === selectedGroupId,
+                  )?.name ?? ""
+                }`
+          }
           editLink={`/admin/edit/attendeeGroup`}
           sections={attendeeGroups
             .filter(

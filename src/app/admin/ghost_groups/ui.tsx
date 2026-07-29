@@ -20,6 +20,9 @@ import { useAlert } from "@/app/context/AlertContext";
 interface GhostGroup {
   group_id: number | "Unassigned";
   name: string;
+  teacher: string;
+  period: string;
+  section: "A" | "B" | "";
   freshmen: Array<{ freshmen_id: string; name: string }>;
 }
 
@@ -37,16 +40,76 @@ export default function AdminGhostGroups({
   const [showFixModal, setShowFixModal] = useState(false);
   const [fixing, setFixing] = useState(false);
 
+  // Freshman search (by first/last name or ID)
+  const [freshmanSearch, setFreshmanSearch] = useState("");
+
+  // Teacher/Period filter
+  const [selectedTeacher, setSelectedTeacher] = useState("");
+  const [selectedPeriod, setSelectedPeriod] = useState("");
+  const [appliedTeacher, setAppliedTeacher] = useState("");
+  const [appliedPeriod, setAppliedPeriod] = useState("");
+
   const handleLogoClick = () => router.push("/admin");
 
   const formatPeople = (people: { name: string; freshmen_id: string }[]) => {
     return people.map((p) => `${p.name}:${p.freshmen_id}`).join(", ");
   };
 
-  const filteredGroups = ghostGroups.filter(
-    (group) =>
-      selectedGroupId === "" || group.group_id.toString() === selectedGroupId,
-  );
+  const teacherOptions = Array.from(
+    new Set(ghostGroups.map((g) => g.teacher).filter((t) => t && t.trim() !== "")),
+  ).sort((a, b) => a.localeCompare(b));
+
+  // Period dropdown is scoped to the selected teacher, since period values
+  // are only meaningful within that teacher's own set of class periods.
+  const periodOptions = Array.from(
+    new Set(
+      ghostGroups
+        .filter(
+          (g) =>
+            selectedTeacher === "" ||
+            g.teacher.toLowerCase() === selectedTeacher.toLowerCase(),
+        )
+        .map((g) => g.period)
+        .filter((p) => p && p.trim() !== ""),
+    ),
+  ).sort((a, b) => Number(a) - Number(b));
+
+  const freshmanQuery = freshmanSearch.trim().toLowerCase();
+
+  const matchesFreshmanSearch = (f: { freshmen_id: string; name: string }) => {
+    if (freshmanQuery === "") return true;
+    const [fName, ...rest] = f.name.toLowerCase().split(" ");
+    const lName = rest.join(" ");
+    if (!isNaN(Number(freshmanQuery))) {
+      return f.freshmen_id.toLowerCase().includes(freshmanQuery);
+    }
+    const parts = freshmanQuery.split(" ");
+    if (parts.length === 2) {
+      const [firstPart, lastPart] = parts;
+      return fName.includes(firstPart) && lName.includes(lastPart);
+    }
+    return fName.includes(freshmanQuery) || lName.includes(freshmanQuery);
+  };
+
+  const filteredGroups = ghostGroups
+    .filter(
+      (group) =>
+        selectedGroupId === "" || group.group_id.toString() === selectedGroupId,
+    )
+    .filter(
+      (group) =>
+        appliedTeacher === "" ||
+        group.teacher.toLowerCase() === appliedTeacher.toLowerCase(),
+    )
+    .filter(
+      (group) =>
+        appliedPeriod === "" ||
+        group.period.toLowerCase() === appliedPeriod.toLowerCase(),
+    )
+    .filter(
+      (group) =>
+        freshmanQuery === "" || group.freshmen.some(matchesFreshmanSearch),
+    );
 
   const exportHeaders = ["Group Name", "Freshmen"];
 
@@ -108,6 +171,83 @@ export default function AdminGhostGroups({
       <button className="back-button" onClick={handleLogoClick}>
         <i className="bi bi-arrow-left"></i>
       </button>
+
+      {/* Freshman Search Bar */}
+      <div
+        className="search-container"
+        style={{ marginLeft: "15%", marginBottom: "0px" }}
+      >
+        <div className="search-row">
+          <input
+            type="text"
+            placeholder="Search Freshman Name / ID..."
+            className="search-input"
+            value={freshmanSearch}
+            onChange={(e) => setFreshmanSearch(e.target.value)}
+          />
+        </div>
+      </div>
+
+      {/* Teacher / Period Filter */}
+      <div className="search-container" style={{ marginLeft: "15%" }}>
+        <div className="search-row">
+          <div className="form-row">
+            <select
+              className="form-select"
+              value={selectedTeacher}
+              onChange={(e) => {
+                setSelectedTeacher(e.target.value);
+                setSelectedPeriod("");
+              }}
+            >
+              <option value="">Teacher</option>
+              {teacherOptions.map((teacher) => (
+                <option key={teacher} value={teacher}>
+                  {teacher}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="form-row">
+            <select
+              className="form-select"
+              value={selectedPeriod}
+              onChange={(e) => setSelectedPeriod(e.target.value)}
+            >
+              <option value="">Period</option>
+              {periodOptions.map((period) => (
+                <option key={period} value={period}>
+                  {period}
+                </option>
+              ))}
+            </select>
+          </div>
+          <button
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: "var(--primaryBlue)",
+              color: "white",
+              fontFamily: "Poppins, sans-serif",
+              fontWeight: "bold",
+              fontSize: "15px",
+              border: "3px solid var(--textBlack)",
+              borderRadius: "14px",
+              padding: "8px 18px",
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+            }}
+            onClick={() => {
+              setAppliedTeacher(selectedTeacher);
+              setAppliedPeriod(selectedPeriod);
+            }}
+          >
+            <i className="bi bi-search" style={{ marginRight: "8px" }} />
+            Search
+          </button>
+        </div>
+      </div>
 
       {/* Group Dropdown */}
       <div className="search-container" style={{ marginLeft: "15%" }}>

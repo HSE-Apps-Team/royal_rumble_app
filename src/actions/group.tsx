@@ -109,12 +109,17 @@ export async function getAllGhostGroups() {
       freshmenId: seminarData.freshmenId,
       fName: seminarData.fName,
       lName: seminarData.lName,
+      teacherFullName: seminarData.teacherFullName,
+      period: seminarData.period,
     })
     .from(seminarData);
 
   interface GhostGroupDetail {
     group_id: number | "Unassigned";
     name: string;
+    teacher: string;
+    period: string;
+    section: "A" | "B" | "";
     freshmen: Array<{ freshmen_id: string; name: string }>;
   }
 
@@ -122,25 +127,39 @@ export async function getAllGhostGroups() {
   // (group_data's serial keys are unrelated and can contain duplicate "Group N"
   // names from being regenerated), so ghost groups are keyed purely off
   // seminar_data.group_id rather than joined against group_data.
-  const groupMap = new Map<number, GhostGroupDetail>();
+  const groupMap = new Map<
+    number,
+    GhostGroupDetail & { teacherCounts: Map<string, number> }
+  >();
 
   const unassigned: GhostGroupDetail = {
     group_id: "Unassigned",
     name: "Unassigned",
+    teacher: "",
+    period: "",
+    section: "",
     freshmen: [],
   };
 
   for (const s of students) {
-    let target: GhostGroupDetail;
+    let target: (GhostGroupDetail & { teacherCounts: Map<string, number> }) | GhostGroupDetail;
     if (s.groupId === null) {
       target = unassigned;
     } else {
       target = groupMap.get(s.groupId) ?? {
         group_id: s.groupId,
         name: `Group ${s.groupId}`,
+        teacher: "",
+        period: "",
+        section: "",
         freshmen: [],
+        teacherCounts: new Map<string, number>(),
       };
-      groupMap.set(s.groupId, target);
+      groupMap.set(s.groupId, target as GhostGroupDetail & { teacherCounts: Map<string, number> });
+
+      const key = `${s.teacherFullName ?? ""}|${s.period ?? ""}`;
+      const counts = (target as GhostGroupDetail & { teacherCounts: Map<string, number> }).teacherCounts;
+      counts.set(key, (counts.get(key) ?? 0) + 1);
     }
     target.freshmen.push({
       freshmen_id: (s.freshmenId ?? "").toString(),
@@ -148,23 +167,61 @@ export async function getAllGhostGroups() {
     });
   }
 
-  const sortedGroups = Array.from(groupMap.values()).sort(
-    (a, b) => (a.group_id as number) - (b.group_id as number),
-  );
+  // Determine the dominant teacher/period for each group (majority of its freshmen).
+  for (const group of groupMap.values()) {
+    let bestKey = "";
+    let bestCount = -1;
+    for (const [key, count] of group.teacherCounts.entries()) {
+      if (count > bestCount) {
+        bestKey = key;
+        bestCount = count;
+      }
+    }
+    const [teacher, period] = bestKey.split("|");
+    group.teacher = teacher ?? "";
+    group.period = period ?? "";
+  }
+
+  // Groups sharing the same teacher/period are paired A (lower group_id) / B (higher).
+  const byTeacherPeriod = new Map<string, number[]>();
+  for (const group of groupMap.values()) {
+    const key = `${group.teacher}|${group.period}`;
+    if (!key.trim().replace("|", "")) continue;
+    const arr = byTeacherPeriod.get(key) ?? [];
+    arr.push(group.group_id as number);
+    byTeacherPeriod.set(key, arr);
+  }
+
+  for (const ids of byTeacherPeriod.values()) {
+    ids.sort((a, b) => a - b);
+    ids.forEach((id, index) => {
+      const group = groupMap.get(id);
+      if (!group) return;
+      group.section = index % 2 === 0 ? "A" : "B";
+    });
+  }
+
+  for (const group of groupMap.values()) {
+    const label = [group.teacher, group.period, group.section]
+      .filter((part) => part && part.trim() !== "")
+      .join(" ");
+    group.name = label
+      ? `Group ${group.group_id}: ${label}`
+      : `Group ${group.group_id}`;
+  }
+
+  const sortedGroups = Array.from(groupMap.values())
+    .sort((a, b) => (a.group_id as number) - (b.group_id as number))
+    .map(({ teacherCounts: _teacherCounts, ...rest }) => rest);
 
   return [unassigned, ...sortedGroups];
 }
 
 export async function getSeminarGroupIds() {
-  const rows = await db
-    .selectDistinct({ groupId: seminarData.groupId })
-    .from(seminarData)
-    .orderBy(asc(seminarData.groupId));
-
-  return rows
-    .map((r) => r.groupId)
-    .filter((id): id is number => id !== null)
-    .map((id) => ({ groupId: id, name: `Group ${id}` }));
+  const ghostGroups = await getAllGhostGroups();
+  return ghostGroups
+    .filter((g) => g.group_id !== "Unassigned")
+    .map((g) => ({ groupId: g.group_id as number, name: g.name }));
 }
 
 export async function getGroupByGroupId(groupId: number) {

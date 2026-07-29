@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { attendeeData, seminarData, groupData } from "@/db/schema";
 import { eq, asc } from "drizzle-orm";
 import { encrypt, decrypt } from "@/lib/crypto";
+import { toTitleCase } from "@/lib/toTitleCase";
 
 //--------------------------------------------------------------------------------------//
 //                                                                                      //
@@ -84,8 +85,8 @@ export const addAttendee = async (data: {
   const groupId = seminar?.groupId ?? null;
 
   await db.insert(attendeeData).values({
-    fName: data.f_name,
-    lName: data.l_name,
+    fName: toTitleCase(data.f_name),
+    lName: toTitleCase(data.l_name),
     attendeeId: data.freshmen_id,
     email: data.email,
     primaryLanguage: data.primary_language,
@@ -135,8 +136,8 @@ export const updateAttendeeByID = async (
   await db
     .update(attendeeData)
     .set({
-      fName: data.f_name,
-      lName: data.l_name,
+      fName: toTitleCase(data.f_name),
+      lName: toTitleCase(data.l_name),
       tshirtSize: data.tshirt_size,
       email: data.email,
       primaryLanguage: data.primary_language,

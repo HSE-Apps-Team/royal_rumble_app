@@ -640,7 +640,7 @@ export async function getGroupSchedule(groupId: number) {
   const routeNum = group[0].routeNum;
 
   const blocks = await db.select().from(blockSchedule);
-  const blockMap = new Map(blocks.map((b) => [b.blockName, b]));
+  const blockMap = new Map(blocks.map((b) => [b.blockName.toLowerCase(), b]));
 
   const eventStartTime = await getEventStartTime();
   let totalMinutes = parseTimeToMinutes(eventStartTime);
@@ -669,7 +669,7 @@ export async function getGroupSchedule(groupId: number) {
     : [];
 
   const schedule = eventOrder.map((blockName) => {
-    const block = blockMap.get(blockName);
+    const block = blockMap.get(blockName.toLowerCase());
     if (!block) {
       return { blockName, startTime: "TBD", stops: [] };
     }
@@ -681,7 +681,7 @@ export async function getGroupSchedule(groupId: number) {
       blockName,
       startTime,
       durationMinutes: block.durationMinutes,
-      stops: blockName === "Tour" ? stops : [],
+      stops: blockName.toLowerCase() === "tour" ? stops : [],
     };
   });
 

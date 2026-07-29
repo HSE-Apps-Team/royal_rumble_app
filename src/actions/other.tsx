@@ -23,7 +23,7 @@ const assignMentorsToEvent = async (
   eventId: number,
   job: string,
 ): Promise<void> => {
-  if (job === "ALL") {
+  if (job.trim().toUpperCase() === "ALL") {
     const allMentors = await db.select().from(mentorData);
     for (const mentor of allMentors) {
       await db
@@ -39,7 +39,7 @@ const assignMentorsToEvent = async (
     const specificMentors = await db
       .select()
       .from(mentorData)
-      .where(eq(mentorData.job, String(job)));
+      .where(sql`upper(trim(${mentorData.job})) = ${job.trim().toUpperCase()}`);
     for (const mentor of specificMentors) {
       await db
         .insert(mentorAttendanceData)
@@ -85,7 +85,10 @@ export const getAllEvents = async (job?: string) => {
 
   let events = await db.select().from(eventsData).orderBy(asc(eventsData.date));
   if (job) {
-    events = events.filter((event) => event.job === job);
+    const normalizedJob = job.trim().toUpperCase();
+    events = events.filter(
+      (event) => (event.job ?? "").trim().toUpperCase() === normalizedJob,
+    );
   }
   for (const event of events) {
     const attendance = await db
@@ -212,6 +215,8 @@ export const getMentorAttendanceAllEvents = async () => {
 };
 
 export const getUserByEmail = async (email: string) => {
+  const normalizedEmail = email.trim().toLowerCase();
+
   // Check mentor
   const mentor = await db
     .select({
@@ -219,7 +224,7 @@ export const getUserByEmail = async (email: string) => {
       job: mentorData.job,
     })
     .from(mentorData)
-    .where(eq(mentorData.email, email));
+    .where(sql`lower(${mentorData.email}) = ${normalizedEmail}`);
 
   if (mentor.length > 0) {
     return {
@@ -234,7 +239,7 @@ export const getUserByEmail = async (email: string) => {
       id: attendeeData.attendeeId,
     })
     .from(attendeeData)
-    .where(eq(attendeeData.email, email));
+    .where(sql`lower(${attendeeData.email}) = ${normalizedEmail}`);
 
   if (attendee.length > 0) {
     return {
@@ -249,7 +254,7 @@ export const getUserByEmail = async (email: string) => {
       id: adminData.adminId,
     })
     .from(adminData)
-    .where(eq(adminData.email, email));
+    .where(sql`lower(${adminData.email}) = ${normalizedEmail}`);
 
   if (admin.length > 0) {
     return {

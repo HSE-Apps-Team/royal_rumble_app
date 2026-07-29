@@ -15,6 +15,7 @@ import { eq, or } from "drizzle-orm";
 import * as XLSX from "xlsx";
 import { encrypt } from "@/lib/crypto";
 import { fixEmail } from "@/lib/fixEmail";
+import { toTitleCase } from "@/lib/toTitleCase";
 
 const requiredColumns: Record<string, string[]> = {
   mentor_data: ["mentor_id", "first_name", "last_name", "job", "email"],
@@ -60,8 +61,8 @@ async function insertData(table: string, rows: any[]) {
 
         await db.insert(mentorData).values({
           mentorId: row["mentor_id"],
-          fName: row["first_name"],
-          lName: row["last_name"],
+          fName: toTitleCase(row["first_name"]),
+          lName: toTitleCase(row["last_name"]),
           gradYear: row["graduation_year"],
           job,
           pizzaType: row["pizza"],
@@ -94,8 +95,8 @@ async function insertData(table: string, rows: any[]) {
         const email = fixEmail(row["email"]?.trim?.() ?? row["email"]);
         await db.insert(attendeeData).values({
           attendeeId: row["freshmen_id"],
-          fName: row["first_name"] ?? row["f_name"],
-          lName: row["last_name"] ?? row["l_name"],
+          fName: toTitleCase(row["first_name"] ?? row["f_name"]),
+          lName: toTitleCase(row["last_name"] ?? row["l_name"]),
           tshirtSize: row["shirt_size"] ?? row["shirtsize"],
           email,
           primaryLanguage: row["primary_language"] || "English",
@@ -105,8 +106,8 @@ async function insertData(table: string, rows: any[]) {
         }).onConflictDoUpdate({
           target: attendeeData.attendeeId,
           set: {
-            fName: row["first_name"] ?? row["f_name"],
-            lName: row["last_name"] ?? row["l_name"],
+            fName: toTitleCase(row["first_name"] ?? row["f_name"]),
+            lName: toTitleCase(row["last_name"] ?? row["l_name"]),
             tshirtSize: row["shirt_size"] ?? row["shirtsize"],
             email,
             primaryLanguage: row["primary_language"] || "English",
@@ -120,8 +121,8 @@ async function insertData(table: string, rows: any[]) {
     case "seminar_data":
       for (const row of rows) {
         await db.insert(seminarData).values({
-          fName: row["f_name"] ?? row["first_name"],
-          lName: row["l_name"] ?? row["last_name"],
+          fName: toTitleCase(row["f_name"] ?? row["first_name"]),
+          lName: toTitleCase(row["l_name"] ?? row["last_name"]),
           freshmenId: row["freshmen_id"],
           semester: row["semester"],
           teacherFullName: row["teacher_full_name"],

@@ -71,8 +71,10 @@ export default function AdminAttendees({
   const languageOptions = [
     ...new Set(attendeeData.map((f) => f.primaryLanguage)),
   ]
-    .filter((lang) => Boolean(lang) && lang !== "English")
-    .sort();
+    .filter((lang) => Boolean(lang) && lang?.trim().toLowerCase() !== "english")
+    .sort((a, b) =>
+      (a ?? "").localeCompare(b ?? "", undefined, { sensitivity: "base" }),
+    );
 
   // --- FILTER LOGIC ---
   const filteredData = tableData.filter((row) => {
@@ -98,7 +100,11 @@ export default function AdminAttendees({
     }
 
     // Language filter (row[5] = primaryLanguage)
-    if (selectedLanguage !== "" && String(row[5]) !== selectedLanguage)
+    if (
+      selectedLanguage !== "" &&
+      String(row[5]).trim().toLowerCase() !==
+        selectedLanguage.trim().toLowerCase()
+    )
       return false;
 
     return true;

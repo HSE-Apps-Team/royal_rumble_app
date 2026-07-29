@@ -3,6 +3,7 @@
 import { db } from "@/db";
 import { adminData } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { toTitleCase } from "@/lib/toTitleCase";
 
 // Read
 export const getAdmins = async () => {
@@ -25,18 +26,21 @@ export const addAdmin = async (data: {
   email: string;
   admin_id: number;
 }) => {
+  const email = data.email.trim().toLowerCase();
+  const fName = toTitleCase(data.f_name);
+  const lName = toTitleCase(data.l_name);
   await db.insert(adminData).values({
-    fName: data.f_name,
-    lName: data.l_name,
-    email: data.email,
+    fName,
+    lName,
+    email,
     adminId: data.admin_id,
   });
   // return to display confirmation
   return {
     success: true,
-    f_name: data.f_name,
-    l_name: data.l_name,
-    email: data.email,
+    f_name: fName,
+    l_name: lName,
+    email,
   };
 };
 
@@ -52,9 +56,9 @@ export const updateAdminByID = async (
   await db
     .update(adminData)
     .set({
-      fName: data.f_name,
-      lName: data.l_name,
-      email: data.email,
+      fName: toTitleCase(data.f_name),
+      lName: toTitleCase(data.l_name),
+      email: data.email ? data.email.trim().toLowerCase() : data.email,
     })
     .where(eq(adminData.adminId, adminId));
 };

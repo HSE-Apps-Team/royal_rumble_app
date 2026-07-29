@@ -12,6 +12,7 @@ import {
 } from "@/db/schema";
 import { eq, sql, or } from "drizzle-orm";
 import { encrypt, decrypt } from "@/lib/crypto";
+import { toTitleCase } from "@/lib/toTitleCase";
 
 //--------------------------------------------------------------------------------------//
 //                                                                                      //
@@ -71,7 +72,7 @@ export const getAmbassadorEvents = async () => {
     })
     .from(eventsData)
     .orderBy(sql`${eventsData.date} ASC, ${eventsData.time} ASC`)
-    .where(or(eq(eventsData.job, "AMBASSADOR"), eq(eventsData.job, "ALL")));
+    .where(sql`upper(trim(${eventsData.job})) IN ('AMBASSADOR', 'ALL')`);
   return events;
 };
 
@@ -153,7 +154,7 @@ export const getHallwayHostEvents = async () => {
     })
     .from(eventsData)
     .orderBy(sql`${eventsData.date} ASC, ${eventsData.time} ASC`)
-    .where(or(eq(eventsData.job, "HALLWAY HOST"), eq(eventsData.job, "ALL")));
+    .where(sql`upper(trim(${eventsData.job})) IN ('HALLWAY HOST', 'ALL')`);
   return events;
 };
 
@@ -171,7 +172,7 @@ export const getUtilitySquadEvents = async () => {
     })
     .from(eventsData)
     .orderBy(sql`${eventsData.date} ASC, ${eventsData.time} ASC`)
-    .where(or(eq(eventsData.job, "UTILITY SQUAD"), eq(eventsData.job, "ALL")));
+    .where(sql`upper(trim(${eventsData.job})) IN ('UTILITY SQUAD', 'ALL')`);
   return events;
 };
 export const getCCAConvosEvents = async () => {
@@ -187,7 +188,7 @@ export const getCCAConvosEvents = async () => {
     })
     .from(eventsData)
     .orderBy(sql`${eventsData.date} ASC, ${eventsData.time} ASC`)
-    .where(or(eq(eventsData.job, "CCA CONVOS"), eq(eventsData.job, "ALL")));
+    .where(sql`upper(trim(${eventsData.job})) IN ('CCA CONVOS', 'ALL')`);
   return events;
 };
 
@@ -215,8 +216,8 @@ export const addMentor = async (data: {
   const job = data.job.trim().toUpperCase();
 
   await db.insert(mentorData).values({
-    fName: data.f_name,
-    lName: data.l_name,
+    fName: toTitleCase(data.f_name),
+    lName: toTitleCase(data.l_name),
     mentorId: data.mentor_id,
     gradYear: data.graduation_year,
     job,
@@ -349,8 +350,8 @@ export const updateMentorByID = async (
   await db
     .update(mentorData)
     .set({
-      fName: data.f_name,
-      lName: data.l_name,
+      fName: toTitleCase(data.f_name),
+      lName: toTitleCase(data.l_name),
       email: data.email.trim().toLowerCase(),
       gradYear: data.grad_year,
       job,

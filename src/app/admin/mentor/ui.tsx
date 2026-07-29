@@ -89,24 +89,26 @@ export default function AdminMentors({
 
   // Dynamic dropdown options derived from actual data
   const EXCLUDED_LANGUAGES = ["english", "no", "none", "na", "n/a"];
+  const localeSort = (a: string, b: string) =>
+    a.localeCompare(b, undefined, { sensitivity: "base" });
   const jobOptions = [...new Set(mentorsData.map((m) => m.job))]
     .filter(Boolean)
-    .sort();
+    .sort(localeSort);
   const languageOptions = [...new Set(mentorsData.map((m) => m.language))]
     .filter(
       (lang) =>
         Boolean(lang) && !EXCLUDED_LANGUAGES.includes(lang.toLowerCase()),
     )
-    .sort();
+    .sort(localeSort);
   const trainingDayOptions = [...new Set(mentorsData.map((m) => m.trainingDay))]
     .filter(Boolean)
-    .sort();
+    .sort(localeSort);
   const gradYearOptions = [...new Set(mentorsData.map((m) => m.gradYear))]
     .filter(Boolean)
     .sort((a, b) => a - b);
   const interestsOptions = [...new Set(mentorsData.map((m) => m.interestsInvolvement ?? ""))]
     .filter(Boolean)
-    .sort();
+    .sort(localeSort);
 
   // --- SEARCH FILTER LOGIC ---
   const filteredData = tableData.filter((row) => {
@@ -130,16 +132,29 @@ export default function AdminMentors({
       }
     }
 
-    if (selectedJob !== "" && String(row[4]) !== selectedJob) return false;
-    if (selectedLanguage !== "" && String(row[7]) !== selectedLanguage)
+    const sameText = (value: string, selected: string) =>
+      value.trim().toLowerCase() === selected.trim().toLowerCase();
+
+    if (selectedJob !== "" && !sameText(String(row[4]), selectedJob))
       return false;
-    if (selectedTrainingDay !== "" && String(row[9]) !== selectedTrainingDay)
+    if (
+      selectedLanguage !== "" &&
+      !sameText(String(row[7]), selectedLanguage)
+    )
+      return false;
+    if (
+      selectedTrainingDay !== "" &&
+      !sameText(String(row[9]), selectedTrainingDay)
+    )
       return false;
     if (selectedGradYear !== "" && String(row[6]) !== selectedGradYear)
       return false;
     if (selectedPastMentor !== "" && String(row[11]) !== selectedPastMentor)
       return false;
-    if (selectedInterests !== "" && String(row[12]) !== selectedInterests)
+    if (
+      selectedInterests !== "" &&
+      !sameText(String(row[12]), selectedInterests)
+    )
       return false;
 
     return true;

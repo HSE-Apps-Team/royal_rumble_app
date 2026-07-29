@@ -152,7 +152,7 @@ export default function AmbassadorRouteUI({
             </div>
 
             {/* Tour block: show stop-by-stop itinerary */}
-            {block.blockName === "Tour" && (
+            {block.blockName.toLowerCase() === "tour" && (
               <>
                 {block.stops.length === 0 ? (
                   <p

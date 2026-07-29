@@ -66,7 +66,12 @@ export default function AdminSearchUI({ attendees, mentors }: Props) {
       for (const m of mentors) {
         const name = `${m.fName ?? ""} ${m.lName ?? ""}`.trim();
         if (q && !name.toLowerCase().includes(q)) continue;
-        if (filterJob.length > 0 && !filterJob.includes(m.job ?? "")) continue;
+        const mentorJob = (m.job ?? "").trim().toUpperCase();
+        if (
+          filterJob.length > 0 &&
+          !filterJob.some((j) => j.trim().toUpperCase() === mentorJob)
+        )
+          continue;
         rows.push([name, m.job ?? "Mentor"]);
       }
     }

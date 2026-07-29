@@ -33,7 +33,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
 
       const { getUserByEmail } = await import("@/actions/other");
-      const dbUser = await getUserByEmail(user.email);
+      const dbUser = await getUserByEmail(user.email.trim().toLowerCase());
 
       console.log("DB user:", dbUser);
 

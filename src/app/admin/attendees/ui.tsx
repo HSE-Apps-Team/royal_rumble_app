@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, ReactElement } from "react";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import LogoButton from "../../components/logoButton";
 import LoginButton from "../../components/loginButton";
@@ -42,6 +42,7 @@ export default function AdminAttendees({
   // Search & filter state
   const [searchText, setSearchText] = useState("");
   const [selectedLanguage, setSelectedLanguage] = useState("");
+  const [presentStatus, setPresentStatus] = useState("");
 
   // Table headers
   const ALL_HEADERS = [
@@ -67,6 +68,30 @@ export default function AdminAttendees({
     f.primaryLanguage,
     f.interests,
     f.healthConcerns,
+    f.present ? (
+      <i
+        className="bi bi-check-lg"
+        style={{ color: "var(--primaryBlue)", fontSize: "24px" }}
+      />
+    ) : (
+      <i
+        className="bi bi-x-lg"
+        style={{ color: "var(--primaryRed)", fontSize: "24px" }}
+      />
+    ),
+    f.assignedGroup ?? "",
+  ]);
+
+  // Export-friendly version (plain text instead of icons)
+  const exportTableData = attendeeData.map((f) => [
+    f.attendeeId,
+    f.fName,
+    f.lName,
+    f.email,
+    f.tshirtSize,
+    f.primaryLanguage,
+    f.interests,
+    f.healthConcerns,
     f.present ? "Yes" : "No",
     f.assignedGroup ?? "",
   ]);
@@ -81,7 +106,11 @@ export default function AdminAttendees({
     );
 
   // --- FILTER LOGIC ---
-  const filteredData = tableData.filter((row) => {
+  const presentById = new Map(
+    attendeeData.map((f) => [f.attendeeId, f.present]),
+  );
+
+  const matchesFilters = (row: (string | number | ReactElement)[]) => {
     const id = row[0].toString();
     const fName = String(row[1]).toLowerCase();
     const lName = String(row[2]).toLowerCase();
@@ -111,8 +140,18 @@ export default function AdminAttendees({
     )
       return false;
 
+    // Present status filter
+    if (presentStatus !== "") {
+      const isPresent = presentById.get(row[0] as number) ?? false;
+      if (presentStatus === "present" && !isPresent) return false;
+      if (presentStatus === "not-present" && isPresent) return false;
+    }
+
     return true;
-  });
+  };
+
+  const filteredData = tableData.filter(matchesFilters);
+  const filteredExportData = exportTableData.filter(matchesFilters);
 
   // Generate visible columns
   const visibleColumns: number[] = [];
@@ -172,6 +211,19 @@ export default function AdminAttendees({
                   {lang}
                 </option>
               ))}
+            </select>
+          </div>
+
+          {/* --- PRESENT STATUS DROPDOWN --- */}
+          <div className="form-row" style={{ marginLeft: "10px" }}>
+            <select
+              className="form-select"
+              value={presentStatus}
+              onChange={(e) => setPresentStatus(e.target.value)}
+            >
+              <option value="">Present Status</option>
+              <option value="present">Present</option>
+              <option value="not-present">Not Present</option>
             </select>
           </div>
         </div>
@@ -300,6 +352,7 @@ export default function AdminAttendees({
         <EditTable
           headers={ALL_HEADERS}
           data={filteredData}
+          exportData={filteredExportData}
           visibleColumns={visibleColumns}
           editLink="/admin/edit/attendee"
           deleteAction={async (id) => {

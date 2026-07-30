@@ -15,6 +15,7 @@ interface EditTableProps {
   idIndex?: number;
   visibleColumns: number[];
   fileName?: string;
+  exportData?: any[];
 }
 
 const makeBtn = (bg: string) => ({
@@ -42,6 +43,7 @@ export default function EditTable({
   idIndex = 0,
   visibleColumns,
   fileName,
+  exportData,
 }: EditTableProps) {
   const router = useRouter();
   const { showAlert } = useAlert();
@@ -141,7 +143,7 @@ export default function EditTable({
               {fileName ? (
                 <ExportToExcelButton
                   headers={headers}
-                  data={data}
+                  data={exportData ?? data}
                   fileName={fileName}
                 />
               ) : (
@@ -156,11 +158,23 @@ export default function EditTable({
             const id = row[idIndex];
             return (
               <tr key={rowIndex}>
-                {visibleColumns.map((ci) => (
-                  <td key={ci} style={cellStyle} title={String(row[ci] ?? "")}>
-                    {row[ci]}
-                  </td>
-                ))}
+                {visibleColumns.map((ci) => {
+                  const value = row[ci];
+                  const isElement = React.isValidElement(value);
+                  return (
+                    <td
+                      key={ci}
+                      style={
+                        isElement
+                          ? { ...cellStyle, textAlign: "center" }
+                          : cellStyle
+                      }
+                      title={isElement ? undefined : String(value ?? "")}
+                    >
+                      {value}
+                    </td>
+                  );
+                })}
                 <td style={cellStyle}>
                   <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 12 }}>
                     <i

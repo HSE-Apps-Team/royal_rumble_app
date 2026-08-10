@@ -37,7 +37,6 @@ export default async function Home() {
     "HALLWAY HOST": "/mentor/hallway_host",
     "UTILITY SQUAD": "/mentor/utility_squad",
     "CCA CONVOS": "/mentor/cca_convos",
-    FRESHMAN: "/attendee/home",
   };
 
   const userJob = session?.user?.job?.trim().toUpperCase();

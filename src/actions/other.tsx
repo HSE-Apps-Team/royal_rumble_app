@@ -233,21 +233,6 @@ export const getUserByEmail = async (email: string) => {
     };
   }
 
-  // Check attendees
-  const attendee = await db
-    .select({
-      id: attendeeData.attendeeId,
-    })
-    .from(attendeeData)
-    .where(sql`lower(${attendeeData.email}) = ${normalizedEmail}`);
-
-  if (attendee.length > 0) {
-    return {
-      id: attendee[0].id,
-      job: "FRESHMAN",
-    };
-  }
-
   // Check admin
   const admin = await db
     .select({

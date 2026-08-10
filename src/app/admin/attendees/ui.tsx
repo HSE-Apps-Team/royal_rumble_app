@@ -18,7 +18,6 @@ export default function AdminAttendees({
     attendeeId: number;
     fName: string;
     lName: string;
-    email: string;
     tshirtSize: string;
     primaryLanguage: string;
     interests: string;
@@ -32,7 +31,6 @@ export default function AdminAttendees({
   const [firstNameSelected, setFirstNameSelected] = useState(true);
   const [lastNameSelected, setLastNameSelected] = useState(true);
   const [shirtSelected, setShirtSelected] = useState(false);
-  const [emailSelected, setEmailSelected] = useState(false);
   const [languageSelected, setLanguageSelected] = useState(false);
   const [interestsSelected, setInterestsSelected] = useState(false);
   const [healthConcernsSelected, setHealthConcernsSelected] = useState(false);
@@ -49,7 +47,6 @@ export default function AdminAttendees({
     "ID",
     "First Name",
     "Last Name",
-    "Email",
     "T-Shirt",
     "Language",
     "Interests",
@@ -63,7 +60,6 @@ export default function AdminAttendees({
     f.attendeeId,
     f.fName,
     f.lName,
-    f.email,
     f.tshirtSize,
     f.primaryLanguage,
     f.interests,
@@ -87,7 +83,6 @@ export default function AdminAttendees({
     f.attendeeId,
     f.fName,
     f.lName,
-    f.email,
     f.tshirtSize,
     f.primaryLanguage,
     f.interests,
@@ -132,10 +127,10 @@ export default function AdminAttendees({
       }
     }
 
-    // Language filter (row[5] = primaryLanguage)
+    // Language filter (row[4] = primaryLanguage)
     if (
       selectedLanguage !== "" &&
-      String(row[5]).trim().toLowerCase() !==
+      String(row[4]).trim().toLowerCase() !==
         selectedLanguage.trim().toLowerCase()
     )
       return false;
@@ -158,13 +153,12 @@ export default function AdminAttendees({
   if (IDSelected) visibleColumns.push(0);
   if (firstNameSelected) visibleColumns.push(1);
   if (lastNameSelected) visibleColumns.push(2);
-  if (emailSelected) visibleColumns.push(3);
-  if (shirtSelected) visibleColumns.push(4);
-  if (languageSelected) visibleColumns.push(5);
-  if (interestsSelected) visibleColumns.push(6);
-  if (healthConcernsSelected) visibleColumns.push(7);
-  if (presentSelected) visibleColumns.push(8);
-  if (assignedGroupSelected) visibleColumns.push(9);
+  if (shirtSelected) visibleColumns.push(3);
+  if (languageSelected) visibleColumns.push(4);
+  if (interestsSelected) visibleColumns.push(5);
+  if (healthConcernsSelected) visibleColumns.push(6);
+  if (presentSelected) visibleColumns.push(7);
+  if (assignedGroupSelected) visibleColumns.push(8);
 
   // If none selected → default to first + last name
   if (visibleColumns.length === 0) visibleColumns.push(1, 2);
@@ -271,15 +265,6 @@ export default function AdminAttendees({
                   onChange={(e) => setLastNameSelected(e.target.checked)}
                 />
                 Last Name
-              </label>
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  className="checkbox-input"
-                  checked={emailSelected}
-                  onChange={(e) => setEmailSelected(e.target.checked)}
-                />
-                Email
               </label>
               <label className="checkbox-label">
                 <input

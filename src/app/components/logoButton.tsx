@@ -11,9 +11,7 @@ export default function LogoButton() {
   const pathname = usePathname();
 
     const handleLogoClick = () => {
-    if (pathname.startsWith("/attendee")) {
-      router.push("/attendee/home");
-    } else if (pathname.startsWith("/mentor/ambassador")) {
+    if (pathname.startsWith("/mentor/ambassador")) {
       router.push("/mentor/ambassador");
 
     } else if (pathname.startsWith("/mentor/hallway_host")) {

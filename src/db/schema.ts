@@ -77,7 +77,6 @@ export const attendeeData = pgTable("attendee_data", {
   fName:           text("f_name"),
   lName:           text("l_name"),
   tshirtSize:      text("tshirt_size"),
-  email:           text("email"),
   primaryLanguage: text("primary_language"),
   interests:       text("interests"),
   healthConcerns:  text("health_concerns"),

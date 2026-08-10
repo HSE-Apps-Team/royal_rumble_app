@@ -163,6 +163,8 @@
     display: flex;
     justify-content: center;
     margin: 10px;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .manual-add-form {
@@ -170,10 +172,12 @@
   flex-direction: column;
   gap: 20px;
   width: 100%;
+  min-width: 0;
   font-family: inherit;
   color: var(--primaryBlue);
   font-weight: 700;
   margin: 10px 30px;
+  box-sizing: border-box;
 }
 .edit-user-form {
   display: flex;
@@ -242,9 +246,11 @@
 .checkbox-row {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   justify-content: flex-start;
-  gap: 80px;
+  gap: 20px 60px;
   margin: 0px 0px 20px 0px;
+  max-width: 100%;
 }
 
 .checkbox-label {
@@ -252,14 +258,31 @@
   align-items: center;
   gap: 15px;
   font-size: 25px;
+  white-space: nowrap;
 }
 
 .checkbox-input {
   width: 30px;
   height: 30px;
-  flex-shrink: 0;   
-  flex-grow: 0;       
+  flex-shrink: 0;
+  flex-grow: 0;
   border: 3px solid var(--primaryBlue);
+}
+
+@media (max-width: 768px) {
+  .checkbox-row {
+    gap: 14px 30px;
+  }
+
+  .checkbox-label {
+    font-size: 18px;
+    gap: 10px;
+  }
+
+  .checkbox-input {
+    width: 22px;
+    height: 22px;
+  }
 }
 
 .save-button-wrapper {
@@ -303,6 +326,143 @@
   font-family: inherit;
   color: var(--textBlack);
   font-weight: 400;
+}
+
+/* add attendee page — candidate search results */
+
+.candidate-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 75%;
+  margin: 20px auto 0;
+}
+
+.candidate-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  background: white;
+  border: 3px solid var(--primaryBlue);
+  border-radius: 12px;
+  padding: 16px 22px;
+  text-align: left;
+}
+
+.candidate-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.candidate-card-name {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: 1.3rem;
+  color: var(--primaryBlue);
+}
+
+.candidate-card-id {
+  font-weight: 400;
+  color: var(--textBlack);
+  opacity: 0.6;
+  font-size: 1rem;
+}
+
+.candidate-card-meta {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--textBlack);
+  opacity: 0.75;
+}
+
+.candidate-select-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--primaryBlue);
+  color: white;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 24px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.15s ease-in-out, background-color 0.15s ease-in-out;
+}
+
+.candidate-select-button:hover {
+  background-color: var(--primaryRed);
+  transform: scale(1.05);
+}
+
+.candidate-empty-state {
+  width: 75%;
+  margin: 30px auto 0;
+  text-align: center;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--textBlack);
+  opacity: 0.7;
+}
+
+/* Ghost/skeleton loading cards */
+
+.skeleton-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  background: white;
+  border: 3px solid var(--secondarySilver);
+  border-radius: 12px;
+  padding: 16px 22px;
+}
+
+.skeleton-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.skeleton-bar {
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    rgba(178, 180, 178, 0.3) 25%,
+    rgba(178, 180, 178, 0.55) 37%,
+    rgba(178, 180, 178, 0.3) 63%
+  );
+  background-size: 400% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+.skeleton-bar-title {
+  width: 45%;
+  height: 22px;
+}
+
+.skeleton-bar-subtitle {
+  width: 65%;
+  height: 15px;
+}
+
+.skeleton-bar-button {
+  width: 90px;
+  height: 38px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 /* add page */

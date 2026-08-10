@@ -63,7 +63,6 @@ export default async function EditAttendeeGroupPage({
     fName: attendee.fName ?? "",
     lName: attendee.lName ?? "",
     tshirtSize: attendee.tshirtSize ?? "",
-    email: attendee.email ?? "",
     primaryLanguage: attendee.primaryLanguage ?? "",
     interests: attendee.interests ?? "",
     healthConcerns: attendee.healthConcerns ?? "",

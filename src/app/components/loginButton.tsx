@@ -11,22 +11,11 @@ const DEV_MODE = process.env.NEXT_PUBLIC_DEV_MODE === "true";
 const TENANT_ID = process.env.NEXT_PUBLIC_MICROSOFT_ENTRA_TENANT_ID;
 
 const JOB_ROUTES: Record<string, string> = {
-  FRESHMAN: "/attendee/home",
-  UNREGISTERED: "/attendee/home",
   ADMIN: "/admin",
   AMBASSADOR: "/mentor/ambassador",
   "HALLWAY HOST": "/mentor/hallway_host",
   "UTILITY SQUAD": "/mentor/utility_squad",
   "CCA CONVOS": "/mentor/cca_convos",
-};
-
-const JOB_BASE_PATHS: Record<string, string> = {
-  FRESHMAN: "/attendee",
-  ADMIN: "/admin",
-  AMBASSADOR: "/mentor",
-  "HALLWAY HOST": "/mentor",
-  "UTILITY SQUAD": "/mentor",
-  "CCA CONVOS": "/mentor",
 };
 
 export default function LoginButton() {

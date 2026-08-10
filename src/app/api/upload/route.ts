@@ -19,7 +19,7 @@ import { toTitleCase } from "@/lib/toTitleCase";
 
 const requiredColumns: Record<string, string[]> = {
   mentor_data: ["mentor_id", "first_name", "last_name", "job", "email"],
-  attendee_data: ["freshmen_id", "first_name", "last_name", "email"],
+  attendee_data: ["freshmen_id", "first_name", "last_name"],
   seminar_data: ["freshmen_id", "first_name", "last_name", "semester", "teacher_full_name", "period"],
 };
 
@@ -92,13 +92,11 @@ async function insertData(table: string, rows: any[]) {
 
     case "attendee_data":
       for (const row of rows) {
-        const email = fixEmail(row["email"]?.trim?.() ?? row["email"]);
         await db.insert(attendeeData).values({
           attendeeId: row["freshmen_id"],
           fName: toTitleCase(row["first_name"] ?? row["f_name"]),
           lName: toTitleCase(row["last_name"] ?? row["l_name"]),
           tshirtSize: row["shirt_size"] ?? row["shirtsize"],
-          email,
           primaryLanguage: row["primary_language"] || "English",
           interests: row["interests"],
           healthConcerns: row["health_concerns"] ? encrypt(row["health_concerns"]) : row["health_concerns"],
@@ -109,7 +107,6 @@ async function insertData(table: string, rows: any[]) {
             fName: toTitleCase(row["first_name"] ?? row["f_name"]),
             lName: toTitleCase(row["last_name"] ?? row["l_name"]),
             tshirtSize: row["shirt_size"] ?? row["shirtsize"],
-            email,
             primaryLanguage: row["primary_language"] || "English",
             interests: row["interests"],
             healthConcerns: row["health_concerns"] ? encrypt(row["health_concerns"]) : row["health_concerns"],

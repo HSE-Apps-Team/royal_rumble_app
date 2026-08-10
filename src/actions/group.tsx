@@ -300,6 +300,44 @@ export async function getAttendeesByGroupId(groupId: number) {
   return attendees;
 }
 
+// Freshmen from the seminar roster who are assigned (via the ghost-group
+// number) to this real group but have no matching attendee_data row, i.e.
+// they haven't registered through GoFan yet.
+export async function getPossibleAttendeesByGroupId(groupId: number) {
+  const group = await db
+    .select({ name: groupData.name })
+    .from(groupData)
+    .where(eq(groupData.groupId, groupId))
+    .limit(1);
+
+  if (group.length === 0) return [];
+
+  // groupData.name is always created as `Group {seminarGroupId}` (see
+  // resolveGroupId in syncGroups), so parse the ghost-group number back out.
+  const match = group[0].name.trim().match(/^Group (\d+)$/i);
+  if (!match) return [];
+  const seminarGroupId = Number(match[1]);
+
+  const seminarRows = await db
+    .select({
+      freshmenId: seminarData.freshmenId,
+      fName: seminarData.fName,
+      lName: seminarData.lName,
+    })
+    .from(seminarData)
+    .where(eq(seminarData.groupId, seminarGroupId));
+
+  const registeredIds = new Set(
+    (await db.select({ attendeeId: attendeeData.attendeeId }).from(attendeeData)).map(
+      (a) => a.attendeeId,
+    ),
+  );
+
+  return seminarRows.filter(
+    (s) => s.freshmenId !== null && !registeredIds.has(s.freshmenId),
+  );
+}
+
 export async function getMentorsByGroupId(groupId: number) {
   const mentorsId = await db
     .select()

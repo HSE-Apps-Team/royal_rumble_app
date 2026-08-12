@@ -7,12 +7,19 @@ import AddButton from "../../../components/addButton";
 import "../../../css/admin.css";
 import "../../../css/logo+login.css";
 import { addEvent } from "@/actions/other";
-import { useState } from "react";
+import { getAllJobs } from "@/actions/job";
+import { useEffect, useState } from "react";
 import { useAlert } from "@/app/context/AlertContext";
 
 export default function AdminAddEvent() {
   const router = useRouter();
   const { showAlert } = useAlert();
+
+  const [jobs, setJobs] = useState<Array<{ dbJob: string; label: string }>>([]);
+
+  useEffect(() => {
+    getAllJobs().then(setJobs);
+  }, []);
 
   const [name, setName] = useState("");
   const [date, setDate] = useState("");
@@ -260,54 +267,26 @@ export default function AdminAddEvent() {
                     <input
                       type="radio"
                       name="mentorType"
-                      value="ambassador"
-                      className="checkbox-input"
-                      onChange={() => setJob("AMBASSADOR")}
-                    />
-                    Ambassador
-                  </label>
-                  <label className="checkbox-label">
-                    <input
-                      type="radio"
-                      name="mentorType"
-                      value="hallwayHost"
-                      className="checkbox-input"
-                      onChange={() => setJob("HALLWAY HOST")}
-                    />
-                    Hallway Host
-                  </label>
-                </div>
-                <div className="form-row checkbox-row">
-                  <label className="checkbox-label">
-                    <input
-                      type="radio"
-                      name="mentorType"
                       value="all"
                       className="checkbox-input"
+                      checked={job === "ALL"}
                       onChange={() => setJob("ALL")}
                     />
                     All
                   </label>
-                  <label className="checkbox-label">
-                    <input
-                      type="radio"
-                      name="mentorType"
-                      value="spirit"
-                      className="checkbox-input"
-                      onChange={() => setJob("CCA CONVOS")}
-                    />
-                    CCA Convos
-                  </label>
-                  <label className="checkbox-label">
-                    <input
-                      type="radio"
-                      name="mentorType"
-                      value="utility"
-                      className="checkbox-input"
-                      onChange={() => setJob("UTILITY SQUAD")}
-                    />
-                    Utility
-                  </label>
+                  {jobs.map((j) => (
+                    <label className="checkbox-label" key={j.dbJob}>
+                      <input
+                        type="radio"
+                        name="mentorType"
+                        value={j.dbJob}
+                        className="checkbox-input"
+                        checked={job === j.dbJob}
+                        onChange={() => setJob(j.dbJob)}
+                      />
+                      {j.label}
+                    </label>
+                  ))}
                 </div>
               </form>
               {errors.job && (

@@ -8,10 +8,16 @@ import "../../css/mentor.css";
 import "../../css/logo+login.css";
 import "../../css/mobile-nav.css";
 
-export default function CCAConvosUI({
+export default function NonUtilityJobUI({
+  homeHref,
+  dashboardHref,
+  contentKey,
   mentorsData,
-  ccaConvosEvents,
+  events,
 }: {
+  homeHref: string;
+  dashboardHref: string;
+  contentKey: string;
   mentorsData: {
     mentorId: number;
     fName: string | null;
@@ -25,7 +31,7 @@ export default function CCAConvosUI({
     trainingDay: string | null;
     pizzaType: string | null;
   };
-  ccaConvosEvents: Array<{
+  events: Array<{
     eventId: number;
     name: string | null;
     date: string | null;
@@ -38,18 +44,20 @@ export default function CCAConvosUI({
   return (
     <>
       <div className="nav-buttons">
-        <NavButton href="/"
-        style={{ width: "90px", height: "40px", padding: "5px 0px", fontSize: "15px" }}
+        <NavButton
+          href={homeHref}
+          style={{ width: "90px", height: "40px", padding: "5px 0px", fontSize: "15px" }}
         >
           Home
         </NavButton>
-        <NavButton href="/mentor/cca_convos"
-        style={{ width: "140px", height: "40px", padding: "5px 0px", fontSize: "15px" }}
+        <NavButton
+          href={dashboardHref}
+          style={{ width: "140px", height: "40px", padding: "5px 0px", fontSize: "15px" }}
         >
           Dashboard
         </NavButton>
       </div>
-      <MobileNav homeHref="/" dashboardHref="/mentor/cca_convos" />
+      <MobileNav homeHref={homeHref} dashboardHref={dashboardHref} />
       <header className="mentor-header">
         <h1 className="mentor-title">
           Welcome, {mentorsData.fName} {mentorsData.lName}!
@@ -72,7 +80,7 @@ export default function CCAConvosUI({
         <InfoBox headerText="Event Details">
           <InfoTable
             headers={["Event", "Date(s)", "Description"]}
-            data={ccaConvosEvents.map((event) => [
+            data={events.map((event) => [
               event.name ?? "N/A",
               formatEventDates(event),
               event.description ?? "N/A",
@@ -82,7 +90,7 @@ export default function CCAConvosUI({
       </section>
 
       <InfoBox headerText="Additional Instruction">
-        <EditableContent contentKey="cca_convos_more_details" />
+        <EditableContent contentKey={contentKey} />
       </InfoBox>
     </>
   );

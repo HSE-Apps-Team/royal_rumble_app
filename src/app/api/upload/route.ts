@@ -3,19 +3,14 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import {
-  mentorData,
-  ambassadorData,
-  hallwayHostData,
-  mentorAttendanceData,
-  eventsData,
   attendeeData,
   seminarData,
+  jobData,
 } from "@/db/schema";
-import { eq, or } from "drizzle-orm";
 import * as XLSX from "xlsx";
 import { encrypt } from "@/lib/crypto";
-import { fixEmail } from "@/lib/fixEmail";
 import { toTitleCase } from "@/lib/toTitleCase";
+import { insertMentorRow, MentorJobMismatch } from "@/lib/mentorUpload";
 
 const requiredColumns: Record<string, string[]> = {
   mentor_data: ["mentor_id", "first_name", "last_name", "job", "email"],
@@ -53,42 +48,38 @@ function validateRows(table: string, rows: any[]) {
   return errors.length ? errors.join("; ") : null;
 }
 
-async function insertData(table: string, rows: any[]) {
+async function insertMentorData(rows: any[]): Promise<MentorJobMismatch[]> {
+  const knownJobs = await db.select({ dbJob: jobData.dbJob }).from(jobData);
+  const knownJobSet = new Set(knownJobs.map((j) => j.dbJob));
+
+  const mismatchesByJob = new Map<string, MentorJobMismatch>();
+
+  for (const row of rows) {
+    const job = typeof row["job"] === "string" ? row["job"].trim().toUpperCase() : row["job"];
+
+    if (!knownJobSet.has(job)) {
+      const group: MentorJobMismatch =
+        mismatchesByJob.get(job) ?? { job, mentors: [] };
+      group.mentors.push({
+        mentorId: row["mentor_id"],
+        fName: toTitleCase(row["first_name"]) ?? null,
+        lName: toTitleCase(row["last_name"]) ?? null,
+        row,
+      });
+      mismatchesByJob.set(job, group);
+      continue;
+    }
+
+    await insertMentorRow(row, job);
+  }
+
+  return Array.from(mismatchesByJob.values());
+}
+
+async function insertData(table: string, rows: any[]): Promise<MentorJobMismatch[] | void> {
   switch (table) {
     case "mentor_data":
-      for (const row of rows) {
-        const job = typeof row["job"] === "string" ? row["job"].trim().toUpperCase() : row["job"];
-
-        await db.insert(mentorData).values({
-          mentorId: row["mentor_id"],
-          fName: toTitleCase(row["first_name"]),
-          lName: toTitleCase(row["last_name"]),
-          gradYear: row["graduation_year"],
-          job,
-          pizzaType: row["pizza"],
-          languages: row["languages"],
-          trainingDay: row["training_day"],
-          tshirtSize: row["shirt_size"],
-          phoneNum: row["phone_number"] ? encrypt(row["phone_number"]) : row["phone_number"],
-          email: fixEmail(row["email"].trim()) as string,
-          pastMentor: row["past_mentor"] ?? null,
-          interestsInvolvement: row["interests_involvement"] ?? null,
-        }).onConflictDoNothing();
-
-        if (job === "AMBASSADOR") {
-          await db.insert(ambassadorData).values({ mentorId: row["mentor_id"], groupId: null }).onConflictDoNothing();
-        } else if (job === "HALLWAY HOST") {
-          await db.insert(hallwayHostData).values({ mentorId: row["mentor_id"], hallwayStopId: null }).onConflictDoNothing();
-        }
-
-        const eventIds = await db.select({ eventId: eventsData.eventId })
-          .from(eventsData)
-          .where(or(eq(eventsData.job, job), eq(eventsData.job, "ALL")));
-        for (const event of eventIds) {
-          await db.insert(mentorAttendanceData).values({ mentorId: row["mentor_id"], eventId: event.eventId, status: false }).onConflictDoNothing();
-        }
-      }
-      break;
+      return insertMentorData(rows);
 
     case "attendee_data":
       for (const row of rows) {
@@ -159,9 +150,18 @@ export async function POST(req: Request) {
     const rowError = validateRows(table, rows);
     if (rowError) return NextResponse.json({ error: rowError }, { status: 400 });
 
-    await insertData(table, rows);
+    const result = await insertData(table, rows);
+    const mismatches = (result ?? []) as MentorJobMismatch[];
+    const unmatchedCount = mismatches.reduce((sum, m) => sum + m.mentors.length, 0);
+    const insertedCount = rows.length - unmatchedCount;
 
-    return NextResponse.json({ message: `✅ Successfully inserted ${rows.length} rows into ${table}.` });
+    return NextResponse.json({
+      message:
+        unmatchedCount > 0
+          ? `✅ Inserted ${insertedCount} row(s) into ${table}. ${unmatchedCount} mentor(s) have an unrecognized job and need to be resolved.`
+          : `✅ Successfully inserted ${rows.length} rows into ${table}.`,
+      mismatches: table === "mentor_data" ? mismatches : undefined,
+    });
   } catch (err: any) {
     console.error("Upload failed:", err);
     return NextResponse.json({ error: "Upload failed. Please check your file and try again." }, { status: 500 });

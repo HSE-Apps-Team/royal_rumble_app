@@ -25,6 +25,8 @@ import {
 import { formatEventDates } from "@/lib/formatEventDates";
 import CheckBoxTable from "../../components/checkBoxTable";
 import { useAlert } from "../../context/AlertContext";
+import { getAllJobs } from "@/actions/job";
+import { toTitleCase } from "@/lib/toTitleCase";
 
 interface EventOption {
   eventId: number;
@@ -41,6 +43,22 @@ interface MentorAttendanceMismatch {
   lName: string | null;
   assignedJob: string | null;
   uploadedJob: string | null;
+}
+
+interface MentorJobMismatchGroup {
+  job: string;
+  mentors: Array<{
+    mentorId: number;
+    fName: string | null;
+    lName: string | null;
+    row: any;
+  }>;
+}
+
+interface JobResolution {
+  action: "add" | "override";
+  newJobLabel: string;
+  overrideDbJob: string;
 }
 
 export const runtime = "nodejs";
@@ -73,6 +91,18 @@ export default function AdminUpload() {
   const [mismatchEventId, setMismatchEventId] = useState<number | null>(null);
   const [confirmingOverrides, setConfirmingOverrides] = useState(false);
 
+  const [jobMismatchGroups, setJobMismatchGroups] = useState<
+    MentorJobMismatchGroup[]
+  >([]);
+  const [jobMismatchModalOpen, setJobMismatchModalOpen] = useState(false);
+  const [jobResolutions, setJobResolutions] = useState<
+    Record<string, JobResolution>
+  >({});
+  const [resolvingJobMismatches, setResolvingJobMismatches] = useState(false);
+  const [knownJobs, setKnownJobs] = useState<
+    Array<{ dbJob: string; label: string }>
+  >([]);
+
   const { showAlert } = useAlert();
   const router = useRouter();
 
@@ -81,6 +111,7 @@ export default function AdminUpload() {
       setEventOptions(events);
       if (events.length > 0) setSelectedAttendanceEvent(events[0].eventId);
     });
+    getAllJobs().then(setKnownJobs);
   }, []);
 
   const handleLogoClick = () => {
@@ -164,6 +195,45 @@ export default function AdminUpload() {
     }
   };
 
+  const handleResolveJobMismatches = async () => {
+    setResolvingJobMismatches(true);
+    try {
+      const resolutions = jobMismatchGroups.map((group) => {
+        const resolution = jobResolutions[group.job];
+        return {
+          uploadedJob: group.job,
+          action: resolution.action,
+          newJobLabel: resolution.newJobLabel,
+          overrideDbJob: resolution.overrideDbJob,
+          rows: group.mentors.map((m) => m.row),
+        };
+      });
+
+      const res = await fetch("/api/upload/resolve-mentor-jobs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ resolutions }),
+      });
+      const data = await res.json();
+
+      if (data.error) {
+        showAlert(data.error, "danger");
+        return;
+      }
+
+      showAlert(data.message, data.errors?.length > 0 ? "warning" : "success");
+      if (!data.errors || data.errors.length === 0) {
+        setJobMismatchModalOpen(false);
+        setJobMismatchGroups([]);
+      }
+      getAllJobs().then(setKnownJobs);
+    } catch {
+      showAlert("Failed to resolve job mismatches. Please try again.", "danger");
+    } finally {
+      setResolvingJobMismatches(false);
+    }
+  };
+
   // Upload handler — identical to original
   const handleUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -228,6 +298,23 @@ export default function AdminUpload() {
         setMessages((prev) => ({ ...prev, [table]: `❌ ${data.error}` }));
       } else {
         setMessages((prev) => ({ ...prev, [table]: data.message }));
+        if (table === "mentor_data" && data.mismatches?.length > 0) {
+          const groups: MentorJobMismatchGroup[] = data.mismatches;
+          setJobMismatchGroups(groups);
+          setJobResolutions(
+            Object.fromEntries(
+              groups.map((g) => [
+                g.job,
+                {
+                  action: "add" as const,
+                  newJobLabel: toTitleCase(g.job) ?? g.job,
+                  overrideDbJob: knownJobs[0]?.dbJob ?? "",
+                },
+              ]),
+            ),
+          );
+          setJobMismatchModalOpen(true);
+        }
       }
     } catch (err: any) {
       setMessages((prev) => ({
@@ -1302,6 +1389,238 @@ export default function AdminUpload() {
               />
             ) : (
               "Confirm"
+            )}
+          </button>
+        </div>
+      </ContentModal>
+
+      <ContentModal
+        title="Unrecognized Mentor Jobs"
+        icon="bi bi-exclamation-triangle"
+        show={jobMismatchModalOpen}
+        onClose={() => setJobMismatchModalOpen(false)}
+      >
+        <label
+          className="form-label"
+          style={{
+            fontWeight: "bold",
+            width: "100%",
+            textAlign: "center",
+            marginBottom: "20px",
+          }}
+        >
+          These mentors were uploaded with a job that doesn&apos;t match any
+          existing job. Choose to add each as a new job or override with an
+          existing one.
+        </label>
+
+        {jobMismatchGroups.map((group) => {
+          const resolution = jobResolutions[group.job] ?? {
+            action: "add" as const,
+            newJobLabel: toTitleCase(group.job),
+            overrideDbJob: knownJobs[0]?.dbJob ?? "",
+          };
+
+          return (
+            <div
+              key={group.job}
+              style={{
+                border: "3px solid var(--primaryBlue)",
+                borderRadius: "10px",
+                padding: "16px",
+                marginBottom: "20px",
+              }}
+            >
+              <div
+                style={{
+                  fontWeight: "bold",
+                  fontSize: "18px",
+                  color: "var(--primaryBlue)",
+                  marginBottom: "10px",
+                }}
+              >
+                Uploaded Job: &quot;{group.job}&quot; ({group.mentors.length}{" "}
+                mentor{group.mentors.length === 1 ? "" : "s"})
+              </div>
+
+              <div style={{ overflowX: "auto", marginBottom: "16px" }}>
+                <table
+                  style={{
+                    borderCollapse: "collapse",
+                    fontSize: "15px",
+                    width: "100%",
+                  }}
+                >
+                  <thead>
+                    <tr>
+                      {["Mentor ID", "First Name", "Last Name", "Listed Job"].map(
+                        (col) => (
+                          <th
+                            key={col}
+                            style={{
+                              textAlign: "left",
+                              padding: "6px 12px",
+                              borderBottom: "2px solid var(--primaryBlue)",
+                              color: "var(--primaryBlue)",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {col}
+                          </th>
+                        ),
+                      )}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {group.mentors.map((m, i) => (
+                      <tr key={m.mentorId}>
+                        <td
+                          style={{
+                            padding: "6px 12px",
+                            whiteSpace: "nowrap",
+                            borderBottom:
+                              i === group.mentors.length - 1
+                                ? "none"
+                                : "1px solid #eee",
+                          }}
+                        >
+                          {m.mentorId}
+                        </td>
+                        <td
+                          style={{
+                            padding: "6px 12px",
+                            whiteSpace: "nowrap",
+                            borderBottom:
+                              i === group.mentors.length - 1
+                                ? "none"
+                                : "1px solid #eee",
+                          }}
+                        >
+                          {m.fName}
+                        </td>
+                        <td
+                          style={{
+                            padding: "6px 12px",
+                            whiteSpace: "nowrap",
+                            borderBottom:
+                              i === group.mentors.length - 1
+                                ? "none"
+                                : "1px solid #eee",
+                          }}
+                        >
+                          {m.lName}
+                        </td>
+                        <td
+                          style={{
+                            padding: "6px 12px",
+                            whiteSpace: "nowrap",
+                            borderBottom:
+                              i === group.mentors.length - 1
+                                ? "none"
+                                : "1px solid #eee",
+                          }}
+                        >
+                          {group.job}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="form-row checkbox-row" style={{ marginBottom: "10px" }}>
+                <label className="checkbox-label">
+                  <input
+                    type="radio"
+                    name={`resolution-${group.job}`}
+                    className="checkbox-input"
+                    checked={resolution.action === "add"}
+                    onChange={() =>
+                      setJobResolutions((prev) => ({
+                        ...prev,
+                        [group.job]: { ...resolution, action: "add" },
+                      }))
+                    }
+                  />
+                  Add as new job:
+                </label>
+                <input
+                  type="text"
+                  className="form-input"
+                  style={{ width: "220px" }}
+                  disabled={resolution.action !== "add"}
+                  value={resolution.newJobLabel}
+                  onChange={(e) =>
+                    setJobResolutions((prev) => ({
+                      ...prev,
+                      [group.job]: { ...resolution, newJobLabel: e.target.value },
+                    }))
+                  }
+                />
+              </div>
+
+              <div className="form-row checkbox-row">
+                <label className="checkbox-label">
+                  <input
+                    type="radio"
+                    name={`resolution-${group.job}`}
+                    className="checkbox-input"
+                    checked={resolution.action === "override"}
+                    onChange={() =>
+                      setJobResolutions((prev) => ({
+                        ...prev,
+                        [group.job]: { ...resolution, action: "override" },
+                      }))
+                    }
+                  />
+                  Override with existing job:
+                </label>
+                <select
+                  className="form-select"
+                  style={{ width: "220px" }}
+                  disabled={resolution.action !== "override" || knownJobs.length === 0}
+                  value={resolution.overrideDbJob}
+                  onChange={(e) =>
+                    setJobResolutions((prev) => ({
+                      ...prev,
+                      [group.job]: { ...resolution, overrideDbJob: e.target.value },
+                    }))
+                  }
+                >
+                  {knownJobs.map((j) => (
+                    <option key={j.dbJob} value={j.dbJob}>
+                      {j.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          );
+        })}
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            marginTop: "20px",
+          }}
+        >
+          <button
+            style={buttonStyle}
+            onMouseEnter={buttonHover}
+            onMouseLeave={buttonUnhover}
+            type="button"
+            disabled={resolvingJobMismatches}
+            onClick={handleResolveJobMismatches}
+          >
+            {resolvingJobMismatches ? (
+              <span
+                className="spinner-border spinner-border-sm"
+                role="status"
+                aria-hidden="true"
+              />
+            ) : (
+              "Resolve"
             )}
           </button>
         </div>

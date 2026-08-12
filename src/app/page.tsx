@@ -26,17 +26,16 @@ import "./css/mobile-nav.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { getRoyalRumbleTicketLink } from "../actions/other";
 import { auth } from "@/auth";
+import { getJobRoutes } from "@/actions/job";
 
 export default async function Home() {
   const ticketLink = await getRoyalRumbleTicketLink();
   const session = await auth();
+  const jobRoutes = await getJobRoutes();
 
   const dashboardRoutes: Record<string, string> = {
     ADMIN: "/admin",
-    AMBASSADOR: "/mentor/ambassador",
-    "HALLWAY HOST": "/mentor/hallway_host",
-    "UTILITY SQUAD": "/mentor/utility_squad",
-    "CCA CONVOS": "/mentor/cca_convos",
+    ...jobRoutes,
   };
 
   const userJob = session?.user?.job?.trim().toUpperCase();

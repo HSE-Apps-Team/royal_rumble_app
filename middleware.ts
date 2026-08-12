@@ -24,18 +24,10 @@ function prodMiddleware(req: any) {
   }
 
   if (path.startsWith("/mentor")) {
-    if (!isLoggedIn) {
-      return NextResponse.redirect(new URL("/", nextUrl));
-    }
-
-    const allowedMentorJobs = [
-      "AMBASSADOR",
-      "HALLWAY HOST",
-      "UTILITY SQUAD",
-      "CCA CONVOS",
-    ];
-
-    if (!allowedMentorJobs.includes(userJob ?? "")) {
+    // Coarse gate only: any logged-in, registered non-admin user may pass.
+    // Precise job -> route validation happens in the page itself (DB-backed
+    // job catalog), since middleware can't do an async DB lookup per request.
+    if (!isLoggedIn || !userJob || userJob === "ADMIN" || userJob === "UNREGISTERED") {
       return NextResponse.redirect(new URL("/", nextUrl));
     }
   }

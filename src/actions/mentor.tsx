@@ -146,7 +146,9 @@ export const getHallwayHostAssignments = async () => {
   return hosts;
 };
 
-export const getHallwayHostEvents = async () => {
+// Non-utility mentor job queries (Hallway Host, Utility Squad, CCA Convos, ...)
+export const getEventsForJob = async (job: string) => {
+  const jobKey = job.trim().toUpperCase();
   const events = await db
     .select({
       eventId: eventsData.eventId,
@@ -159,41 +161,7 @@ export const getHallwayHostEvents = async () => {
     })
     .from(eventsData)
     .orderBy(sql`${eventsData.date} ASC, ${eventsData.time} ASC`)
-    .where(sql`upper(trim(${eventsData.job})) IN ('HALLWAY HOST', 'ALL')`);
-  return events;
-};
-
-// Utility / CCA Convos queries
-export const getUtilitySquadEvents = async () => {
-  const events = await db
-    .select({
-      eventId: eventsData.eventId,
-      name: eventsData.name,
-      date: eventsData.date,
-      time: eventsData.time,
-      date2: eventsData.date2,
-      time2: eventsData.time2,
-      description: eventsData.description,
-    })
-    .from(eventsData)
-    .orderBy(sql`${eventsData.date} ASC, ${eventsData.time} ASC`)
-    .where(sql`upper(trim(${eventsData.job})) IN ('UTILITY SQUAD', 'ALL')`);
-  return events;
-};
-export const getCCAConvosEvents = async () => {
-  const events = await db
-    .select({
-      eventId: eventsData.eventId,
-      name: eventsData.name,
-      date: eventsData.date,
-      time: eventsData.time,
-      date2: eventsData.date2,
-      time2: eventsData.time2,
-      description: eventsData.description,
-    })
-    .from(eventsData)
-    .orderBy(sql`${eventsData.date} ASC, ${eventsData.time} ASC`)
-    .where(sql`upper(trim(${eventsData.job})) IN ('CCA CONVOS', 'ALL')`);
+    .where(sql`upper(trim(${eventsData.job})) IN (${jobKey}, 'ALL')`);
   return events;
 };
 

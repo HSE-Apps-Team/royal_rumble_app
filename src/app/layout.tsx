@@ -7,6 +7,7 @@ import AlertMessage from "./components/AlertMessage";
 import { ToastProvider } from "./context/ToastContext";
 import ToastStack from "./components/ToastStack";
 import Providers from "./components/Providers";
+import { getAllJobs } from "@/actions/job";
 
 export const dynamic = "force-dynamic";
 const DEV_MODE = process.env.DEV_MODE === "true";
@@ -16,11 +17,12 @@ export const metadata: Metadata = {
   description: "The hub for all things Royal Rumble!",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const jobs = DEV_MODE ? await getAllJobs() : [];
   return (
     <html lang="en">
       <meta
@@ -43,10 +45,11 @@ export default function RootLayout({
                   }}
                 >
                   <Link href="/">Home</Link> | <Link href="/faq">FAQ</Link> |{" "}
-                  <Link href="/mentor/ambassador">Ambassador</Link> |{" "}
-                  <Link href="/mentor/hallway_host">Hallway Host</Link> |{" "}
-                  <Link href="/mentor/utility_squad">Utility Squad</Link> |{" "}
-                  <Link href="/mentor/cca_convos">CCA Convos</Link> |{" "}
+                  {jobs.map((job) => (
+                    <span key={job.slug}>
+                      <Link href={`/mentor/${job.slug}`}>{job.label}</Link> |{" "}
+                    </span>
+                  ))}
                   <Link href="/admin">Admin</Link>
                 </nav>
               )}

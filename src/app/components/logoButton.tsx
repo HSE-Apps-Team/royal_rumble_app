@@ -11,20 +11,12 @@ export default function LogoButton() {
   const pathname = usePathname();
 
     const handleLogoClick = () => {
-    if (pathname.startsWith("/mentor/ambassador")) {
-      router.push("/mentor/ambassador");
-
-    } else if (pathname.startsWith("/mentor/hallway_host")) {
-      router.push("/mentor/hallway_host");
-
-    } else if (pathname.startsWith("/mentor/utility_squad")) {
-      router.push("/mentor/utility_squad");
-
-    } else if (pathname.startsWith("/admin")) {
+    if (pathname.startsWith("/admin")) {
       router.push("/admin");
 
     } else {
-      router.push("/");
+      const mentorMatch = pathname.match(/^\/mentor\/[^/]+/);
+      router.push(mentorMatch ? mentorMatch[0] : "/");
     }
   };
 

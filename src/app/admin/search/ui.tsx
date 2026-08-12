@@ -48,6 +48,14 @@ export default function AdminSearchUI({ attendees, mentors }: Props) {
       prev.includes(job) ? prev.filter((j) => j !== job) : [...prev, job],
     );
 
+  const jobOptions = useMemo(
+    () =>
+      [...new Set(mentors.map((m) => (m.job ?? "").trim().toUpperCase()))]
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b)),
+    [mentors],
+  );
+
   const results = useMemo(() => {
     const q = nameQuery.trim().toLowerCase();
 
@@ -130,7 +138,7 @@ export default function AdminSearchUI({ attendees, mentors }: Props) {
 
             {(showMentors || (!showAttendees && !showMentors)) && (
               <div className="form-row checkbox-row">
-                {["AMBASSADOR", "HALLWAY HOST", "CCA CONVOS", "UTILITY SQUAD"].map((job) => (
+                {jobOptions.map((job) => (
                   <label key={job} className="checkbox-label">
                     <input
                       type="checkbox"

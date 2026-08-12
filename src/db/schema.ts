@@ -121,6 +121,17 @@ export const adminData = pgTable("admin_data", {
   lName:   text("l_name"),
 });
 
+// ---------------- job_data ----------------
+export const jobData = pgTable("job_data", {
+  jobId:      serial("job_id").primaryKey(),
+  slug:       varchar("slug", { length: 100 }).unique().notNull(),
+  dbJob:      text("db_job").unique().notNull(),
+  label:      text("label").notNull(),
+  contentKey: varchar("content_key", { length: 100 }).unique().notNull(),
+  isProtected: boolean("is_protected").notNull().default(false),
+  isNonUtility: boolean("is_non_utility").notNull().default(true),
+});
+
 // ---------------- site_content ----------------
 export const siteContent = pgTable("site_content", {
   id:      serial("id").primaryKey(),

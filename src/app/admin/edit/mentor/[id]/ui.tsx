@@ -9,6 +9,7 @@ import "@/app/css/admin.css";
 import "@/app/css/logo+login.css";
 import BackButton from "@/app/components/backButton";
 import { getMentorById, updateMentorByID } from "@/actions/mentor";
+import { getAllJobs } from "@/actions/job";
 import { useAlert } from "@/app/context/AlertContext";
 
 export default function AdminEditMentorUI({
@@ -33,8 +34,13 @@ export default function AdminEditMentorUI({
   const [pastMentor, setPastMentor] = useState(false);
   const [interestsInvolvement, setInterestsInvolvement] = useState("");
 
+  const [jobs, setJobs] = useState<Array<{ dbJob: string; label: string }>>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    getAllJobs().then(setJobs);
+  }, []);
 
   useEffect(() => {
     const loadMentor = async () => {
@@ -230,10 +236,11 @@ export default function AdminEditMentorUI({
                     Select Job
                   </option>
                 ) : null}
-                <option value="AMBASSADOR">AMBASSADOR</option>
-                <option value="HALLWAY HOST">HALLWAY HOST</option>
-                <option value="CCA CONVOS">CCA CONVOS</option>
-                <option value="UTILITY SQUAD">UTILITY SQUAD</option>
+                {jobs.map((j) => (
+                  <option key={j.dbJob} value={j.dbJob}>
+                    {j.label}
+                  </option>
+                ))}
               </select>
               {errors.job && (
                 <div className="invalid-feedback d-block">{errors.job}</div>

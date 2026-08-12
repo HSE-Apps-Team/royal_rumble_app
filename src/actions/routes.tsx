@@ -331,6 +331,45 @@ export async function deleteTourRouteStop(routeStopId: number) {
   return { success: true };
 }
 
+// Reorders a route's stops to match the given routeStopId sequence
+// (drag-and-drop reordering in the admin UI). Writes stopOrder in two
+// passes — first to unused high values, then to the final 1..N — so the
+// (routeId, stopOrder) unique constraint never collides mid-update.
+export async function reorderTourRouteStops(
+  routeId: number,
+  orderedRouteStopIds: number[],
+) {
+  const existing = await db
+    .select({ routeStopId: tourRouteStop.routeStopId })
+    .from(tourRouteStop)
+    .where(eq(tourRouteStop.routeId, routeId));
+
+  const existingIds = new Set(existing.map((s) => s.routeStopId));
+  if (
+    existingIds.size !== orderedRouteStopIds.length ||
+    !orderedRouteStopIds.every((id) => existingIds.has(id))
+  ) {
+    return { success: false, reason: "Stop list does not match this route." };
+  }
+
+  const offset = existing.length + 1000;
+  for (let i = 0; i < orderedRouteStopIds.length; i++) {
+    await db
+      .update(tourRouteStop)
+      .set({ stopOrder: offset + i })
+      .where(eq(tourRouteStop.routeStopId, orderedRouteStopIds[i]));
+  }
+
+  for (let i = 0; i < orderedRouteStopIds.length; i++) {
+    await db
+      .update(tourRouteStop)
+      .set({ stopOrder: i + 1 })
+      .where(eq(tourRouteStop.routeStopId, orderedRouteStopIds[i]));
+  }
+
+  return { success: true };
+}
+
 // ============================================================
 //  GROUP ROUTE ATTENDANCE
 // ============================================================

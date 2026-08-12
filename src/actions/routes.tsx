@@ -14,7 +14,7 @@ import {
   seminarData,
   siteContent,
 } from "@/db/schema";
-import { eq, asc, sql, and } from "drizzle-orm";
+import { eq, asc, sql, and, inArray } from "drizzle-orm";
 
 // ============================================================
 //  EVENT START TIME (single overall start time, chained across
@@ -362,20 +362,58 @@ export async function seedGroupRouteAttendance(
   return { success: true, stopsSeeded: stops.length };
 }
 
-export async function getAttendanceByStop(hallwayStopId: number) {
-  return db
-    .select({
-      attendanceId: groupRouteAttendance.attendanceId,
-      groupId:      groupRouteAttendance.groupId,
-      groupName:    groupData.name,
-      present:      groupRouteAttendance.present,
-      markedAt:     groupRouteAttendance.markedAt,
-      routeNum:     groupData.routeNum,
-    })
-    .from(groupRouteAttendance)
-    .innerJoin(groupData, eq(groupRouteAttendance.groupId, groupData.groupId))
-    .where(eq(groupRouteAttendance.hallwayStopId, hallwayStopId))
-    .orderBy(asc(groupData.groupId));
+// ============================================================
+//  BLOCK ATTENDANCE (non-Tour blocks, e.g. Gym, Leonard)
+//
+//  Reuses hallway_stop_data as a generic named location and
+//  group_route_attendance as a generic (group, location) presence
+//  row — the same tables Tour stops use — so ambassadors mark
+//  "reached the gym" the same way they mark "reached stop 2".
+//  A block's location is found/created by matching its name
+//  against hallway_stop_data.location.
+// ============================================================
+
+export async function ensureGroupBlockAttendance(groupId: number) {
+  const group = await db
+    .select({ eventOrder: groupData.eventOrder, routeNum: groupData.routeNum })
+    .from(groupData)
+    .where(eq(groupData.groupId, groupId))
+    .limit(1);
+
+  if (!group[0]) return { success: false, reason: "Group not found" };
+
+  const eventOrder: string[] = JSON.parse(group[0].eventOrder ?? "[]");
+  const nonTourBlocks = eventOrder.filter((b) => b.toLowerCase() !== "tour");
+
+  await Promise.all([
+    ...nonTourBlocks.map(async (blockName) => {
+      let stop = await db
+        .select({ hallwayStopId: hallwayStopData.hallwayStopId })
+        .from(hallwayStopData)
+        .where(eq(hallwayStopData.location, blockName))
+        .limit(1);
+
+      if (!stop[0]) {
+        const inserted = await db
+          .insert(hallwayStopData)
+          .values({ location: blockName })
+          .returning({ hallwayStopId: hallwayStopData.hallwayStopId });
+        stop = inserted;
+      }
+
+      if (stop[0]) {
+        await db
+          .insert(groupRouteAttendance)
+          .values({ groupId, hallwayStopId: stop[0].hallwayStopId, present: false })
+          .onConflictDoNothing();
+      }
+    }),
+    group[0].routeNum != null
+      ? seedGroupRouteAttendance(groupId, group[0].routeNum)
+      : Promise.resolve(),
+  ]);
+
+  return { success: true, blocksSeeded: nonTourBlocks.length };
 }
 
 export async function getAttendanceByGroup(groupId: number) {
@@ -625,35 +663,23 @@ export async function createEstimatedGroups(count: number) {
 //  own event order: block[n].startTime = block[n-1].startTime +
 //  block[n-1].durationMinutes. Tour stops no longer get a computed
 //  arrival time — only their duration is shown.
+//
+//  SCHEDULE REFERENCE DATA (shared, group-independent) is fetched
+//  once via getScheduleReferenceData() below — block durations, the
+//  event start time, every tour route's stops (keyed by routeNum),
+//  and every hallway_stop_data location (for matching non-Tour block
+//  names) — instead of re-fetching it per group.
 // ============================================================
 
-export async function getGroupSchedule(groupId: number) {
-  const group = await db
-    .select({ name: groupData.name, eventOrder: groupData.eventOrder, routeNum: groupData.routeNum })
-    .from(groupData)
-    .where(eq(groupData.groupId, groupId))
-    .limit(1);
-
-  if (!group[0]) return null;
-
-  const eventOrder: string[] = JSON.parse(group[0].eventOrder ?? "[]");
-  const routeNum = group[0].routeNum;
-
-  const blocks = await db.select().from(blockSchedule);
-  const blockMap = new Map(blocks.map((b) => [b.blockName.toLowerCase(), b]));
-
-  const eventStartTime = await getEventStartTime();
-  let totalMinutes = parseTimeToMinutes(eventStartTime);
-
-  const route = await db
-    .select()
-    .from(tourRoute)
-    .where(eq(tourRoute.routeNum, routeNum ?? 0))
-    .limit(1);
-
-  const stops = route[0]
-    ? await db
+async function getScheduleReferenceData() {
+  const [blocks, eventStartTime, routes, allStops, allLocations] =
+    await Promise.all([
+      db.select().from(blockSchedule),
+      getEventStartTime(),
+      db.select().from(tourRoute),
+      db
         .select({
+          routeId:         tourRouteStop.routeId,
           stopOrder:       tourRouteStop.stopOrder,
           durationMinutes: tourRouteStop.durationMinutes,
           hallwayStopId:   tourRouteStop.hallwayStopId,
@@ -664,26 +690,154 @@ export async function getGroupSchedule(groupId: number) {
           hallwayStopData,
           eq(tourRouteStop.hallwayStopId, hallwayStopData.hallwayStopId),
         )
-        .where(eq(tourRouteStop.routeId, route[0].routeId))
-        .orderBy(asc(tourRouteStop.stopOrder))
-    : [];
+        .orderBy(asc(tourRouteStop.routeId), asc(tourRouteStop.stopOrder)),
+      db.select().from(hallwayStopData),
+    ]);
+
+  const blockMap = new Map(blocks.map((b) => [b.blockName.toLowerCase(), b]));
+
+  const routeIdByRouteNum = new Map(routes.map((r) => [r.routeNum, r.routeId]));
+  const stopsByRouteId = new Map<number, typeof allStops>();
+  for (const stop of allStops) {
+    const list = stopsByRouteId.get(stop.routeId);
+    if (list) list.push(stop);
+    else stopsByRouteId.set(stop.routeId, [stop]);
+  }
+
+  const stopIdByLocation = new Map(
+    allLocations.map((s) => [s.location, s.hallwayStopId]),
+  );
+
+  return {
+    blockMap,
+    eventStartTime,
+    routeIdByRouteNum,
+    stopsByRouteId,
+    stopIdByLocation,
+  };
+}
+
+function computeSchedule(
+  group: { groupId: number; name: string; eventOrder: string | null; routeNum: number | null },
+  ref: Awaited<ReturnType<typeof getScheduleReferenceData>>,
+  attendanceByStopId: Map<number, boolean>,
+) {
+  const eventOrder: string[] = JSON.parse(group.eventOrder ?? "[]");
+  const routeNum = group.routeNum;
+
+  const routeId = routeNum != null ? ref.routeIdByRouteNum.get(routeNum) : undefined;
+  const stops = routeId != null ? ref.stopsByRouteId.get(routeId) ?? [] : [];
+
+  let totalMinutes = parseTimeToMinutes(ref.eventStartTime);
 
   const schedule = eventOrder.map((blockName) => {
-    const block = blockMap.get(blockName.toLowerCase());
+    const block = ref.blockMap.get(blockName.toLowerCase());
+    const isTour = blockName.toLowerCase() === "tour";
+
+    const blockHallwayStopId = isTour
+      ? null
+      : ref.stopIdByLocation.get(blockName) ?? null;
+
+    const base = {
+      blockName,
+      hallwayStopId: blockHallwayStopId,
+      present: blockHallwayStopId != null
+        ? attendanceByStopId.get(blockHallwayStopId) ?? false
+        : false,
+    };
+
     if (!block) {
-      return { blockName, startTime: "TBD", stops: [] };
+      return { ...base, startTime: "TBD", stops: [] };
     }
 
     const startTime = totalMinutes === null ? "TBD" : formatMinutesToTime(totalMinutes);
     if (totalMinutes !== null) totalMinutes += block.durationMinutes;
 
     return {
-      blockName,
+      ...base,
       startTime,
       durationMinutes: block.durationMinutes,
-      stops: blockName.toLowerCase() === "tour" ? stops : [],
+      stops: isTour
+        ? stops.map((stop) => ({
+            ...stop,
+            present: attendanceByStopId.get(stop.hallwayStopId) ?? false,
+          }))
+        : [],
     };
   });
 
-  return { groupId, groupName: group[0].name, routeNum, schedule };
+  return { groupId: group.groupId, groupName: group.name, routeNum, schedule };
+}
+
+export async function getGroupSchedule(groupId: number) {
+  const group = await db
+    .select({ name: groupData.name, eventOrder: groupData.eventOrder, routeNum: groupData.routeNum })
+    .from(groupData)
+    .where(eq(groupData.groupId, groupId))
+    .limit(1);
+
+  if (!group[0]) return null;
+
+  await ensureGroupBlockAttendance(groupId);
+
+  const [ref, attendanceRows] = await Promise.all([
+    getScheduleReferenceData(),
+    getAttendanceByGroup(groupId),
+  ]);
+  const attendanceByStopId = new Map(
+    attendanceRows.map((a) => [a.hallwayStopId, a.present]),
+  );
+
+  return computeSchedule({ groupId, ...group[0] }, ref, attendanceByStopId);
+}
+
+// ============================================================
+//  BATCHED SCHEDULE LOOKUP (read-only, no seeding)
+//
+//  For pages that need many groups' schedules at once (e.g. the
+//  admin All Groups list). Fetches reference data + attendance for
+//  every group in ONE round-trip each, instead of getGroupSchedule's
+//  ~7 sequential queries repeated per group. Does not call
+//  ensureGroupBlockAttendance — this is a pure read, so groups whose
+//  attendance rows haven't been seeded yet (e.g. brand-new groups)
+//  simply show "not reached" until an ambassador opens their route
+//  page, which seeds them.
+// ============================================================
+
+export async function getGroupSchedulesForGroups(groupIds: number[]) {
+  if (groupIds.length === 0) return new Map<number, ReturnType<typeof computeSchedule>>();
+
+  const [groups, ref, attendanceRows] = await Promise.all([
+    db
+      .select({ groupId: groupData.groupId, name: groupData.name, eventOrder: groupData.eventOrder, routeNum: groupData.routeNum })
+      .from(groupData)
+      .where(inArray(groupData.groupId, groupIds)),
+    getScheduleReferenceData(),
+    db
+      .select({
+        groupId:       groupRouteAttendance.groupId,
+        hallwayStopId: groupRouteAttendance.hallwayStopId,
+        present:       groupRouteAttendance.present,
+      })
+      .from(groupRouteAttendance)
+      .where(inArray(groupRouteAttendance.groupId, groupIds)),
+  ]);
+
+  const attendanceByGroup = new Map<number, Map<number, boolean>>();
+  for (const row of attendanceRows) {
+    let map = attendanceByGroup.get(row.groupId);
+    if (!map) {
+      map = new Map();
+      attendanceByGroup.set(row.groupId, map);
+    }
+    map.set(row.hallwayStopId, row.present);
+  }
+
+  const result = new Map<number, ReturnType<typeof computeSchedule>>();
+  for (const group of groups) {
+    const attendanceByStopId = attendanceByGroup.get(group.groupId) ?? new Map();
+    result.set(group.groupId, computeSchedule(group, ref, attendanceByStopId));
+  }
+
+  return result;
 }

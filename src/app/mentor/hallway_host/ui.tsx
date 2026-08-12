@@ -1,5 +1,4 @@
 import InfoBox from "../../components/infoBox";
-import MentorButtons from "../../components/mentorButtons";
 import NavButton from "../../components/addButton";
 import MobileNav from "../../components/MobileNav";
 import InfoTable from "../../components/infoTable";
@@ -12,7 +11,6 @@ import "../../css/mobile-nav.css";
 export default function HallwayHostUI({
   mentorsData,
   hallwayHostEvents,
-  hallwayData,
   hallwayMentors,
 }: {
   mentorsData: {
@@ -37,10 +35,6 @@ export default function HallwayHostUI({
     time2?: string | null;
     description: string | null;
   }>;
-  hallwayData: {
-    hallwayStopId: number;
-    location: string | null;
-  };
   hallwayMentors: Array<{
     mentor_id: number;
     fname: string | null;
@@ -80,12 +74,6 @@ export default function HallwayHostUI({
           <h3 className="mentor-subtitle2">{mentorsData.job}</h3>
         </div>
       </header>
-      <div className="mentor-info-box">
-        <MentorButtons link="/mentor/hallway_host/group_attendance">
-          Attendance
-        </MentorButtons>
-      </div>
-
       <section className="mentor-info-box" style={{display: "flex", flexDirection: "column",}}>
         <InfoBox headerText="Group Details">
           <section>

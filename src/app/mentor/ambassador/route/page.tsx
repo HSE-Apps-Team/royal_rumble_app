@@ -15,5 +15,5 @@ export default async function AmbassadorRoutePage() {
   const groupId = await getGroupIdByMentorId(Number(studentId));
   const schedule = groupId != null ? await getGroupSchedule(groupId) : null;
 
-  return <AmbassadorRouteUI schedule={schedule} />;
+  return <AmbassadorRouteUI schedule={schedule} groupId={groupId} />;
 }

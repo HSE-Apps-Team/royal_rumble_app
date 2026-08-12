@@ -126,6 +126,69 @@ export const searchSeminarCandidates = async (query: string) => {
     );
 };
 
+// Searches checked-in attendees (attendee_data) by name or student ID, for the
+// "Attendee Lost?" day-of-event lookup. Mirrors searchSeminarCandidates but
+// searches the actual attendee roster instead of the seminar roster, and
+// includes each attendee's current group so results are useful at a glance.
+export const searchCheckedInAttendees = async (query: string) => {
+  const trimmed = query.trim();
+
+  const [attendees, groupRows] = await Promise.all([
+    db
+      .select({
+        attendeeId: attendeeData.attendeeId,
+        fName: attendeeData.fName,
+        lName: attendeeData.lName,
+        groupId: attendeeData.groupId,
+        present: attendeeData.present,
+      })
+      .from(attendeeData),
+    db.select({ groupId: groupData.groupId, name: groupData.name }).from(groupData),
+  ]);
+
+  const groupNameById = new Map<number, string>();
+  for (const g of groupRows) {
+    groupNameById.set(g.groupId, g.name);
+  }
+
+  const lowerQuery = trimmed.toLowerCase();
+  const isNumeric = /^\d+$/.test(trimmed);
+
+  const matches =
+    trimmed === ""
+      ? attendees
+      : attendees.filter((row) => {
+          if (isNumeric) {
+            return row.attendeeId.toString().includes(trimmed);
+          }
+
+          const fName = (row.fName ?? "").toLowerCase();
+          const lName = (row.lName ?? "").toLowerCase();
+          const parts = lowerQuery.split(" ").filter(Boolean);
+          if (parts.length === 2) {
+            const [firstPart, lastPart] = parts;
+            return fName.includes(firstPart) && lName.includes(lastPart);
+          }
+          return fName.includes(lowerQuery) || lName.includes(lowerQuery);
+        });
+
+  const limited = trimmed === "" ? matches : matches.slice(0, 25);
+
+  return limited
+    .map((row) => ({
+      attendeeId: row.attendeeId,
+      fName: row.fName ?? "",
+      lName: row.lName ?? "",
+      groupId: row.groupId,
+      groupName: row.groupId != null ? groupNameById.get(row.groupId) ?? null : null,
+      present: row.present ?? false,
+    }))
+    .sort(
+      (a, b) =>
+        a.lName.localeCompare(b.lName) || a.fName.localeCompare(b.fName),
+    );
+};
+
 //--------------------------------------------------------------------------------------//
 //                                     End of Read                                      //
 //--------------------------------------------------------------------------------------//
@@ -181,6 +244,75 @@ export const addAttendee = async (data: {
     freshmen_id: data.freshmen_id,
     teacher: seminar?.teacherFullName ?? null,
     groupName,
+  };
+};
+// Registers a walk-in sophomore-or-above attendee. Unlike addAttendee (which
+// onboards a student already present in the seminar/"Freshmen Prep" roster),
+// these students were never in seminar_data, so this creates both the
+// attendee_data row (their real event-day registration) and a matching
+// seminar_data row (so they also show up in Ghost Groups / group rosters that
+// are keyed off the ghost-group number, same as everyone else). The admin
+// picks a real event-day group directly; the ghost-group number is derived
+// from that group's name, which is always "Group {N}" (see resolveGroupId in
+// src/actions/group.tsx).
+export const addWalkInAttendee = async (data: {
+  f_name: string;
+  l_name: string;
+  attendee_id: number;
+  group_id: number;
+}) => {
+  const existing = await db
+    .select({ attendeeId: attendeeData.attendeeId })
+    .from(attendeeData)
+    .where(eq(attendeeData.attendeeId, data.attendee_id))
+    .limit(1);
+
+  if (existing.length > 0) {
+    return { success: false as const, error: "duplicate" as const };
+  }
+
+  const groupRecord = await db
+    .select({ groupId: groupData.groupId, name: groupData.name })
+    .from(groupData)
+    .where(eq(groupData.groupId, data.group_id))
+    .limit(1);
+
+  const group = groupRecord[0];
+  if (!group) {
+    return { success: false as const, error: "invalid_group" as const };
+  }
+
+  const ghostGroupMatch = group.name.trim().match(/^Group (\d+)$/i);
+  const ghostGroupNumber = ghostGroupMatch ? Number(ghostGroupMatch[1]) : null;
+
+  await db.insert(attendeeData).values({
+    fName: toTitleCase(data.f_name),
+    lName: toTitleCase(data.l_name),
+    attendeeId: data.attendee_id,
+    groupId: group.groupId,
+  });
+
+  const existingSeminarRow = await db
+    .select({ freshmenId: seminarData.freshmenId })
+    .from(seminarData)
+    .where(eq(seminarData.freshmenId, data.attendee_id))
+    .limit(1);
+
+  if (existingSeminarRow.length === 0) {
+    await db.insert(seminarData).values({
+      freshmenId: data.attendee_id,
+      fName: toTitleCase(data.f_name),
+      lName: toTitleCase(data.l_name),
+      groupId: ghostGroupNumber,
+    });
+  }
+
+  return {
+    success: true as const,
+    f_name: data.f_name,
+    l_name: data.l_name,
+    attendee_id: data.attendee_id,
+    groupName: group.name,
   };
 };
 //--------------------------------------------------------------------------------------//

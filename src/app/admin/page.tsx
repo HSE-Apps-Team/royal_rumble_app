@@ -28,35 +28,34 @@ export default async function AdminHomepage() {
       </header>
 
       <section
-        className="admin-button-box"
+        className="admin-button-box admin-button-box-spaced"
         style={{
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          margin: "50px",
         }}
       >
-        <div style={{ display: "flex", flexDirection: "row", gap: "20px", margin: "20px" }}>
+        <div className="admin-button-row admin-button-grid">
+          <AdminButtons
+            link="/admin/day_of_event"
+            className="admin-day-of-event-button"
+            backgroundColor="#ff3be2"
+          >
+            Day of Event
+          </AdminButtons>
           <AdminButtons link="/admin/admin">Admin</AdminButtons>
           <AdminButtons link="/admin/mentor">Mentor</AdminButtons>
           <AdminButtons link="/admin/attendees">Attendees</AdminButtons>
-        </div>
-
-        <div style={{ display: "flex", flexDirection: "row", gap: "20px", margin: "20px" }}>
           <AdminButtons link="/admin/upload">Upload</AdminButtons>
           <AdminButtons link="/admin/attendance">Attendance</AdminButtons>
           <AdminButtons link="/admin/events">Events</AdminButtons>
-        </div>
-
-        <div style={{ display: "flex", flexDirection: "row", gap: "20px", margin: "20px" }}>
           <AdminButtons link="/admin/all_groups">All Groups</AdminButtons>
           <AdminButtons link="/admin/routes">Routes</AdminButtons>
-          <AdminButtons link="/admin/editContent">Edit Content</AdminButtons>
-        </div>
-
-        <div style={{ display: "flex", flexDirection: "row", gap: "20px", margin: "20px" }}>
           <AdminButtons link="/admin/ghost_groups">Ghost Groups</AdminButtons>
-          <AdminButtons link="/admin/reset">Reset Tables</AdminButtons>
+          <AdminButtons link="/admin/editContent">Edit Content</AdminButtons>
+          <AdminButtons link="/admin/reset" backgroundColor="var(--primaryRed)">
+            Reset Tables
+          </AdminButtons>
         </div>
       </section>
     </main>

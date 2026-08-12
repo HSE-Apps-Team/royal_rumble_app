@@ -32,7 +32,16 @@ export default function RootLayout({
           <AlertProvider>
             <ToastProvider>
               {DEV_MODE && (
-                <nav style={{ textAlign: "center", padding: "30px" }}>
+                <nav
+                  style={{
+                    textAlign: "center",
+                    padding: "30px",
+                    display: "flex",
+                    flexWrap: "wrap",
+                    justifyContent: "center",
+                    gap: "4px 8px",
+                  }}
+                >
                   <Link href="/">Home</Link> | <Link href="/faq">FAQ</Link> |{" "}
                   <Link href="/mentor/ambassador">Ambassador</Link> |{" "}
                   <Link href="/mentor/hallway_host">Hallway Host</Link> |{" "}

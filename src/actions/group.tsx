@@ -11,7 +11,7 @@ import {
   hallwayStopData,
   eventOrderPattern,
 } from "@/db/schema";
-import { eq, sql, isNull, inArray, asc } from "drizzle-orm";
+import { eq, and, sql, isNull, inArray, asc } from "drizzle-orm";
 
 //--------------------------------------------------------------------------------------//
 //                                                                                      //
@@ -298,6 +298,83 @@ export async function getAttendeesByGroupId(groupId: number) {
     .from(attendeeData)
     .where(eq(attendeeData.groupId, groupId));
   return attendees;
+}
+
+// Looks up which group (if any) a given attendee currently belongs to, along
+// with that group's full roster of attendees + mentors — everything the "All
+// Groups" accordion shows for a group. Used by the day-of-event "Attendee
+// Lost?" lookup so an admin can find a student and immediately see their
+// group's info. Returns null if the attendee has no group assigned.
+export async function getGroupDetailForAttendee(attendeeId: number) {
+  const attendeeRows = await db
+    .select({ groupId: attendeeData.groupId })
+    .from(attendeeData)
+    .where(eq(attendeeData.attendeeId, attendeeId))
+    .limit(1);
+
+  const groupId = attendeeRows[0]?.groupId;
+  if (groupId == null) return null;
+
+  return getGroupDetailByGroupId(groupId);
+}
+
+// Fetches one group's full detail (route #, event order, attendee + mentor
+// rosters) without pulling every other group like getAllGroups does. Shares
+// the same GroupDetail shape so callers can swap between the two freely.
+export async function getGroupDetailByGroupId(groupId: number) {
+  const groupRows = await db
+    .select({
+      groupId: groupData.groupId,
+      name: groupData.name,
+      routeNum: groupData.routeNum,
+      eventOrder: groupData.eventOrder,
+    })
+    .from(groupData)
+    .where(eq(groupData.groupId, groupId))
+    .limit(1);
+
+  const group = groupRows[0];
+  if (!group) return null;
+
+  const [attendees, mentors] = await Promise.all([
+    db
+      .select({
+        attendeeId: attendeeData.attendeeId,
+        fName: attendeeData.fName,
+        lName: attendeeData.lName,
+      })
+      .from(attendeeData)
+      .where(eq(attendeeData.groupId, groupId)),
+    db
+      .select({
+        mentorId: mentorData.mentorId,
+        fName: mentorData.fName,
+        lName: mentorData.lName,
+      })
+      .from(mentorData)
+      .innerJoin(ambassadorData, eq(ambassadorData.mentorId, mentorData.mentorId))
+      .where(
+        and(
+          sql`upper(trim(${mentorData.job})) = 'AMBASSADOR'`,
+          eq(ambassadorData.groupId, groupId),
+        ),
+      ),
+  ]);
+
+  return {
+    group_id: group.groupId,
+    name: group.name,
+    route_num: group.routeNum ?? 0,
+    event_order: group.eventOrder ? JSON.parse(group.eventOrder).join(", ") : "",
+    attendees: attendees.map((a) => ({
+      attendee_id: a.attendeeId.toString(),
+      name: `${a.fName} ${a.lName}`,
+    })),
+    mentors: mentors.map((m) => ({
+      mentor_id: m.mentorId.toString(),
+      name: `${m.fName} ${m.lName}`,
+    })),
+  };
 }
 
 // Freshmen from the seminar roster who are assigned (via the ghost-group

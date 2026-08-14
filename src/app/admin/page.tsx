@@ -56,6 +56,9 @@ export default async function AdminHomepage() {
           <AdminButtons link="/admin/reset" backgroundColor="var(--primaryRed)">
             Reset Tables
           </AdminButtons>
+          <AdminButtons link="/admin/mentor_preview">
+            Mentor Preview
+          </AdminButtons>
         </div>
       </section>
     </main>

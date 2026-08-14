@@ -65,14 +65,26 @@ export default function AmbassadorUI({
 }) {
   return (
     <>
-     <div className="nav-buttons">
-        <NavButton href="/"
-        style={{ width: "90px", height: "40px", padding: "5px 0px", fontSize: "15px" }}
+      <div className="nav-buttons">
+        <NavButton
+          href="/"
+          style={{
+            width: "90px",
+            height: "40px",
+            padding: "5px 0px",
+            fontSize: "15px",
+          }}
         >
           Home
         </NavButton>
-        <NavButton href="/mentor/ambassador"
-        style={{ width: "140px", height: "40px", padding: "5px 0px", fontSize: "15px" }}
+        <NavButton
+          href="/mentor/ambassador"
+          style={{
+            width: "140px",
+            height: "40px",
+            padding: "5px 0px",
+            fontSize: "15px",
+          }}
         >
           Dashboard
         </NavButton>
@@ -106,9 +118,7 @@ export default function AmbassadorUI({
             <MentorButtons link="/mentor/ambassador/attendance">
               Attendance
             </MentorButtons>
-            <MentorButtons link="/mentor/ambassador/route">
-              Route
-            </MentorButtons>
+            <MentorButtons link="/mentor/ambassador/route">Route</MentorButtons>
           </div>
 
           <section className="mentor-info-box">
@@ -132,15 +142,15 @@ export default function AmbassadorUI({
                 </div>
                 <div className="info-pairs">
                   {/* <div className="info-pair"> */}
-                    <div className="info-label">Mentors:</div>
-                    <div className="info-value">
-                      <ol className="list-group list-group-numbered list-group-horizontal">
-                        {groupMentors.map((mentor) => (
-                          <li className="list-group-item" key={mentor.mentorId}>
-                            {mentor.fName} {mentor.lName}
-                          </li>
-                        ))}
-                      </ol>
+                  <div className="info-label">Mentors:</div>
+                  <div className="info-value">
+                    <ol className="list-group list-group-numbered list-group-horizontal">
+                      {groupMentors.map((mentor) => (
+                        <li className="list-group-item" key={mentor.mentorId}>
+                          {mentor.fName} {mentor.lName}
+                        </li>
+                      ))}
+                    </ol>
                     {/* </div> */}
                   </div>
                   <div className="info-pairs">

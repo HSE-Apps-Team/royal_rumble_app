@@ -60,8 +60,12 @@ export async function POST(req: Request) {
       }
 
       for (const row of resolution.rows) {
-        await insertMentorRow(row, targetDbJob);
-        insertedCount++;
+        try {
+          await insertMentorRow(row, targetDbJob);
+          insertedCount++;
+        } catch (err: any) {
+          errors.push(`${resolution.uploadedJob}: ${err?.message ?? "failed to save mentor row."}`);
+        }
       }
     }
 
@@ -75,8 +79,9 @@ export async function POST(req: Request) {
     });
   } catch (err: any) {
     console.error("Resolve mentor jobs failed:", err);
+    const detail = err?.message ? String(err.message) : "An unexpected error occurred.";
     return NextResponse.json(
-      { error: "Failed to resolve mentor jobs. Please try again." },
+      { error: `Failed to resolve mentor jobs: ${detail}` },
       { status: 500 },
     );
   }

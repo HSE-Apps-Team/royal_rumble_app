@@ -142,15 +142,15 @@ export async function upsertBlockSchedule(
   const existing = await db
     .select()
     .from(blockSchedule)
-    .where(eq(blockSchedule.blockName, blockName))
+    .where(sql`lower(${blockSchedule.blockName}) = lower(${blockName})`)
     .limit(1);
 
   if (existing.length > 0) {
     await db
       .update(blockSchedule)
       .set({ durationMinutes })
-      .where(eq(blockSchedule.blockName, blockName));
-    return { success: true, action: "updated", blockName };
+      .where(sql`lower(${blockSchedule.blockName}) = lower(${blockName})`);
+    return { success: true, action: "updated", blockName: existing[0].blockName };
   } else {
     const [inserted] = await db
       .insert(blockSchedule)
@@ -429,7 +429,7 @@ export async function ensureGroupBlockAttendance(groupId: number) {
       let stop = await db
         .select({ hallwayStopId: hallwayStopData.hallwayStopId })
         .from(hallwayStopData)
-        .where(eq(hallwayStopData.location, blockName))
+        .where(sql`lower(${hallwayStopData.location}) = lower(${blockName})`)
         .limit(1);
 
       if (!stop[0]) {
@@ -744,7 +744,9 @@ async function getScheduleReferenceData() {
   }
 
   const stopIdByLocation = new Map(
-    allLocations.map((s) => [s.location, s.hallwayStopId]),
+    allLocations
+      .filter((s): s is typeof s & { location: string } => s.location !== null)
+      .map((s) => [s.location.toLowerCase(), s.hallwayStopId]),
   );
 
   return {
@@ -775,7 +777,7 @@ function computeSchedule(
 
     const blockHallwayStopId = isTour
       ? null
-      : ref.stopIdByLocation.get(blockName) ?? null;
+      : ref.stopIdByLocation.get(blockName.toLowerCase()) ?? null;
 
     const base = {
       blockName,

@@ -162,9 +162,10 @@ export default function AdminUpload() {
           showAlert(data.message, "success");
         }
       }
-    } catch (err) {
-      setAttendanceMessage("❌ Upload failed. Please try again.");
-      showAlert("Upload failed. Please try again.", "danger");
+    } catch (err: any) {
+      const detail = err?.message ? `: ${err.message}` : ". Please try again.";
+      setAttendanceMessage(`❌ Upload failed${detail}`);
+      showAlert(`Upload failed${detail}`, "danger");
     } finally {
       setAttendanceUploading(false);
       e.target.value = "";
@@ -296,6 +297,7 @@ export default function AdminUpload() {
 
       if (data.error) {
         setMessages((prev) => ({ ...prev, [table]: `❌ ${data.error}` }));
+        showAlert(data.error, "danger");
       } else {
         setMessages((prev) => ({ ...prev, [table]: data.message }));
         if (table === "mentor_data" && data.mismatches?.length > 0) {
@@ -317,10 +319,12 @@ export default function AdminUpload() {
         }
       }
     } catch (err: any) {
+      const detail = err?.message ? `: ${err.message}` : ". Please try again.";
       setMessages((prev) => ({
         ...prev,
-        [table]: "❌ Upload failed. Please try again.",
+        [table]: `❌ Upload failed${detail}`,
       }));
+      showAlert(`Upload failed${detail}`, "danger");
       setProgress((prev) => ({ ...prev, [table]: 0 }));
       setFunnyText((prev) => ({ ...prev, [table]: "" }));
     } finally {

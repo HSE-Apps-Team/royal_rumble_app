@@ -22,21 +22,34 @@ export interface MentorJobMismatch {
 }
 
 export async function insertMentorRow(row: any, job: string) {
-  await db.insert(mentorData).values({
-    mentorId: row["mentor_id"],
-    fName: toTitleCase(row["first_name"]),
-    lName: toTitleCase(row["last_name"]),
-    gradYear: row["graduation_year"],
-    job,
-    pizzaType: row["pizza"],
-    languages: row["languages"],
-    trainingDay: row["training_day"],
-    tshirtSize: row["shirt_size"],
-    phoneNum: row["phone_number"] ? encrypt(row["phone_number"]) : row["phone_number"],
-    email: fixEmail(row["email"].trim()) as string,
-    pastMentor: row["past_mentor"] ?? null,
-    interestsInvolvement: row["interests_involvement"] ?? null,
-  }).onConflictDoNothing();
+  const rawEmail = typeof row["email"] === "string" ? row["email"].trim() : row["email"];
+  if (!rawEmail) {
+    throw new Error(
+      `Mentor ID ${row["mentor_id"] ?? "(missing)"}: Email is blank or missing.`,
+    );
+  }
+
+  try {
+    await db.insert(mentorData).values({
+      mentorId: row["mentor_id"],
+      fName: toTitleCase(row["first_name"]),
+      lName: toTitleCase(row["last_name"]),
+      gradYear: row["graduation_year"],
+      job,
+      pizzaType: row["pizza"],
+      languages: row["languages"],
+      trainingDay: row["training_day"],
+      tshirtSize: row["shirt_size"],
+      phoneNum: row["phone_number"] ? encrypt(row["phone_number"]) : row["phone_number"],
+      email: fixEmail(rawEmail) as string,
+      pastMentor: row["past_mentor"] ?? null,
+      interestsInvolvement: row["interests_involvement"] ?? null,
+    }).onConflictDoNothing();
+  } catch (err: any) {
+    throw new Error(
+      `Mentor ID ${row["mentor_id"] ?? "(missing)"}: ${err?.message ?? "failed to save mentor row."}`,
+    );
+  }
 
   if (job === "AMBASSADOR") {
     await db.insert(ambassadorData).values({ mentorId: row["mentor_id"], groupId: null }).onConflictDoNothing();

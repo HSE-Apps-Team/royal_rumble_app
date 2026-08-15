@@ -8,6 +8,7 @@ import AddButton from "../../../components/addButton";
 import { addMentor } from "../../../../actions/mentor";
 import { getGroupIds } from "../../../../actions/group";
 import { getAllHallways } from "../../../../actions/group";
+import { getAllJobs } from "../../../../actions/job";
 import "../../../css/admin.css";
 import "../../../css/logo+login.css";
 import BackButton from "@/app/components/backButton";
@@ -29,6 +30,7 @@ export default function AdminAddMentor() {
 
   const [groups, setGroups] = useState<Array<{ groupId: number; name: string }>>([]);
   const [hallways, setHallways] = useState<Array<{ hallwayStopId: number; location: string | null }>>([]);
+  const [jobs, setJobs] = useState<Array<{ dbJob: string; label: string }>>([]);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -36,6 +38,7 @@ export default function AdminAddMentor() {
   useEffect(() => {
     getGroupIds().then(setGroups);
     getAllHallways().then(setHallways);
+    getAllJobs().then(setJobs);
   }, []);
 
   // Reset assignment when job changes
@@ -193,10 +196,11 @@ export default function AdminAddMentor() {
                     Select Job
                   </option>
                 ) : null}
-                <option value="AMBASSADOR">AMBASSADOR</option>
-                <option value="HALLWAY HOST">HALLWAY HOST</option>
-                <option value="CCA CONVOS">CCA CONVOS</option>
-                <option value="UTILITY SQUAD">UTILITY SQUAD</option>
+                {jobs.map((j) => (
+                  <option key={j.dbJob} value={j.dbJob}>
+                    {j.label}
+                  </option>
+                ))}
               </select>
               {errors.job && (
                 <div className="invalid-feedback d-block">{errors.job}</div>

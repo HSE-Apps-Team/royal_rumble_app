@@ -13,6 +13,7 @@ export default function ModalStyle({
   icon = "bi bi-question-circle",
   show,
   onClose,
+  dismissText,
 }: {
   children: React.ReactNode;
   title?: string;
@@ -21,6 +22,7 @@ export default function ModalStyle({
   icon?: string;
   show?: boolean;
   onClose?: () => void;
+  dismissText?: string;
 }) {
   const [internalShow, setInternalShow] = useState(false);
   const isControlled = show !== undefined;
@@ -153,7 +155,7 @@ export default function ModalStyle({
                 }}
                 type="button"
               >
-                Cancel
+                {dismissText ?? (saveAction ? "Cancel" : "Done")}
               </button>
               {saveAction && (
                 <SaveButton

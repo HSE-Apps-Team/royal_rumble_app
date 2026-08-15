@@ -6,28 +6,10 @@ import { useRouter, usePathname } from "next/navigation";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "../css/homepage.css";
 import { useAlert } from "../context/AlertContext";
+import { getJobRoutes } from "@/actions/job";
 
 const DEV_MODE = process.env.NEXT_PUBLIC_DEV_MODE === "true";
 const TENANT_ID = process.env.NEXT_PUBLIC_MICROSOFT_ENTRA_TENANT_ID;
-
-const JOB_ROUTES: Record<string, string> = {
-  FRESHMAN: "/attendee/home",
-  UNREGISTERED: "/attendee/home",
-  ADMIN: "/admin",
-  AMBASSADOR: "/mentor/ambassador",
-  "HALLWAY HOST": "/mentor/hallway_host",
-  "UTILITY SQUAD": "/mentor/utility_squad",
-  "CCA CONVOS": "/mentor/cca_convos",
-};
-
-const JOB_BASE_PATHS: Record<string, string> = {
-  FRESHMAN: "/attendee",
-  ADMIN: "/admin",
-  AMBASSADOR: "/mentor",
-  "HALLWAY HOST": "/mentor",
-  "UTILITY SQUAD": "/mentor",
-  "CCA CONVOS": "/mentor",
-};
 
 export default function LoginButton() {
   const { data: session, status } = useSession();
@@ -44,8 +26,11 @@ export default function LoginButton() {
       const justLoggedIn = sessionStorage.getItem("justLoggedIn");
       if (justLoggedIn) {
         sessionStorage.removeItem("justLoggedIn");
-        const route = JOB_ROUTES[session.user.job.trim().toUpperCase()];
-        if (route) router.push(route);
+        getJobRoutes().then((jobRoutes) => {
+          const routes: Record<string, string> = { ADMIN: "/admin", ...jobRoutes };
+          const route = routes[session.user!.job!.trim().toUpperCase()];
+          if (route) router.push(route);
+        });
       }
     }
   }, [status, session]);

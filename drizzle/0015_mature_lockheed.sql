@@ -1,2 +1,0 @@
-ALTER TABLE "group_leader_data" ADD COLUMN "group_id" text;--> statement-breakpoint
-ALTER TABLE "group_leader_data" ADD CONSTRAINT "group_leader_data_group_id_group_data_group_id_fk" FOREIGN KEY ("group_id") REFERENCES "public"."group_data"("group_id") ON DELETE no action ON UPDATE no action;

@@ -1,0 +1,39 @@
+/* Mobile/tablet overrides for ViewDropdown. Inline styles set the desktop
+   look in viewDropdown.tsx, so these need !important to win on small screens. */
+@media (max-width: 768px) {
+  .view-dropdown-container {
+    width: 96% !important;
+    margin: 16px auto !important;
+    border-width: 3px !important;
+  }
+
+  .view-dropdown-header {
+    font-size: 18px !important;
+    padding: 14px 12px !important;
+  }
+
+  .view-dropdown-accordion-header {
+    font-size: 19px !important;
+    padding: 10px 12px !important;
+  }
+
+  .view-dropdown-icon-container {
+    margin: 14px 20px 10px 10px !important;
+  }
+
+  .view-dropdown-content-box {
+    margin: 10px !important;
+    padding: 12px !important;
+    border-width: 3px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .view-dropdown-header {
+    font-size: 16px !important;
+  }
+
+  .view-dropdown-accordion-header {
+    font-size: 16px !important;
+  }
+}

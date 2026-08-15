@@ -48,12 +48,20 @@ export async function POST(req: Request) {
       );
     }
 
-    const buffer = Buffer.from(fileData, "base64");
-    const workbook = XLSX.read(buffer, { type: "buffer" });
+    let workbook;
+    try {
+      const buffer = Buffer.from(fileData, "base64");
+      workbook = XLSX.read(buffer, { type: "buffer" });
+    } catch (err: any) {
+      return NextResponse.json(
+        { error: `Could not read the file as an Excel spreadsheet (${err?.message ?? "unknown parsing error"}). Make sure it's a valid .xlsx or .xls file.` },
+        { status: 400 },
+      );
+    }
 
     if (!workbook.SheetNames.length) {
       return NextResponse.json(
-        { error: "Excel file has no sheets." },
+        { error: "The Excel file has no sheets." },
         { status: 400 },
       );
     }
@@ -84,7 +92,9 @@ export async function POST(req: Request) {
 
     if (!idCol) {
       return NextResponse.json(
-        { error: "Could not find an ID column in the uploaded file." },
+        {
+          error: `Could not find an ID column in the uploaded file. Expected one of these headers: ${ID_HEADER_CANDIDATES.join(", ")}. Found: ${headers.join(", ") || "(no columns detected)"}.`,
+        },
         { status: 400 },
       );
     }
@@ -104,7 +114,9 @@ export async function POST(req: Request) {
 
     if (!scanned.length) {
       return NextResponse.json(
-        { error: "No valid mentor IDs found in the uploaded file." },
+        {
+          error: `No valid mentor IDs found in the "${idCol}" column. Values must be numeric — check that the column isn't blank or contains non-numeric text.`,
+        },
         { status: 400 },
       );
     }
@@ -157,16 +169,22 @@ export async function POST(req: Request) {
         );
     }
 
+    const notFoundSuffix =
+      notFound.length > 0
+        ? ` Not found in mentor list: ${notFound.slice(0, 15).join(", ")}${notFound.length > 15 ? `, +${notFound.length - 15} more` : ""}.`
+        : "";
+
     return NextResponse.json({
-      message: `Processed ${scanned.length} scan(s): ${matchedIds.length} marked present, ${mismatches.length} mismatched, ${notFound.length} not found.`,
+      message: `Processed ${scanned.length} scan(s): ${matchedIds.length} marked present, ${mismatches.length} mismatched, ${notFound.length} not found.${notFoundSuffix}`,
       matchedCount: matchedIds.length,
       mismatches,
       notFound,
     });
   } catch (err: any) {
     console.error("Mentor attendance upload failed:", err);
+    const detail = err?.message ? String(err.message) : "An unexpected error occurred.";
     return NextResponse.json(
-      { error: "Upload failed. Please check your file and try again." },
+      { error: `Upload failed: ${detail}` },
       { status: 500 },
     );
   }

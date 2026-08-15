@@ -6,10 +6,13 @@ import {
   getNullHallwayMentors,
 } from "@/actions/group";
 import { getAllHallways } from "@/actions/mentor";
-import { get } from "http";
+import { getGroupSchedulesForGroups } from "@/actions/routes";
 
 export default async function AdminPage() {
   const attendeeGroups = await getAllGroups(); // fetch from DB
+  const schedulesByGroupId = await getGroupSchedulesForGroups(
+    attendeeGroups.map((group) => group.group_id),
+  );
   const transformedAttendeeGroups = attendeeGroups.map((group) => ({
     group_id: group.group_id,
     name: group.name,
@@ -23,6 +26,7 @@ export default async function AdminPage() {
       mentor_id: m.mentor_id,
       name: m.name,
     })),
+    schedule: schedulesByGroupId.get(group.group_id) ?? null,
   }));
 
   const hallwayGroupsData = await getAllHallways(); // fetch from DB

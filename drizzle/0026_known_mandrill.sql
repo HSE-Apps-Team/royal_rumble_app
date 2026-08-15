@@ -1,1 +1,0 @@
-ALTER TABLE "events_data" ADD COLUMN "is_royal_rumble" boolean DEFAULT false;

@@ -18,7 +18,6 @@ export default async function AttendeesPage() {
     attendeeId: f.attendeeId,
     fName: f.fName ?? "",
     lName: f.lName ?? "",
-    email: f.email ?? "",
     tshirtSize: f.tshirtSize ?? "",
     primaryLanguage: f.primaryLanguage ?? "",
     interests: f.interests ?? "",

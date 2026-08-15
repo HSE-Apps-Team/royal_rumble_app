@@ -23,7 +23,6 @@ export default function AdminEditAttendeeUI({
   const [fName, setFName] = useState("");
   const [lName, setLName] = useState("");
   const [tshirtSize, setTshirtSize] = useState("");
-  const [email, setEmail] = useState("");
   const [primaryLanguage, setPrimaryLanguage] = useState("");
   const [interests, setInterests] = useState("");
   const [healthConcerns, setHealthConcerns] = useState("");
@@ -36,7 +35,6 @@ export default function AdminEditAttendeeUI({
       setFName(attendee.fName ?? "");
       setLName(attendee.lName ?? "");
       setTshirtSize(attendee.tshirtSize ?? "");
-      setEmail(attendee.email ?? "");
       setPrimaryLanguage(attendee.primaryLanguage ?? "");
       setInterests(attendee.interests ?? "");
       setHealthConcerns(attendee.healthConcerns ?? "");
@@ -49,11 +47,6 @@ export default function AdminEditAttendeeUI({
 
     if (!fName.trim()) newErrors.fName = "First name is required.";
     if (!lName.trim()) newErrors.lName = "Last name is required.";
-    if (!email.trim()) {
-      newErrors.email = "Email is required.";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = "Enter a valid email address.";
-    }
     if (!primaryLanguage.trim())
       newErrors.primaryLanguage = "Primary language is required.";
 
@@ -68,7 +61,6 @@ export default function AdminEditAttendeeUI({
       f_name: fName,
       l_name: lName,
       tshirt_size: tshirtSize,
-      email: email,
       primary_language: primaryLanguage,
       interests: interests,
       health_concerns: healthConcerns,
@@ -133,21 +125,6 @@ export default function AdminEditAttendeeUI({
               />
               {errors.lName && (
                 <div className="invalid-feedback d-block">{errors.lName}</div>
-              )}
-            </div>
-          </div>
-          <div className="form-row">
-            <label className="form-label">Email:</label>
-            <div>
-              <input
-                type="text"
-                className={`form-input${errors.email ? " is-invalid" : ""}`}
-                placeholder="Attendee Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-              {errors.email && (
-                <div className="invalid-feedback d-block">{errors.email}</div>
               )}
             </div>
           </div>

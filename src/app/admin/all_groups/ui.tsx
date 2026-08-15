@@ -7,6 +7,7 @@ import LogoButton from "../../components/logoButton";
 import LoginButton from "../../components/loginButton";
 import ViewDropdown from "../../components/viewDropdown";
 import InfoTable from "../../components/infoTable";
+import RouteProgress from "../../components/routeProgress";
 import AddButton from "../../components/addButton";
 import ExportToExcelButton from "../../components/ExportToExcelButton";
 import "../../css/admin.css";
@@ -19,6 +20,30 @@ import {
 import ModalShell from "../../components/ModalShell";
 import { useAlert } from "@/app/context/AlertContext";
 
+interface ScheduleStop {
+  stopOrder: number;
+  location: string | null;
+  durationMinutes: number;
+  hallwayStopId: number;
+  present: boolean;
+}
+
+interface ScheduleBlock {
+  blockName: string;
+  startTime: string;
+  durationMinutes?: number;
+  stops: ScheduleStop[];
+  hallwayStopId: number | null;
+  present: boolean;
+}
+
+interface GroupSchedule {
+  groupId: number;
+  groupName: string;
+  routeNum: number | null;
+  schedule: ScheduleBlock[];
+}
+
 interface AttendeeGroup {
   group_id: number | "Unassigned";
   name: string;
@@ -26,6 +51,7 @@ interface AttendeeGroup {
   event_order: string;
   attendees: Array<{ attendee_id: string; name: string }>;
   mentors: Array<{ mentor_id: string; name: string }>;
+  schedule?: GroupSchedule | null;
 }
 interface HallwayGroup {
   hallwayStopId: number;
@@ -286,6 +312,32 @@ export default function AdminAllGroups({
                       <div className="info-value">{group.event_order}</div>
                     </div>
                   </div>
+
+                  {group.schedule && group.schedule.schedule.length > 0 && (
+                    <>
+                      <label className="info-label" style={{ marginTop: "30px" }}>
+                        Route Progress:
+                      </label>
+                      <RouteProgress
+                        bordered={false}
+                        blocks={group.schedule.schedule.map((block, blockIndex) => ({
+                          key: String(blockIndex),
+                          label: block.blockName,
+                          present:
+                            block.blockName.toLowerCase() === "tour"
+                              ? block.stops.length > 0 &&
+                                block.stops.every((s) => s.present)
+                              : block.present,
+                          isTour: block.blockName.toLowerCase() === "tour",
+                          stops: block.stops.map((stop) => ({
+                            key: String(stop.hallwayStopId),
+                            label: stop.location ?? "Unknown",
+                            present: stop.present,
+                          })),
+                        }))}
+                      />
+                    </>
+                  )}
 
                   <label className="info-label" style={{ marginTop: "30px" }}>
                     Mentors:

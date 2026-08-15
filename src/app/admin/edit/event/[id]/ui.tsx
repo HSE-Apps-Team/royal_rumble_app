@@ -12,6 +12,7 @@ import "../../../../css/logo+login.css";
 import { useAlert } from "@/app/context/AlertContext";
 
 import { getEventById, updateEventByID } from "@/actions/other";
+import { getAllJobs } from "@/actions/job";
 
 export default function AdminEditEventsUI({
   params,
@@ -33,9 +34,14 @@ export default function AdminEditEventsUI({
   const [location, setLocation] = useState("");
 
   const [currentJob, setCurrentJob] = useState("");
+  const [jobs, setJobs] = useState<Array<{ dbJob: string; label: string }>>([]);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    getAllJobs().then(setJobs);
+  }, []);
 
   useEffect(() => {
     const loadEvent = async () => {
@@ -261,10 +267,11 @@ export default function AdminEditEventsUI({
                   </option>
                 ) : null}
                 <option value="ALL">ALL</option>
-                <option value="AMBASSADOR">AMBASSADOR</option>
-                <option value="HALLWAY HOST">HALLWAY HOST</option>
-                <option value="CCA CONVOS">CCA CONVOS</option>
-                <option value="UTILITY SQUAD">UTILITY SQUAD</option>
+                {jobs.map((j) => (
+                  <option key={j.dbJob} value={j.dbJob}>
+                    {j.label}
+                  </option>
+                ))}
               </select>
               {errors.job && (
                 <div className="invalid-feedback d-block">{errors.job}</div>

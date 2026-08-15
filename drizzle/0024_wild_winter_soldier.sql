@@ -1,1 +1,0 @@
-ALTER TABLE "mentor_data" ADD COLUMN "present" boolean;

@@ -237,6 +237,16 @@ export default function AdminMentors({
             style={{ marginLeft: "30px", fontSize: "30px" }}
           ></i>
         </AddButton>
+        <AddButton
+          href="/admin/manageJobs"
+          style={{ fontSize: "30px", width: "340px" }}
+        >
+          Manage Jobs
+          <i
+            className="bi bi-gear"
+            style={{ marginLeft: "20px", fontSize: "30px" }}
+          ></i>
+        </AddButton>
       </div>
 
       {/* --- SEARCH BAR --- */}

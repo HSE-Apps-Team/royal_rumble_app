@@ -1,1 +1,0 @@
-ALTER TABLE "mentor_attendance_data" RENAME COLUMN "training_id" TO "event_id";

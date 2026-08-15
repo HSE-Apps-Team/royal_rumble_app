@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { useAlert } from "@/app/context/AlertContext";
 import ModalShell from "./ModalShell";
+import "./viewDropdown.css";
 
 interface ViewDropdownProps {
   editLink?: string;
@@ -16,6 +17,7 @@ interface ViewDropdownProps {
     content: React.ReactNode;
     sectionId: string | number;
   }[];
+  defaultOpenAll?: boolean;
 }
 
 export default function ViewDropdown({
@@ -24,11 +26,14 @@ export default function ViewDropdown({
   editLink,
   deleteAction,
   idIndex = 0,
+  defaultOpenAll = false,
 }: ViewDropdownProps) {
   const router = useRouter();
   const { showAlert } = useAlert();
 
-  const [openIndices, setOpenIndices] = useState<(string | number)[]>([]);
+  const [openIndices, setOpenIndices] = useState<(string | number)[]>(() =>
+    defaultOpenAll ? sections.map((s) => s.sectionId) : [],
+  );
   const [modalID, setModalID] = useState<null | string | number>(null);
 
   const containerStyle = {
@@ -182,9 +187,9 @@ export default function ViewDropdown({
   };
 
   return (
-    <div style={containerStyle}>
+    <div className="view-dropdown-container" style={containerStyle}>
       {/* Top blue header */}
-      {header && <div style={headerStyle}>{header}</div>}
+      {header && <div className="view-dropdown-header" style={headerStyle}>{header}</div>}
 
       {/* Accordion Sections */}
       {sections.map((section) => {
@@ -193,6 +198,7 @@ export default function ViewDropdown({
         return (
           <div key={section.sectionId}>
             <div
+              className="view-dropdown-accordion-header"
               style={accordionHeaderStyle}
               onClick={() => handleToggle(section.sectionId)}
             >
@@ -207,7 +213,7 @@ export default function ViewDropdown({
 
             {isOpen && (
               <div>
-                <div style={iconContainer}>
+                <div className="view-dropdown-icon-container" style={iconContainer}>
                   {editLink && (
                     <i
                       className="bi bi-pencil"
@@ -229,7 +235,7 @@ export default function ViewDropdown({
                   )}
                 </div>
                 <div style={contentWrapperStyle}>
-                  <div style={contentBoxStyle}>{section.content}</div>
+                  <div className="view-dropdown-content-box" style={contentBoxStyle}>{section.content}</div>
                 </div>
               </div>
             )}

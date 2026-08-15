@@ -35,18 +35,14 @@ interface Events {
 
 interface AdminEventsUIProps {
   allEvents: Events;
-  ambassadorEvents: Events;
-  hallwayHostEvents: Events;
-  ccaConvosEvents: Events;
-  utilityEvents: Events;
+  eventsByJob: Record<string, Events["events"]>;
+  jobs: Array<{ dbJob: string; label: string }>;
 }
 
 export default function AdminEventsUI({
   allEvents,
-  ambassadorEvents,
-  hallwayHostEvents,
-  ccaConvosEvents,
-  utilityEvents,
+  eventsByJob,
+  jobs,
 }: AdminEventsUIProps) {
   const router = useRouter();
 
@@ -92,49 +88,20 @@ export default function AdminEventsUI({
                 All
               </label>
 
-              <label className="checkbox-label">
-                <input
-                  type="radio"
-                  name="groupType"
-                  value="ambassador"
-                  className="checkbox-input"
-                  onClick={() => setEvents(ambassadorEvents)}
-                />
-                Ambassador
-              </label>
-
-              <label className="checkbox-label">
-                <input
-                  type="radio"
-                  name="groupType"
-                  value="hallwayHost"
-                  className="checkbox-input"
-                  onClick={() => setEvents(hallwayHostEvents)}
-                />
-                Hallway Host
-              </label>
-
-              <label className="checkbox-label">
-                <input
-                  type="radio"
-                  name="groupType"
-                  value="spirit"
-                  className="checkbox-input"
-                  onClick={() => setEvents(ccaConvosEvents)}
-                />
-                CCA Convos
-              </label>
-
-              <label className="checkbox-label">
-                <input
-                  type="radio"
-                  name="groupType"
-                  value="utility"
-                  className="checkbox-input"
-                  onClick={() => setEvents(utilityEvents)}
-                />
-                Utility
-              </label>
+              {jobs.map((job) => (
+                <label className="checkbox-label" key={job.dbJob}>
+                  <input
+                    type="radio"
+                    name="groupType"
+                    value={job.dbJob}
+                    className="checkbox-input"
+                    onClick={() =>
+                      setEvents({ events: eventsByJob[job.dbJob] ?? [] })
+                    }
+                  />
+                  {job.label}
+                </label>
+              ))}
             </div>
           </form>
         </div>

@@ -1,5 +1,5 @@
-import { pgTable, integer, text, boolean, date, serial, varchar, timestamp, unique } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+import { pgTable, integer, text, boolean, date, serial, varchar, timestamp, unique, uniqueIndex } from "drizzle-orm/pg-core";
+import { relations, sql } from "drizzle-orm";
 
 // ---------------- group_data ----------------
 export const groupData = pgTable("group_data", {
@@ -37,10 +37,16 @@ export const eventsData = pgTable("events_data", {
 });
 
 // ---------------- hallway_stop_data ----------------
+// Non-Tour blocks (Gym, Leonard, etc.) are matched to a row here by name
+// (see ensureGroupBlockAttendance in src/actions/routes.tsx) — the unique
+// index makes "find or create by name" race-safe across concurrent
+// requests instead of relying on an unenforced check-then-insert.
 export const hallwayStopData = pgTable("hallway_stop_data", {
   hallwayStopId: integer("hallway_stop_id").primaryKey().generatedAlwaysAsIdentity(),
   location:      text("location"),
-});
+}, (t) => ({
+  locationLowerUnique: uniqueIndex("hallway_stop_data_location_lower_unique").on(sql`lower(${t.location})`),
+}));
 
 // ---------------- hallway_host_data ----------------
 export const hallwayHostData = pgTable(
@@ -77,7 +83,6 @@ export const attendeeData = pgTable("attendee_data", {
   fName:           text("f_name"),
   lName:           text("l_name"),
   tshirtSize:      text("tshirt_size"),
-  email:           text("email"),
   primaryLanguage: text("primary_language"),
   interests:       text("interests"),
   healthConcerns:  text("health_concerns"),
@@ -98,6 +103,10 @@ export const ambassadorData = pgTable(
 );
 
 // ---------------- mentor_data ----------------
+// Emails are always normalized to lowercase before write (see fixEmail /
+// getUserByEmail) since Microsoft Entra returns login emails in lowercase;
+// this index makes case-insensitive uniqueness a DB guarantee rather than
+// relying solely on that app-level discipline.
 export const mentorData = pgTable("mentor_data", {
   mentorId:             integer("mentor_id").primaryKey(),
   email:                text("email").notNull(),
@@ -112,7 +121,9 @@ export const mentorData = pgTable("mentor_data", {
   phoneNum:             text("phone_num"),
   pastMentor:           boolean("past_mentor"),
   interestsInvolvement: text("interests_involvement"),
-});
+}, (t) => ({
+  emailLowerUnique: uniqueIndex("mentor_data_email_lower_unique").on(sql`lower(${t.email})`),
+}));
 
 // ---------------- admin_data ----------------
 export const adminData = pgTable("admin_data", {
@@ -120,7 +131,23 @@ export const adminData = pgTable("admin_data", {
   email:   text("email"),
   fName:   text("f_name"),
   lName:   text("l_name"),
-});
+}, (t) => ({
+  emailLowerUnique: uniqueIndex("admin_data_email_lower_unique").on(sql`lower(${t.email})`),
+}));
+
+// ---------------- job_data ----------------
+export const jobData = pgTable("job_data", {
+  jobId:      serial("job_id").primaryKey(),
+  slug:       varchar("slug", { length: 100 }).unique().notNull(),
+  dbJob:      text("db_job").unique().notNull(),
+  label:      text("label").notNull(),
+  contentKey: varchar("content_key", { length: 100 }).unique().notNull(),
+  isProtected: boolean("is_protected").notNull().default(false),
+  isNonUtility: boolean("is_non_utility").notNull().default(true),
+}, (t) => ({
+  slugLowerUnique: uniqueIndex("job_data_slug_lower_unique").on(sql`lower(${t.slug})`),
+  dbJobLowerUnique: uniqueIndex("job_data_db_job_lower_unique").on(sql`lower(${t.dbJob})`),
+}));
 
 // ---------------- site_content ----------------
 export const siteContent = pgTable("site_content", {
@@ -152,7 +179,9 @@ export const blockSchedule = pgTable("block_schedule", {
   blockScheduleId: serial("block_schedule_id").primaryKey(),
   blockName:       text("block_name").notNull().unique(),
   durationMinutes: integer("duration_minutes").notNull(),
-});
+}, (t) => ({
+  blockNameLowerUnique: uniqueIndex("block_schedule_block_name_lower_unique").on(sql`lower(${t.blockName})`),
+}));
 
 // ---------------- tour_route ----------------
 export const tourRoute = pgTable("tour_route", {

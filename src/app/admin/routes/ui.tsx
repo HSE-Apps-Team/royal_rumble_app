@@ -23,6 +23,7 @@ import {
   deleteBlockSchedule,
   addTourRouteStop,
   deleteTourRouteStop,
+  reorderTourRouteStops,
   setEventStartTime,
 } from "@/actions/routes";
 
@@ -277,15 +278,18 @@ export default function AdminRoutesUI({
   const [newStopHallway, setNewStopHallway] = useState<Record<number, string>>(
     {},
   );
-  const [newStopDuration, setNewStopDuration] = useState<
-    Record<number, string>
-  >({});
+  // Single default duration applied to every stop added across all routes,
+  // set once at the top of the Tour Routes section instead of per stop.
+  const [defaultStopDuration, setDefaultStopDuration] = useState("");
 
   const handleAddStop = async (routeId: number) => {
     const hallwayId = parseInt(newStopHallway[routeId] ?? "");
-    const duration = parseInt(newStopDuration[routeId] ?? "");
+    const duration = parseInt(defaultStopDuration);
     if (isNaN(hallwayId) || isNaN(duration) || duration < 1) {
-      showAlert("Please select a stop and enter a valid duration.", "danger");
+      showAlert(
+        "Please set a stop duration above and select a stop.",
+        "danger",
+      );
       return;
     }
     let result;
@@ -319,7 +323,6 @@ export default function AdminRoutesUI({
       ),
     );
     setNewStopHallway((prev) => ({ ...prev, [routeId]: "" }));
-    setNewStopDuration((prev) => ({ ...prev, [routeId]: "" }));
     showAlert("Stop added!", "success");
   };
 
@@ -338,6 +341,65 @@ export default function AdminRoutesUI({
       ),
     );
     showAlert("Stop removed.", "success");
+  };
+
+  // Drag-and-drop stop reordering. dragState tracks which stop (by route +
+  // routeStopId) is currently being dragged so onDrop knows the source.
+  const [dragState, setDragState] = useState<{
+    routeId: number;
+    routeStopId: number;
+  } | null>(null);
+  const [dragOverRouteStopId, setDragOverRouteStopId] = useState<
+    number | null
+  >(null);
+
+  const handleDropStop = async (
+    routeId: number,
+    targetRouteStopId: number,
+  ) => {
+    const source = dragState;
+    setDragState(null);
+    setDragOverRouteStopId(null);
+    if (
+      !source ||
+      source.routeId !== routeId ||
+      source.routeStopId === targetRouteStopId
+    ) {
+      return;
+    }
+
+    const route = routesState.find((r) => r.routeId === routeId);
+    if (!route) return;
+
+    const stops = [...route.stops];
+    const fromIndex = stops.findIndex(
+      (s) => s.routeStopId === source.routeStopId,
+    );
+    const toIndex = stops.findIndex(
+      (s) => s.routeStopId === targetRouteStopId,
+    );
+    if (fromIndex === -1 || toIndex === -1) return;
+
+    const [moved] = stops.splice(fromIndex, 1);
+    stops.splice(toIndex, 0, moved);
+    const reordered = stops.map((s, i) => ({ ...s, stopOrder: i + 1 }));
+
+    // Optimistic update
+    setRoutesState((prev) =>
+      prev.map((r) => (r.routeId !== routeId ? r : { ...r, stops: reordered })),
+    );
+
+    const result = await reorderTourRouteStops(
+      routeId,
+      reordered.map((s) => s.routeStopId),
+    );
+
+    if (!result?.success) {
+      showAlert("Failed to reorder stops.", "danger");
+      setRoutesState((prev) =>
+        prev.map((r) => (r.routeId !== routeId ? r : route)),
+      );
+    }
   };
 
   // ─── Render ───────────────────────────────────────────────────────────────────
@@ -719,6 +781,34 @@ export default function AdminRoutesUI({
                   style={{ marginLeft: "30px", fontSize: "30px" }}
                 />
               </AddButton>
+
+              <InfoBox headerText="Stop Duration">
+                <p
+                  style={{
+                    color: "var(--textBlack)",
+                    fontWeight: "normal",
+                    fontSize: "18px",
+                    marginBottom: "20px",
+                  }}
+                >
+                  Set the duration once here — it's used for every stop you
+                  add below, across all routes, so you don't have to enter it
+                  each time.
+                </p>
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "10px" }}
+                >
+                  <label style={labelStyle}>Duration (min):</label>
+                  <input
+                    type="number"
+                    style={{ ...inputStyle, width: "140px" }}
+                    placeholder="e.g. 10"
+                    value={defaultStopDuration}
+                    onChange={(e) => setDefaultStopDuration(e.target.value)}
+                  />
+                </div>
+              </InfoBox>
+
               <ViewDropdown
                 header="Tour Routes"
                 sections={routesState.map((route) => ({
@@ -750,7 +840,7 @@ export default function AdminRoutesUI({
                         >
                           <thead>
                             <tr>
-                              {["#", "Location", "Duration (min)", ""].map(
+                              {["", "Location", "Duration (min)", ""].map(
                                 (h, i) => (
                                   <th
                                     key={i}
@@ -770,17 +860,68 @@ export default function AdminRoutesUI({
                             </tr>
                           </thead>
                           <tbody>
-                            {route.stops.map((stop) => (
-                              <tr key={stop.routeStopId}>
+                            {route.stops.map((stop) => {
+                              const isDragOver =
+                                dragOverRouteStopId === stop.routeStopId;
+                              const rowBg = isDragOver
+                                ? "var(--secondarySilver)"
+                                : "white";
+
+                              return (
+                              <tr
+                                key={stop.routeStopId}
+                                draggable
+                                onDragStart={() =>
+                                  setDragState({
+                                    routeId: route.routeId,
+                                    routeStopId: stop.routeStopId,
+                                  })
+                                }
+                                onDragOver={(e) => {
+                                  e.preventDefault();
+                                  if (dragOverRouteStopId !== stop.routeStopId) {
+                                    setDragOverRouteStopId(stop.routeStopId);
+                                  }
+                                }}
+                                onDragLeave={() =>
+                                  setDragOverRouteStopId((prev) =>
+                                    prev === stop.routeStopId ? null : prev,
+                                  )
+                                }
+                                onDrop={(e) => {
+                                  e.preventDefault();
+                                  handleDropStop(route.routeId, stop.routeStopId);
+                                }}
+                                onDragEnd={() => {
+                                  setDragState(null);
+                                  setDragOverRouteStopId(null);
+                                }}
+                              >
+                                <td
+                                  style={{
+                                    backgroundColor: rowBg,
+                                    textAlign: "center",
+                                    padding: "12px",
+                                    border: "2px solid var(--primaryBlue)",
+                                    cursor: "grab",
+                                  }}
+                                >
+                                  <i
+                                    className="bi bi-arrow-down-up"
+                                    style={{
+                                      fontSize: "20px",
+                                      color: "var(--primaryBlue)",
+                                    }}
+                                  />
+                                </td>
                                 {[
-                                  stop.stopOrder,
                                   stop.location ?? "Unknown",
                                   `${stop.durationMinutes} min`,
                                 ].map((val, i) => (
                                   <td
                                     key={i}
                                     style={{
-                                      backgroundColor: "white",
+                                      backgroundColor: rowBg,
                                       textAlign: "center",
                                       padding: "12px",
                                       border: "2px solid var(--primaryBlue)",
@@ -792,7 +933,7 @@ export default function AdminRoutesUI({
                                 ))}
                                 <td
                                   style={{
-                                    backgroundColor: "white",
+                                    backgroundColor: rowBg,
                                     textAlign: "center",
                                     padding: "12px",
                                     border: "2px solid var(--primaryBlue)",
@@ -821,7 +962,8 @@ export default function AdminRoutesUI({
                                   </button>
                                 </td>
                               </tr>
-                            ))}
+                              );
+                            })}
                           </tbody>
                         </table>
                       )}
@@ -879,28 +1021,6 @@ export default function AdminRoutesUI({
                                 </option>
                               ))}
                             </select>
-                          </div>
-
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "10px",
-                            }}
-                          >
-                            <label style={labelStyle}>Duration (min):</label>
-                            <input
-                              type="number"
-                              style={{ ...inputStyle, width: "140px" }}
-                              placeholder="e.g. 10"
-                              value={newStopDuration[route.routeId] ?? ""}
-                              onChange={(e) =>
-                                setNewStopDuration((prev) => ({
-                                  ...prev,
-                                  [route.routeId]: e.target.value,
-                                }))
-                              }
-                            />
                           </div>
 
                           <AddButton

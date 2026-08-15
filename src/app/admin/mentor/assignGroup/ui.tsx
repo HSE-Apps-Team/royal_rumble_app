@@ -47,6 +47,39 @@ export default function MentorAssignGroupUI({
   const [searchText, setSearchText] = useState("");
   const [showAssigned, setShowAssigned] = useState(true);
   const [showAmbassador, setShowAmbassador] = useState(true);
+  const [ambassadorInputMode, setAmbassadorInputMode] = useState<
+    "dropdown" | "text"
+  >("dropdown");
+
+  // Group names are created as "Group {N}" (see resolveGroupId), but admins
+  // may type just the number or the full name — accept either.
+  const resolveGroupNumber = (text: string): number | null => {
+    const match = text.trim().match(/^(?:group\s*)?(\d+)$/i);
+    if (!match) return null;
+    return Number(match[1]);
+  };
+
+  const resolveGroupIdFromText = (text: string): string | null => {
+    const groupNumber = resolveGroupNumber(text);
+    if (groupNumber === null) return null;
+
+    const exact = groupIds.find(
+      (g) => g.name.trim().toLowerCase() === `group ${groupNumber}`,
+    );
+    if (exact) return String(exact.groupId);
+
+    // Fall back to a group literally named just the number, or matching the
+    // raw groupId itself, in case names don't follow the "Group N" pattern.
+    const byName = groupIds.find(
+      (g) => g.name.trim() === String(groupNumber),
+    );
+    if (byName) return String(byName.groupId);
+
+    const byId = groupIds.find((g) => g.groupId === groupNumber);
+    if (byId) return String(byId.groupId);
+
+    return null;
+  };
 
   const normalizedSearch = searchText.toLowerCase().trim();
 
@@ -134,6 +167,32 @@ export default function MentorAssignGroupUI({
                 Show assigned mentors?
               </label>
             </div>
+            {showAmbassador && (
+              <div className="form-row checkbox-row">
+                <label className="checkbox-label">
+                  <input
+                    type="radio"
+                    name="ambassadorInputMode"
+                    value="dropdown"
+                    className="checkbox-input"
+                    checked={ambassadorInputMode === "dropdown"}
+                    onChange={() => setAmbassadorInputMode("dropdown")}
+                  />
+                  Assign via dropdown
+                </label>
+                <label className="checkbox-label">
+                  <input
+                    type="radio"
+                    name="ambassadorInputMode"
+                    value="text"
+                    className="checkbox-input"
+                    checked={ambassadorInputMode === "text"}
+                    onChange={() => setAmbassadorInputMode("text")}
+                  />
+                  Assign via typed group number
+                </label>
+              </div>
+            )}
           </form>
         </div>
       </div>
@@ -153,6 +212,9 @@ export default function MentorAssignGroupUI({
             dropdownValues={groupIds.map((g) => String(g.groupId))}
             dropdownDisplayTexts={groupIds.map((g) => g.name)}
             currentDropdownColumnIndex={0}
+            useTextInput={ambassadorInputMode === "text"}
+            resolveTextValue={resolveGroupIdFromText}
+            textInputPlaceholder='e.g. "1" or "Group 1"'
             reassignAction={async (mentorId, newGroupId) => {
               const parsed =
                 newGroupId === "unassigned" ? null : Number(newGroupId);

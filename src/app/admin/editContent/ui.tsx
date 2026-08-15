@@ -22,9 +22,11 @@ import { useState } from "react";
 export default function AdminEditContentPageUI({
   faqData,
   royalRumbleTicketLinkCurrent,
+  jobs,
 }: {
   faqData: Array<{ id: number; question: string; answer: string }>;
   royalRumbleTicketLinkCurrent: string;
+  jobs: Array<{ slug: string; label: string; contentKey: string }>;
 }) {
   const router = useRouter();
   const { showAlert } = useAlert();
@@ -288,22 +290,13 @@ export default function AdminEditContentPageUI({
             title="Attendee More Details Text"
             contentKey="freshmen_more_details"
           />
-          <EditableContentBox
-            title="CCA Convos More Details Text"
-            contentKey="cca_convos_more_details"
-          />
-          <EditableContentBox
-            title="Utility Squad More Details Text"
-            contentKey="utility_squad_more_details"
-          />
-          <EditableContentBox
-            title="Hallway Host More Details Text"
-            contentKey="hallway_host_more_details"
-          />
-          <EditableContentBox
-            title="Ambassador More Details Text"
-            contentKey="ambassador_more_details"
-          />
+          {jobs.map((job) => (
+            <EditableContentBox
+              key={job.slug}
+              title={`${job.label} More Details Text`}
+              contentKey={job.contentKey}
+            />
+          ))}
         </>
       )}
 

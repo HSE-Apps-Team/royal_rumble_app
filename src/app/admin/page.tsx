@@ -53,10 +53,10 @@ export default async function AdminHomepage() {
             <div className="admin-section-head">Daily Operations</div>
             <div className="admin-section-grid">
               <AdminButtons link="/admin/attendees" className="admin-section-button">Attendees</AdminButtons>
-              <AdminButtons link="/admin/attendance" className="admin-section-button">Attendance</AdminButtons>
+              <AdminButtons link="/admin/mentor" className="admin-section-button">Mentor</AdminButtons>
               <AdminButtons link="/admin/all_groups" className="admin-section-button">All Groups</AdminButtons>
               <AdminButtons link="/admin/ghost_groups" className="admin-section-button">Ghost Groups</AdminButtons>
-              <AdminButtons link="/admin/mentor" className="admin-section-button">Mentor</AdminButtons>
+              <AdminButtons link="/admin/attendance" className="admin-section-button">Attendance</AdminButtons>
               <AdminButtons link="/admin/events" className="admin-section-button">Events</AdminButtons>
             </div>
           </div>
@@ -87,10 +87,10 @@ export default async function AdminHomepage() {
             <div className="admin-section-head">Daily Operations</div>
             <div className="admin-section-grid">
               <AdminButtons link="/admin/attendees" className="admin-section-button">Attendees</AdminButtons>
-              <AdminButtons link="/admin/attendance" className="admin-section-button">Attendance</AdminButtons>
+              <AdminButtons link="/admin/mentor" className="admin-section-button">Mentor</AdminButtons>
               <AdminButtons link="/admin/all_groups" className="admin-section-button">All Groups</AdminButtons>
               <AdminButtons link="/admin/ghost_groups" className="admin-section-button">Ghost Groups</AdminButtons>
-              <AdminButtons link="/admin/mentor" className="admin-section-button">Mentor</AdminButtons>
+              <AdminButtons link="/admin/attendance" className="admin-section-button">Attendance</AdminButtons>
               <AdminButtons link="/admin/events" className="admin-section-button">Events</AdminButtons>
             </div>
           </div>

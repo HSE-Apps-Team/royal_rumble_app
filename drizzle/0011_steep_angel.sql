@@ -1,1 +1,0 @@
-ALTER TABLE "group_data" DROP COLUMN "start_pos";

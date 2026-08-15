@@ -10,6 +10,9 @@ import {
   groupData,
   ambassadorData,
   faqContentData,
+  groupRouteAttendance,
+  tourRoute,
+  tourRouteStop,
 } from "@/db/schema";
 import { eq, asc, and, sql, inArray } from "drizzle-orm";
 
@@ -395,6 +398,67 @@ export const getRoyalRumbleTicketLink = async (): Promise<string> => {
     .where(eq(siteContent.key, "royalRumbleTicketLink"))
     .limit(1);
   return royalRumbleEvent[0]?.content ?? "";
+};
+
+//--------------------------------------------------------------------------------------//
+//                                                                                      //
+//                              Day of Event stats                                      //
+//                                                                                      //
+//--------------------------------------------------------------------------------------//
+
+// "Groups on tour" = groups with a route assigned that have marked present
+// at at least one of THAT ROUTE's stops but not every one of them yet
+// (started, not finished). group_route_attendance also holds non-Tour block
+// rows (Gym, Leonard, etc. — see ensureGroupBlockAttendance), so this joins
+// through tour_route_stop to scope the count to only the group's actual
+// tour route stops, not every block it has attendance rows for.
+export const getDayOfEventStats = async (): Promise<{
+  attendeesCheckedIn: number;
+  attendeesTotal: number;
+  mentorsTotal: number;
+  groupsOnTour: number;
+  groupsWithRoute: number;
+}> => {
+  const [attendeeCounts, mentorCountRows, tourCounts] = await Promise.all([
+    db
+      .select({
+        checkedIn: sql<number>`count(*) filter (where ${attendeeData.present} = true)`,
+        total: sql<number>`count(*)`,
+      })
+      .from(attendeeData),
+    db.select({ total: sql<number>`count(*)` }).from(mentorData),
+    db
+      .select({
+        groupId: groupData.groupId,
+        stopsTotal: sql<number>`count(${tourRouteStop.routeStopId})`,
+        stopsPresent: sql<number>`count(*) filter (where ${groupRouteAttendance.present} = true)`,
+      })
+      .from(groupData)
+      .innerJoin(tourRoute, eq(groupData.routeNum, tourRoute.routeNum))
+      .innerJoin(tourRouteStop, eq(tourRouteStop.routeId, tourRoute.routeId))
+      .innerJoin(
+        groupRouteAttendance,
+        and(
+          eq(groupRouteAttendance.groupId, groupData.groupId),
+          eq(groupRouteAttendance.hallwayStopId, tourRouteStop.hallwayStopId),
+        ),
+      )
+      .where(sql`${groupData.routeNum} is not null`)
+      .groupBy(groupData.groupId),
+  ]);
+
+  const groupsWithRoute = tourCounts.length;
+  const groupsOnTour = tourCounts.filter(
+    (g) => Number(g.stopsPresent) > 0 && Number(g.stopsPresent) < Number(g.stopsTotal),
+  ).length;
+
+  return {
+    attendeesCheckedIn: Number(attendeeCounts[0]?.checkedIn ?? 0),
+    attendeesTotal: Number(attendeeCounts[0]?.total ?? 0),
+    mentorsTotal: Number(mentorCountRows[0]?.total ?? 0),
+    groupsOnTour,
+    groupsWithRoute,
+  };
 };
 
 //--------------------------------------------------------------------------------------//

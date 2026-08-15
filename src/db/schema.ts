@@ -37,10 +37,16 @@ export const eventsData = pgTable("events_data", {
 });
 
 // ---------------- hallway_stop_data ----------------
+// Non-Tour blocks (Gym, Leonard, etc.) are matched to a row here by name
+// (see ensureGroupBlockAttendance in src/actions/routes.tsx) — the unique
+// index makes "find or create by name" race-safe across concurrent
+// requests instead of relying on an unenforced check-then-insert.
 export const hallwayStopData = pgTable("hallway_stop_data", {
   hallwayStopId: integer("hallway_stop_id").primaryKey().generatedAlwaysAsIdentity(),
   location:      text("location"),
-});
+}, (t) => ({
+  locationLowerUnique: uniqueIndex("hallway_stop_data_location_lower_unique").on(sql`lower(${t.location})`),
+}));
 
 // ---------------- hallway_host_data ----------------
 export const hallwayHostData = pgTable(

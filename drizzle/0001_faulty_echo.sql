@@ -1,1 +1,0 @@
-ALTER TABLE "seminar_data" DROP COLUMN "teacher_full_name";

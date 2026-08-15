@@ -89,13 +89,198 @@
   margin: 5px 20px;
 }
 
+/* ---------------- admin homepage sections ---------------- */
+
+.admin-sections {
+  width: 100%;
+  max-width: 1400px;
+  display: flex;
+  justify-content: center;
+  padding: 0 clamp(16px, 4vw, 48px);
+  box-sizing: border-box;
+}
+
+.admin-desktop-only,
+.admin-mobile-only {
+  width: 100%;
+}
+
+.admin-section-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: 'Poppins', sans-serif;
+  font-size: clamp(0.85rem, 1vw, 1rem);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--primaryBlue);
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.admin-section-head::after {
+  content: "";
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--secondarySilver);
+  opacity: 1;
+}
+
+/* Wide, rectangular tiles that stretch to fill the row — a real grid with
+   a fixed column count per section, so a trailing row (e.g. Mentor/Events
+   under a 4-wide Daily Ops row) keeps the same tile width as the row
+   above it instead of re-stretching to fill fewer columns. */
+.admin-section-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(14px, 1.6vw, 24px);
+}
+
+.admin-section-grid.admin-cols-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.admin-section-grid.admin-single-col {
+  grid-template-columns: 1fr;
+}
+
+.admin-nav-button.admin-section-button {
+  width: 100%;
+  height: clamp(90px, 8vw, 130px);
+  margin: 0;
+  font-size: clamp(1.1rem, 1.6vw, 1.6rem);
+  line-height: 1.25;
+  padding: 16px 20px;
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* Day of Event: neon pink/magenta gradient pulled from the logo's ring.
+   The base .admin-nav-button rule gives every tile a thick (10px) solid
+   transparent border; at this button's rounded corners that border layer
+   was producing a visible seam against the gradient underneath in some
+   browsers. Removing the border here means there's no border layer left
+   to seam against — just one flat gradient fill, corner to corner. */
 .admin-day-of-event-button {
-  order: 1;
+  border-width: 0;
+  background-image: linear-gradient(135deg, #ff3be2, #ff5f9e);
+  transition: filter 0.2s;
+}
+
+.admin-day-of-event-button:hover {
+  filter: brightness(1.08);
+}
+
+/* Mentor Preview: dashed outline instead of a flat/filled tile */
+.admin-mentor-preview-button {
+  background-color: #ffffff;
+  color: var(--primaryBlue);
+  border-color: var(--primaryBlue) !important;
+  border-style: dashed;
+  transition: background-color 0.2s;
+}
+
+.admin-mentor-preview-button:hover {
+  background-color: #eaf1f8;
+}
+
+/* Desktop: Day of Event / Mentor Preview / Reset Tables sit together in one
+   "Other" row. Mobile: Day of Event pins to the very top with Mentor Preview
+   directly under it, ahead of Daily Operations and Setup — so these use two
+   separate layout blocks (one per breakpoint) rather than fighting CSS order
+   across a shared grid. */
+.admin-mobile-only { display: none; }
+.admin-desktop-only { display: flex; flex-direction: column; gap: clamp(24px, 3vw, 40px); width: 100%; max-width: 1200px; }
+
+/* Pinned mobile tiles (Day of Event, Mentor Preview, Reset Tables) read as
+   full-width banners rather than small floating tiles. */
+.admin-mobile-only .admin-single-col .admin-section-button {
+  width: 100%;
+  max-width: 480px;
+  height: clamp(80px, 18vw, 110px);
+}
+
+/* Tablet (iPad portrait/landscape and similar, ~601–1024px): the 4-column
+   desktop grid gets tight, so Daily Ops/Setup drop to 3 columns and Other's
+   3 tiles keep their own row. Tiles size up a bit too, since there's more
+   room per tile at 3-wide than there was at 4-wide. */
+@media (min-width: 601px) and (max-width: 1024px) {
+  .admin-section-grid:not(.admin-cols-3):not(.admin-single-col) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .admin-nav-button.admin-section-button {
+    height: clamp(100px, 11vw, 140px);
+    font-size: clamp(1.15rem, 2vw, 1.5rem);
+  }
 }
 
 @media (max-width: 600px) {
-  .admin-day-of-event-button {
-    order: -1;
+  .admin-sections { gap: 20px; padding: 0 16px; }
+  .admin-mobile-only { display: flex; flex-direction: column; gap: 20px; width: 100%; }
+  .admin-desktop-only { display: none; }
+  .admin-mobile-only .admin-section-grid:not(.admin-single-col) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ---------------- Day of Event stats ---------------- */
+
+.doe-stat-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  width: 100%;
+  max-width: 700px;
+  margin-bottom: 20px;
+}
+
+.doe-stat {
+  background: rgba(1, 83, 156, 0.06);
+  border: 1px solid rgba(1, 83, 156, 0.15);
+  border-radius: 12px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+}
+
+.doe-stat-num {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: 1.6rem;
+  color: var(--primaryBlue);
+}
+
+.doe-stat-of {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--secondarySilver);
+}
+
+.doe-stat-label {
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--secondarySilver);
+}
+
+@media (max-width: 600px) {
+  .doe-stat-row {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .doe-stat {
+    padding: 10px 10px;
+  }
+  .doe-stat-num {
+    font-size: 1.1rem;
+  }
+  .doe-stat-label {
+    font-size: 0.65rem;
   }
 }
 

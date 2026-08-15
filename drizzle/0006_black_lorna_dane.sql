@@ -1,1 +1,0 @@
-ALTER TABLE "trainings_data" ALTER COLUMN "training_id" ADD GENERATED ALWAYS AS IDENTITY (sequence name "trainings_data_training_id_seq" INCREMENT BY 1 MINVALUE 1 MAXVALUE 2147483647 START WITH 1 CACHE 1);

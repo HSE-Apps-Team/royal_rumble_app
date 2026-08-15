@@ -426,18 +426,24 @@ export async function ensureGroupBlockAttendance(groupId: number) {
 
   await Promise.all([
     ...nonTourBlocks.map(async (blockName) => {
-      let stop = await db
-        .select({ hallwayStopId: hallwayStopData.hallwayStopId })
-        .from(hallwayStopData)
-        .where(sql`lower(${hallwayStopData.location}) = lower(${blockName})`)
-        .limit(1);
+      // Insert-then-select-on-conflict, backed by the unique index on
+      // lower(location) — race-safe across concurrent requests (e.g. two
+      // ambassadors' groups sharing a block name like "Gym" both loading
+      // their route page at once), unlike a plain check-then-insert which
+      // can create duplicate hallway_stop_data rows for the same name.
+      const inserted = await db
+        .insert(hallwayStopData)
+        .values({ location: blockName })
+        .onConflictDoNothing()
+        .returning({ hallwayStopId: hallwayStopData.hallwayStopId });
 
+      let stop = inserted;
       if (!stop[0]) {
-        const inserted = await db
-          .insert(hallwayStopData)
-          .values({ location: blockName })
-          .returning({ hallwayStopId: hallwayStopData.hallwayStopId });
-        stop = inserted;
+        stop = await db
+          .select({ hallwayStopId: hallwayStopData.hallwayStopId })
+          .from(hallwayStopData)
+          .where(sql`lower(${hallwayStopData.location}) = lower(${blockName})`)
+          .limit(1);
       }
 
       if (stop[0]) {

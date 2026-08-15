@@ -27,38 +27,108 @@ export default async function AdminHomepage() {
         </h1>
       </header>
 
-      <section
-        className="admin-button-box admin-button-box-spaced"
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
-      >
-        <div className="admin-button-row admin-button-grid">
-          <AdminButtons
-            link="/admin/day_of_event"
-            className="admin-day-of-event-button"
-            backgroundColor="#ff3be2"
-          >
-            Day of Event
-          </AdminButtons>
-          <AdminButtons link="/admin/admin">Admin</AdminButtons>
-          <AdminButtons link="/admin/mentor">Mentor</AdminButtons>
-          <AdminButtons link="/admin/attendees">Attendees</AdminButtons>
-          <AdminButtons link="/admin/upload">Upload</AdminButtons>
-          <AdminButtons link="/admin/attendance">Attendance</AdminButtons>
-          <AdminButtons link="/admin/events">Events</AdminButtons>
-          <AdminButtons link="/admin/all_groups">All Groups</AdminButtons>
-          <AdminButtons link="/admin/routes">Routes</AdminButtons>
-          <AdminButtons link="/admin/ghost_groups">Ghost Groups</AdminButtons>
-          <AdminButtons link="/admin/editContent">Edit Content</AdminButtons>
-          <AdminButtons link="/admin/reset" backgroundColor="var(--primaryRed)">
-            Reset Tables
-          </AdminButtons>
-          <AdminButtons link="/admin/mentor_preview">
-            Mentor Preview
-          </AdminButtons>
+      <section className="admin-button-box admin-button-box-spaced admin-sections">
+        {/* Mobile: Day of Event pinned to the very top, Mentor Preview
+            directly under it, ahead of everything else. */}
+        <div className="admin-mobile-only">
+          <div className="admin-section-grid admin-single-col">
+            <AdminButtons
+              link="/admin/day_of_event"
+              className="admin-section-button admin-day-of-event-button"
+              staticStyle
+            >
+              Day of Event
+            </AdminButtons>
+          </div>
+          <div className="admin-section-grid admin-single-col">
+            <AdminButtons
+              link="/admin/mentor_preview"
+              className="admin-section-button admin-mentor-preview-button"
+              staticStyle
+            >
+              Mentor Preview
+            </AdminButtons>
+          </div>
+          <div>
+            <div className="admin-section-head">Daily Operations</div>
+            <div className="admin-section-grid">
+              <AdminButtons link="/admin/attendees" className="admin-section-button">Attendees</AdminButtons>
+              <AdminButtons link="/admin/attendance" className="admin-section-button">Attendance</AdminButtons>
+              <AdminButtons link="/admin/all_groups" className="admin-section-button">All Groups</AdminButtons>
+              <AdminButtons link="/admin/ghost_groups" className="admin-section-button">Ghost Groups</AdminButtons>
+              <AdminButtons link="/admin/mentor" className="admin-section-button">Mentor</AdminButtons>
+              <AdminButtons link="/admin/events" className="admin-section-button">Events</AdminButtons>
+            </div>
+          </div>
+          <div>
+            <div className="admin-section-head">Setup &amp; Configuration</div>
+            <div className="admin-section-grid">
+              <AdminButtons link="/admin/admin" className="admin-section-button">Admin</AdminButtons>
+              <AdminButtons link="/admin/upload" className="admin-section-button">Upload</AdminButtons>
+              <AdminButtons link="/admin/routes" className="admin-section-button">Routes</AdminButtons>
+              <AdminButtons link="/admin/editContent" className="admin-section-button">Edit Content</AdminButtons>
+            </div>
+          </div>
+          <div className="admin-section-grid admin-single-col">
+            <AdminButtons
+              link="/admin/reset"
+              className="admin-section-button"
+              backgroundColor="var(--primaryRed)"
+            >
+              Reset Tables
+            </AdminButtons>
+          </div>
+        </div>
+
+        {/* Desktop: Day of Event, Mentor Preview, and Reset Tables share one
+            "Other" row — quiet the other 90% of the time, still findable. */}
+        <div className="admin-desktop-only">
+          <div>
+            <div className="admin-section-head">Daily Operations</div>
+            <div className="admin-section-grid">
+              <AdminButtons link="/admin/attendees" className="admin-section-button">Attendees</AdminButtons>
+              <AdminButtons link="/admin/attendance" className="admin-section-button">Attendance</AdminButtons>
+              <AdminButtons link="/admin/all_groups" className="admin-section-button">All Groups</AdminButtons>
+              <AdminButtons link="/admin/ghost_groups" className="admin-section-button">Ghost Groups</AdminButtons>
+              <AdminButtons link="/admin/mentor" className="admin-section-button">Mentor</AdminButtons>
+              <AdminButtons link="/admin/events" className="admin-section-button">Events</AdminButtons>
+            </div>
+          </div>
+          <div>
+            <div className="admin-section-head">Setup &amp; Configuration</div>
+            <div className="admin-section-grid">
+              <AdminButtons link="/admin/admin" className="admin-section-button">Admin</AdminButtons>
+              <AdminButtons link="/admin/upload" className="admin-section-button">Upload</AdminButtons>
+              <AdminButtons link="/admin/routes" className="admin-section-button">Routes</AdminButtons>
+              <AdminButtons link="/admin/editContent" className="admin-section-button">Edit Content</AdminButtons>
+            </div>
+          </div>
+          <div>
+            <div className="admin-section-head">Other</div>
+            <div className="admin-section-grid admin-cols-3">
+              <AdminButtons
+                link="/admin/day_of_event"
+                className="admin-section-button admin-day-of-event-button"
+                staticStyle
+              >
+                Day of Event
+              </AdminButtons>
+              <AdminButtons
+                link="/admin/mentor_preview"
+                className="admin-section-button admin-mentor-preview-button"
+                staticStyle
+              >
+                Mentor Preview
+              </AdminButtons>
+              <AdminButtons
+                link="/admin/reset"
+                className="admin-section-button"
+                backgroundColor="var(--primaryRed)"
+              >
+                Reset Tables
+              </AdminButtons>
+            </div>
+          </div>
         </div>
       </section>
     </main>

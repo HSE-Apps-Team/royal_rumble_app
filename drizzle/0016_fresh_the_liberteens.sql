@@ -1,1 +1,0 @@
-ALTER TABLE "freshmen_data" ADD COLUMN "group_id" text;

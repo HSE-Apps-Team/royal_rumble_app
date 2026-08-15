@@ -1,1 +1,0 @@
-ALTER TABLE "group_data" ALTER COLUMN "route_num" SET DATA TYPE integer;

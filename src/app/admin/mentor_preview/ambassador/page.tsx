@@ -219,10 +219,10 @@ export default function AmbassadorPreview() {
                   Avatar Aang
                 </li>
                 <li className="list-group-item" key="mentor2">
-                  Katara Water
+                  Nithik Sajja
                 </li>
                 <li className="list-group-item" key="mentor3">
-                  Toph Beifong
+                  Nico Suriano
                 </li>
               </ol>
             </div>

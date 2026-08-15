@@ -1,1 +1,0 @@
-ALTER TABLE "seminar_data" ADD COLUMN "teacher_full_name" text;

@@ -1,1 +1,0 @@
-ALTER TABLE "mentor_attendance_data" ALTER COLUMN "status" SET DATA TYPE boolean;

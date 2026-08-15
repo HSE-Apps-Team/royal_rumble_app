@@ -1,14 +1,15 @@
-"use client";
-
-import { useRouter } from "next/navigation";
+import BackButton from "../../components/backButton";
 import LogoButton from "../../components/logoButton";
 import LoginButton from "../../components/loginButton";
 import AdminButtons from "../../components/adminButtons";
 import "../../css/admin.css";
 import "../../css/logo+login.css";
+import { getDayOfEventStats } from "@/src/actions/other";
 
-export default function DayOfEventHomepage() {
-  const router = useRouter();
+export const dynamic = "force-dynamic";
+
+export default async function DayOfEventHomepage() {
+  const stats = await getDayOfEventStats();
 
   return (
     <main className="admin-container">
@@ -19,9 +20,7 @@ export default function DayOfEventHomepage() {
         <h1 className="admin-title">Day of Event</h1>
       </header>
 
-      <button className="back-button" onClick={() => router.push("/admin")}>
-        <i className="bi bi-arrow-left"></i>
-      </button>
+      <BackButton href="/admin" />
 
       <section
         className="admin-button-box"
@@ -32,6 +31,27 @@ export default function DayOfEventHomepage() {
           margin: "50px",
         }}
       >
+        <div className="doe-stat-row">
+          <div className="doe-stat">
+            <span className="doe-stat-num">
+              {stats.attendeesCheckedIn}{" "}
+              <span className="doe-stat-of">/ {stats.attendeesTotal}</span>
+            </span>
+            <span className="doe-stat-label">Attendees checked in</span>
+          </div>
+          <div className="doe-stat">
+            <span className="doe-stat-num">{stats.mentorsTotal}</span>
+            <span className="doe-stat-label">Total mentors</span>
+          </div>
+          <div className="doe-stat">
+            <span className="doe-stat-num">
+              {stats.groupsOnTour}{" "}
+              <span className="doe-stat-of">/ {stats.groupsWithRoute}</span>
+            </span>
+            <span className="doe-stat-label">Groups on tour</span>
+          </div>
+        </div>
+
         <div className="admin-button-row">
           <AdminButtons link="/admin/day_of_event/attendee_lost">
             Attendee Lost?

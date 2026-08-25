@@ -17,7 +17,7 @@ export default async function AmbassadorHomepage() {
   const studentId = !DEV_MODE ? session?.user?.id : "100001";
 
   const mentorsData = await getMentorById(Number(studentId));
-  const ambassadorEvents = await getAmbassadorEvents();
+  const ambassadorEvents = await getAmbassadorEvents(Number(studentId));
 
   const groupId = await getGroupIdByMentorId(Number(studentId));
   const groupDetails = groupId != null ? await getGroupByGroupId(groupId) : null;

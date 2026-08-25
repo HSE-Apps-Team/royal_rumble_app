@@ -3,8 +3,8 @@ import MentorButtons from "../../components/mentorButtons";
 import NavButton from "../../components/addButton";
 import MobileNav from "../../components/MobileNav";
 import InfoTable from "../../components/infoTable";
+import EventCheckInTable from "../../components/EventCheckInTable";
 import EditableContent from "../../components/EditableContent";
-import { formatEventDates } from "@/lib/formatEventDates";
 import "../../css/mentor.css";
 import "../../css/logo+login.css";
 import "../../css/mobile-nav.css";
@@ -38,6 +38,8 @@ export default function AmbassadorUI({
     date2?: string | null;
     time2?: string | null;
     description: string | null;
+    attendanceCodeActive: boolean;
+    attended: boolean;
   }>;
   groupDetails: {
     groupId: number;
@@ -195,13 +197,9 @@ export default function AmbassadorUI({
             Dates:
           </div>
 
-          <InfoTable
-            headers={["Event", "Date(s)", "Description"]}
-            data={ambassadorEvents.map((event) => [
-              event.name ?? "N/A",
-              formatEventDates(event),
-              event.description ?? "N/A",
-            ])}
+          <EventCheckInTable
+            mentorId={mentorsData.mentorId}
+            events={ambassadorEvents}
           />
         </InfoBox>
       </section>

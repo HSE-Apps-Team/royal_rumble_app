@@ -21,7 +21,7 @@ export default async function NonUtilityJobHomepage({
   const studentId = !DEV_MODE ? session?.user?.id : DEV_STUDENT_ID;
 
   const mentorsData = await getMentorById(Number(studentId));
-  const events = await getEventsForJob(jobConfig.dbJob);
+  const events = await getEventsForJob(jobConfig.dbJob, Number(studentId));
 
   return (
     <NonUtilityJobUI

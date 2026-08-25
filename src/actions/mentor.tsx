@@ -10,7 +10,7 @@ import {
   mentorData,
   groupData,
 } from "@/db/schema";
-import { eq, sql, or } from "drizzle-orm";
+import { eq, sql, or, and } from "drizzle-orm";
 import { encrypt, decrypt } from "@/lib/crypto";
 import { toTitleCase } from "@/lib/toTitleCase";
 
@@ -59,7 +59,7 @@ export const getAmbassadorAssignments = async () => {
   return groups;
 };
 
-export const getAmbassadorEvents = async () => {
+export const getAmbassadorEvents = async (mentorId: number) => {
   const events = await db
     .select({
       eventId: eventsData.eventId,
@@ -69,11 +69,27 @@ export const getAmbassadorEvents = async () => {
       date2: eventsData.date2,
       time2: eventsData.time2,
       description: eventsData.description,
+      attendanceCodeExpiresAt: eventsData.attendanceCodeExpiresAt,
+      attended: mentorAttendanceData.status,
     })
     .from(eventsData)
+    .leftJoin(
+      mentorAttendanceData,
+      and(
+        eq(mentorAttendanceData.eventId, eventsData.eventId),
+        eq(mentorAttendanceData.mentorId, mentorId),
+      ),
+    )
     .orderBy(sql`${eventsData.date} ASC, ${eventsData.time} ASC`)
     .where(sql`upper(trim(${eventsData.job})) IN ('AMBASSADOR', 'ALL')`);
-  return events;
+  return events.map((event) => ({
+    ...event,
+    attendanceCodeActive: Boolean(
+      event.attendanceCodeExpiresAt &&
+        new Date(event.attendanceCodeExpiresAt).getTime() > Date.now(),
+    ),
+    attended: event.attended ?? false,
+  }));
 };
 
 // Hallway Host queries
@@ -147,7 +163,7 @@ export const getHallwayHostAssignments = async () => {
 };
 
 // Non-utility mentor job queries (Hallway Host, Utility Squad, CCA Convos, ...)
-export const getEventsForJob = async (job: string) => {
+export const getEventsForJob = async (job: string, mentorId: number) => {
   const jobKey = job.trim().toUpperCase();
   const events = await db
     .select({
@@ -158,11 +174,27 @@ export const getEventsForJob = async (job: string) => {
       date2: eventsData.date2,
       time2: eventsData.time2,
       description: eventsData.description,
+      attendanceCodeExpiresAt: eventsData.attendanceCodeExpiresAt,
+      attended: mentorAttendanceData.status,
     })
     .from(eventsData)
+    .leftJoin(
+      mentorAttendanceData,
+      and(
+        eq(mentorAttendanceData.eventId, eventsData.eventId),
+        eq(mentorAttendanceData.mentorId, mentorId),
+      ),
+    )
     .orderBy(sql`${eventsData.date} ASC, ${eventsData.time} ASC`)
     .where(sql`upper(trim(${eventsData.job})) IN (${jobKey}, 'ALL')`);
-  return events;
+  return events.map((event) => ({
+    ...event,
+    attendanceCodeActive: Boolean(
+      event.attendanceCodeExpiresAt &&
+        new Date(event.attendanceCodeExpiresAt).getTime() > Date.now(),
+    ),
+    attended: event.attended ?? false,
+  }));
 };
 
 //--------------------------------------------------------------------------------------//

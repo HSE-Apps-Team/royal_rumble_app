@@ -76,6 +76,8 @@ export const getAllEvents = async (job?: string) => {
     location: string;
     job: string;
     description: string | null;
+    attendanceCode: string | null;
+    attendanceCodeExpiresAt: string | null;
     mentors: Array<{
       fName: string;
       lName: string;
@@ -117,6 +119,10 @@ export const getAllEvents = async (job?: string) => {
       time2: event.time2 ?? null,
       location: String(event.location),
       description: event.description,
+      attendanceCode: event.attendanceCode,
+      attendanceCodeExpiresAt: event.attendanceCodeExpiresAt
+        ? new Date(event.attendanceCodeExpiresAt).toISOString()
+        : null,
       mentors: attendance as Array<{
         fName: string;
         lName: string;
@@ -157,6 +163,59 @@ export const getEventById = async (eventId: number) => {
     .from(eventsData)
     .where(eq(eventsData.eventId, eventId));
   return event[0];
+};
+
+export const checkMentorAttendanceCode = async (
+  eventId: number,
+  mentorId: number,
+  code: string,
+): Promise<{ success: true } | { success: false; error: "invalid" | "expired" | "already_checked_in" }> => {
+  const event = await db
+    .select({
+      attendanceCode: eventsData.attendanceCode,
+      attendanceCodeExpiresAt: eventsData.attendanceCodeExpiresAt,
+    })
+    .from(eventsData)
+    .where(eq(eventsData.eventId, eventId));
+
+  const row = event[0];
+  if (
+    !row?.attendanceCode ||
+    row.attendanceCode.trim().toUpperCase() !== code.trim().toUpperCase()
+  ) {
+    return { success: false, error: "invalid" };
+  }
+  if (
+    !row.attendanceCodeExpiresAt ||
+    new Date(row.attendanceCodeExpiresAt).getTime() < Date.now()
+  ) {
+    return { success: false, error: "expired" };
+  }
+
+  const existing = await db
+    .select({ status: mentorAttendanceData.status })
+    .from(mentorAttendanceData)
+    .where(
+      and(
+        eq(mentorAttendanceData.eventId, eventId),
+        eq(mentorAttendanceData.mentorId, mentorId),
+      ),
+    );
+  if (existing[0]?.status) {
+    return { success: false, error: "already_checked_in" };
+  }
+
+  await db
+    .update(mentorAttendanceData)
+    .set({ status: true })
+    .where(
+      and(
+        eq(mentorAttendanceData.eventId, eventId),
+        eq(mentorAttendanceData.mentorId, mentorId),
+      ),
+    );
+
+  return { success: true };
 };
 
 export const getMentorAttendanceAllEvents = async () => {
@@ -565,6 +624,35 @@ export const updateEventByID = async (
   }
 
   return { success: true, eventId: eventId };
+};
+
+export const setEventAttendanceCode = async (
+  eventId: number,
+  code: string,
+  durationMinutes: number,
+) => {
+  const expiresAt = new Date(Date.now() + durationMinutes * 60_000);
+  await db
+    .update(eventsData)
+    .set({
+      attendanceCode: code.trim().toUpperCase(),
+      attendanceCodeExpiresAt: expiresAt,
+    })
+    .where(eq(eventsData.eventId, eventId));
+  return {
+    success: true,
+    eventId,
+    code: code.trim().toUpperCase(),
+    expiresAt: expiresAt.toISOString(),
+  };
+};
+
+export const clearEventAttendanceCode = async (eventId: number) => {
+  await db
+    .update(eventsData)
+    .set({ attendanceCode: null, attendanceCodeExpiresAt: null })
+    .where(eq(eventsData.eventId, eventId));
+  return { success: true, eventId };
 };
 
 export const updateMentorAttendanceById = async (

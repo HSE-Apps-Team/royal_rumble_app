@@ -140,7 +140,6 @@ export default function FindGroup() {
             <div className="search-row" style={{ justifyContent: "center" }}>
               <input
                 type="text"
-                inputMode="numeric"
                 placeholder="Search Group Number / Name..."
                 className="search-input"
                 value={searchQuery}

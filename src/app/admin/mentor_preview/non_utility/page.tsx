@@ -3,10 +3,9 @@
 import LogoButton from "../../../components/logoButton";
 import LoginButton from "../../../components/loginButton";
 import InfoBox from "../../../components/infoBox";
-import InfoTable from "../../../components/infoTable";
+import EventCheckInTablePreview from "../../../components/EventCheckInTablePreview";
 import NavButton from "../../../components/addButton";
 import MobileNav from "../../../components/MobileNav";
-import { formatEventDates } from "@/lib/formatEventDates";
 import "../../../css/mentor.css";
 import "../../../css/logo+login.css";
 import "../../../css/mobile-nav.css";
@@ -25,6 +24,8 @@ export default function NonUtilityJobPreview() {
       time2: "11:00 AM",
       description:
         "Training for all Royal Rumble mentors: choose one of the 2 available dates.",
+      attendanceCodeActive: false,
+      attended: true,
     },
     {
       eventId: 6,
@@ -34,6 +35,8 @@ export default function NonUtilityJobPreview() {
       date2: null,
       time2: null,
       description: "Job-specific rehearsal for Royal Rumble mentors",
+      attendanceCodeActive: true,
+      attended: false,
     },
     {
       eventId: 7,
@@ -43,6 +46,8 @@ export default function NonUtilityJobPreview() {
       date2: null,
       time2: null,
       description: "The official Royal Rumble new student orientation",
+      attendanceCodeActive: false,
+      attended: false,
     },
   ];
   return (
@@ -103,14 +108,7 @@ export default function NonUtilityJobPreview() {
       </header>
       <section className="mentor-info-box">
         <InfoBox headerText="Event Details">
-          <InfoTable
-            headers={["Event", "Date(s)", "Description"]}
-            data={events.map((event) => [
-              event.name ?? "N/A",
-              formatEventDates(event),
-              event.description ?? "N/A",
-            ])}
-          />
+          <EventCheckInTablePreview events={events} />
         </InfoBox>
       </section>
 

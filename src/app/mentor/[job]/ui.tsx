@@ -1,9 +1,8 @@
 import InfoBox from "../../components/infoBox";
-import InfoTable from "../../components/infoTable";
+import EventCheckInTable from "../../components/EventCheckInTable";
 import EditableContent from "../../components/EditableContent";
 import NavButton from "../../components/addButton";
 import MobileNav from "../../components/MobileNav";
-import { formatEventDates } from "@/lib/formatEventDates";
 import "../../css/mentor.css";
 import "../../css/logo+login.css";
 import "../../css/mobile-nav.css";
@@ -39,6 +38,8 @@ export default function NonUtilityJobUI({
     date2?: string | null;
     time2?: string | null;
     description: string | null;
+    attendanceCodeActive: boolean;
+    attended: boolean;
   }>;
 }) {
   return (
@@ -78,14 +79,7 @@ export default function NonUtilityJobUI({
       </header>
       <section className="mentor-info-box">
         <InfoBox headerText="Event Details">
-          <InfoTable
-            headers={["Event", "Date(s)", "Description"]}
-            data={events.map((event) => [
-              event.name ?? "N/A",
-              formatEventDates(event),
-              event.description ?? "N/A",
-            ])}
-          />
+          <EventCheckInTable mentorId={mentorsData.mentorId} events={events} />
         </InfoBox>
       </section>
 

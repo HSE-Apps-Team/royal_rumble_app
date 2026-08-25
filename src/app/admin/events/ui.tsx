@@ -8,6 +8,7 @@ import LoginButton from "../../components/loginButton";
 import ViewDropdown from "../../components/viewDropdown";
 import CheckBoxTable from "../../components/checkBoxTable";
 import AddButton from "../../components/addButton";
+import AttendanceCodeControl from "../../components/AttendanceCodeControl";
 import "../../css/admin.css";
 import "../../css/logo+login.css";
 import { deleteEvent } from "../../../../src/actions/other";
@@ -24,6 +25,8 @@ interface Events {
     location: string;
     job: string;
     description: string | null;
+    attendanceCode: string | null;
+    attendanceCodeExpiresAt: string | null;
     mentors: Array<{
       fName: string;
       lName: string;
@@ -158,6 +161,12 @@ export default function AdminEventsUI({
               <div className="info-value">
                 {event.description || "No description"}
               </div>
+
+              <AttendanceCodeControl
+                eventId={event.eventId}
+                attendanceCode={event.attendanceCode}
+                attendanceCodeExpiresAt={event.attendanceCodeExpiresAt}
+              />
 
               <label className="info-label" style={{ marginTop: "30px" }}>
                 Mentors:

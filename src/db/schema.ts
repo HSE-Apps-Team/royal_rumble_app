@@ -34,6 +34,8 @@ export const eventsData = pgTable("events_data", {
   location:      text("location"),
   description:   text("description"),
   isRoyalRumble: boolean("is_royal_rumble").default(false),
+  attendanceCode:          text("attendance_code"),
+  attendanceCodeExpiresAt: timestamp("attendance_code_expires_at"),
 });
 
 // ---------------- hallway_stop_data ----------------

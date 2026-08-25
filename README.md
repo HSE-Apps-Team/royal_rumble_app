@@ -1,36 +1,93 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Royal Rumble App
 
-## Getting Started
+Operations hub for **Royal Rumble**, Hamilton Southeastern High School's annual
+welcome program for incoming freshmen. Upperclassman mentors run building
+tours, group activities, and a pep rally for freshmen on the day of the
+event; this app is what mentors and admins use to plan it, staff it, and run
+it live.
 
-First, run the development server:
+The app has three audiences:
+
+- **Public site** — event info, FAQ, and a ticket link for freshmen/families.
+- **Mentor dashboards** — role-specific pages (Ambassador, Hallway Host,
+  Utility Squad, CCA Convos, etc.) for viewing assignments, marking
+  attendance, and following the tour route.
+- **Admin console** — rosters, group/route setup, live day-of-event tools,
+  and bulk data import.
+
+See [`docs/`](docs/) for details beyond this quick start:
+
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — tech stack, auth model, dev mode, route-management engine, environment variables
+- [`docs/DATA_MODEL.md`](docs/DATA_MODEL.md) — full database schema reference
+- [`docs/API.md`](docs/API.md) — HTTP API route handlers
+- [`docs/FEATURES.md`](docs/FEATURES.md) — page-by-page tour of the admin and mentor apps
+
+## Tech stack
+
+Next.js 16 (App Router) · React 19 · TypeScript · Drizzle ORM on Neon
+(serverless Postgres) · Auth.js v5 with Microsoft Entra ID SSO · Bootstrap 5
+· Tiptap (rich text editing) · SheetJS/`xlsx` (bulk import/export)
+
+## Getting started
+
+### Prerequisites
+
+- Node.js 20+
+- A Neon Postgres database (or any Postgres instance)
+- A Microsoft Entra ID (Azure AD) app registration — not required if you use
+  `DEV_MODE` (see below)
+
+### Setup
+
+```bash
+npm install
+cp .env.example .env.local   # then fill in the values — see docs/ARCHITECTURE.md
+```
+
+Apply the database schema with Drizzle Kit:
+
+```bash
+npx drizzle-kit push
+```
+
+Run the dev server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Skipping SSO locally
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Set `DEV_MODE=true` and `NEXT_PUBLIC_DEV_MODE=true` in `.env.local` to bypass
+Microsoft Entra login entirely. Admin and mentor pages fall back to
+hardcoded dev IDs so you can exercise `/admin` and `/mentor/*` without an
+Entra app registration. **Never enable this in production.** Details in
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md#dev-mode).
 
-## Learn More
+## Scripts
 
-To learn more about Next.js, take a look at the following resources:
+| Command | Purpose |
+|---|---|
+| `npm run dev` | Start the Next.js dev server |
+| `npm run build` | Production build |
+| `npm run start` | Serve a production build |
+| `npm run lint` | Run ESLint |
+| `npx drizzle-kit push` | Push `src/db/schema.ts` changes directly to the database |
+| `npx drizzle-kit generate` | Generate a SQL migration file under `drizzle/` |
+| `npx drizzle-kit studio` | Open Drizzle Studio (visual DB browser) |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+There is no automated test suite in this project yet.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deployment
 
-## Deploy on Vercel
+Deployed on Vercel. `vercel.json` redirects `www.hseroyalrumble.com` to the
+apex domain `hseroyalrumble.com`. Set the environment variables from
+`.env.example` in the Vercel project settings (with `DEV_MODE` unset or
+`false`).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Project status
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Fully built out except for one remaining feature (in progress — see the
+project board / current branch for details).

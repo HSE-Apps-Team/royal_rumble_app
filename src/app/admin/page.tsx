@@ -3,6 +3,7 @@
 import LogoButton from "../components/logoButton";
 import LoginButton from "../components/loginButton";
 import AdminButtons from "../components/adminButtons";
+import HelpButton from "../components/helpButton";
 import "../css/admin.css";
 import "../css/logo+login.css";
 import { auth } from "@/auth";
@@ -20,6 +21,7 @@ export default async function AdminHomepage() {
     <main className="admin-container">
       <LogoButton />
       <LoginButton />
+      <HelpButton />
 
       <header className="admin-header">
         <h1 className="admin-title">
